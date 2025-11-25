@@ -1,14 +1,17 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, HTTPException, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 from pathlib import Path
-from pydantic import BaseModel, Field
-from typing import List
+from pydantic import BaseModel, Field, EmailStr
+from typing import List, Optional
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
+import jwt
+import bcrypt
 
 
 ROOT_DIR = Path(__file__).parent
@@ -19,38 +22,309 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
+# JWT Configuration
+SECRET_KEY = os.getenv("JWT_SECRET_KEY", "sepalis-secret-key-change-in-production")
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
+
+security = HTTPBearer()
+
 # Create the main app without a prefix
-app = FastAPI()
+app = FastAPI(title="Sepalis API")
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
 
-# Define Models
-class StatusCheck(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+# ============ AUTH MODELS ============
+class UserRegister(BaseModel):
+    email: EmailStr
+    password: str
+    name: str
 
-class StatusCheckCreate(BaseModel):
-    client_name: str
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
 
-# Add your routes to the router instead of directly to app
+class UserResponse(BaseModel):
+    id: str
+    email: str
+    name: str
+
+class TokenResponse(BaseModel):
+    token: str
+    user: UserResponse
+
+
+# ============ PLANT MODELS ============
+class PlantBase(BaseModel):
+    name: str
+    scientificName: Optional[str] = None
+    wateringFrequency: Optional[int] = 7
+    description: Optional[str] = None
+
+class PlantCreate(PlantBase):
+    pass
+
+class PlantResponse(PlantBase):
+    id: str = Field(alias="_id")
+    userId: str
+    createdAt: datetime
+
+    class Config:
+        populate_by_name = True
+
+
+# ============ TASK MODELS ============
+class TaskBase(BaseModel):
+    title: str
+    description: Optional[str] = None
+    type: Optional[str] = "general"  # watering, fertilizing, pruning, general
+    dueDate: Optional[datetime] = None
+    completed: bool = False
+
+class TaskCreate(TaskBase):
+    plantId: Optional[str] = None
+
+class TaskResponse(TaskBase):
+    id: str = Field(alias="_id")
+    userId: str
+    plantId: Optional[str] = None
+    createdAt: datetime
+
+    class Config:
+        populate_by_name = True
+
+
+# ============ COURSE MODELS ============
+class CourseResponse(BaseModel):
+    id: str = Field(alias="_id")
+    title: str
+    description: str
+    level: Optional[str] = "Tous niveaux"
+    duration: Optional[str] = "2h"
+    price: Optional[int] = 0
+    slug: str
+
+    class Config:
+        populate_by_name = True
+
+
+# ============ AUTH HELPERS ============
+def hash_password(password: str) -> str:
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
+
+def create_access_token(data: dict) -> str:
+    to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+async def get_current_user(credentials: HTTPAuthorizationCredentials):
+    token = credentials.credentials
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.JWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    
+    user = await db.users.find_one({"_id": user_id})
+    if user is None:
+        raise HTTPException(status_code=401, detail="User not found")
+    return user
+
+
+# ============ AUTH ROUTES ============
+@api_router.post("/auth/register", response_model=TokenResponse)
+async def register(user_data: UserRegister):
+    # Check if user already exists
+    existing_user = await db.users.find_one({"email": user_data.email})
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    # Create new user
+    user_id = str(uuid.uuid4())
+    hashed_password = hash_password(user_data.password)
+    
+    new_user = {
+        "_id": user_id,
+        "email": user_data.email,
+        "name": user_data.name,
+        "password": hashed_password,
+        "createdAt": datetime.utcnow()
+    }
+    
+    await db.users.insert_one(new_user)
+    
+    # Create token
+    token = create_access_token({"sub": user_id})
+    
+    return TokenResponse(
+        token=token,
+        user=UserResponse(id=user_id, email=user_data.email, name=user_data.name)
+    )
+
+@api_router.post("/auth/login", response_model=TokenResponse)
+async def login(credentials: UserLogin):
+    # Find user
+    user = await db.users.find_one({"email": credentials.email})
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    
+    # Verify password
+    if not verify_password(credentials.password, user["password"]):
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    
+    # Create token
+    token = create_access_token({"sub": user["_id"]})
+    
+    return TokenResponse(
+        token=token,
+        user=UserResponse(id=user["_id"], email=user["email"], name=user["name"])
+    )
+
+@api_router.get("/auth/me", response_model=UserResponse)
+async def get_me(credentials: HTTPAuthorizationCredentials = security):
+    user = await get_current_user(credentials)
+    return UserResponse(id=user["_id"], email=user["email"], name=user["name"])
+
+
+# ============ PLANTS ROUTES ============
+@api_router.get("/user/plants", response_model=List[PlantResponse])
+async def get_user_plants(credentials: HTTPAuthorizationCredentials = security):
+    user = await get_current_user(credentials)
+    plants = await db.plants.find({"userId": user["_id"]}).to_list(100)
+    return [PlantResponse(**{**plant, "_id": plant["_id"]}) for plant in plants]
+
+@api_router.post("/user/plants", response_model=PlantResponse)
+async def create_plant(plant_data: PlantCreate, credentials: HTTPAuthorizationCredentials = security):
+    user = await get_current_user(credentials)
+    
+    plant_id = str(uuid.uuid4())
+    plant = {
+        "_id": plant_id,
+        "userId": user["_id"],
+        **plant_data.dict(),
+        "createdAt": datetime.utcnow()
+    }
+    
+    await db.plants.insert_one(plant)
+    return PlantResponse(**plant)
+
+@api_router.delete("/user/plants/{plant_id}")
+async def delete_plant(plant_id: str, credentials: HTTPAuthorizationCredentials = security):
+    user = await get_current_user(credentials)
+    result = await db.plants.delete_one({"_id": plant_id, "userId": user["_id"]})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Plant not found")
+    return {"message": "Plant deleted successfully"}
+
+
+# ============ TASKS ROUTES ============
+@api_router.get("/user/tasks", response_model=List[TaskResponse])
+async def get_user_tasks(credentials: HTTPAuthorizationCredentials = security):
+    user = await get_current_user(credentials)
+    tasks = await db.tasks.find({"userId": user["_id"]}).to_list(100)
+    return [TaskResponse(**{**task, "_id": task["_id"]}) for task in tasks]
+
+@api_router.post("/user/tasks", response_model=TaskResponse)
+async def create_task(task_data: TaskCreate, credentials: HTTPAuthorizationCredentials = security):
+    user = await get_current_user(credentials)
+    
+    task_id = str(uuid.uuid4())
+    task = {
+        "_id": task_id,
+        "userId": user["_id"],
+        **task_data.dict(),
+        "createdAt": datetime.utcnow()
+    }
+    
+    await db.tasks.insert_one(task)
+    return TaskResponse(**task)
+
+@api_router.post("/user/tasks/{task_id}/complete")
+async def complete_task(task_id: str, credentials: HTTPAuthorizationCredentials = security):
+    user = await get_current_user(credentials)
+    result = await db.tasks.update_one(
+        {"_id": task_id, "userId": user["_id"]},
+        {"$set": {"completed": True}}
+    )
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return {"message": "Task completed"}
+
+@api_router.delete("/user/tasks/{task_id}")
+async def delete_task(task_id: str, credentials: HTTPAuthorizationCredentials = security):
+    user = await get_current_user(credentials)
+    result = await db.tasks.delete_one({"_id": task_id, "userId": user["_id"]})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return {"message": "Task deleted successfully"}
+
+
+# ============ COURSES ROUTES ============
+@api_router.get("/courses", response_model=List[CourseResponse])
+async def get_courses():
+    # Retourner des cours fictifs pour le moment
+    courses = [
+        {
+            "_id": "1",
+            "title": "Initiation au jardinage bio",
+            "description": "Découvrez les bases du jardinage biologique et apprenez à cultiver vos premiers légumes sans produits chimiques.",
+            "level": "Débutant",
+            "duration": "2h30",
+            "price": 39,
+            "slug": "initiation-jardinage-bio"
+        },
+        {
+            "_id": "2",
+            "title": "Maîtriser le compost",
+            "description": "Apprenez toutes les techniques pour réaliser un compost de qualité et enrichir votre sol naturellement.",
+            "level": "Intermédiaire",
+            "duration": "1h45",
+            "price": 29,
+            "slug": "maitriser-compost"
+        },
+        {
+            "_id": "3",
+            "title": "Potager urbain",
+            "description": "Créez votre potager sur balcon ou terrasse. Techniques adaptées aux petits espaces.",
+            "level": "Tous niveaux",
+            "duration": "3h",
+            "price": 49,
+            "slug": "potager-urbain"
+        },
+        {
+            "_id": "4",
+            "title": "Permaculture avancée",
+            "description": "Conception et gestion d'un jardin en permaculture. Pour jardiniers expérimentés.",
+            "level": "Avancé",
+            "duration": "4h",
+            "price": 69,
+            "slug": "permaculture-avancee"
+        }
+    ]
+    return [CourseResponse(**course) for course in courses]
+
+@api_router.post("/courses/preregister")
+async def preregister_course(data: dict, credentials: HTTPAuthorizationCredentials = security):
+    user = await get_current_user(credentials)
+    # Pour l'instant, on enregistre juste la pré-inscription
+    return {"message": "Pré-inscription enregistrée avec succès"}
+
+
+# ============ ROOT ROUTE ============
 @api_router.get("/")
 async def root():
-    return {"message": "Hello World"}
-
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.dict()
-    status_obj = StatusCheck(**status_dict)
-    _ = await db.status_checks.insert_one(status_obj.dict())
-    return status_obj
-
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    status_checks = await db.status_checks.find().to_list(1000)
-    return [StatusCheck(**status_check) for status_check in status_checks]
+    return {"message": "Sepalis API - Votre jardin connecté"}
 
 # Include the router in the main app
 app.include_router(api_router)
