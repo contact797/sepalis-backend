@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sepalis Mobile - QR Code</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%);
+            color: white;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+            max-width: 500px;
+        }
+        h1 {
+            color: #22C55E;
+            margin: 0 0 10px 0;
+            font-size: 32px;
+        }
+        .subtitle {
+            color: #6B7280;
+            margin: 0 0 30px 0;
+            font-size: 16px;
+        }
+        .qr-container {
+            background: #F9FAFB;
+            padding: 30px;
+            border-radius: 16px;
+            margin: 30px 0;
+        }
+        .instructions {
+            background: #F3F4F6;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: left;
+            color: #111827;
+            margin-top: 20px;
+        }
+        .instructions h3 {
+            margin: 0 0 15px 0;
+            color: #22C55E;
+            font-size: 18px;
+        }
+        .instructions ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .instructions li {
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+        .url {
+            background: #22C55E;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            font-family: monospace;
+            font-size: 14px;
+            word-break: break-all;
+            margin: 20px 0;
+        }
+        .badge {
+            display: inline-block;
+            background: #22C55E;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 10px 5px;
+        }
+        .logo {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+        a {
+            color: #22C55E;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🌱</div>
+        <h1>Sepalis Mobile</h1>
+        <p class="subtitle">Votre jardin connecté</p>
+        
+        <div class="url">
+            https://sepalis-mobile.preview.emergentagent.com
+        </div>
+
+        <div class="qr-container" id="qrcode"></div>
+
+        <div style="margin: 20px 0;">
+            <span class="badge">iOS Compatible</span>
+            <span class="badge">Android Compatible</span>
+        </div>
+
+        <div class="instructions">
+            <h3>📱 Comment tester sur smartphone :</h3>
+            <ol>
+                <li><strong>Installez Expo Go</strong>
+                    <ul>
+                        <li>iPhone : <a href="https://apps.apple.com/app/expo-go/id982107779" target="_blank">App Store</a></li>
+                        <li>Android : <a href="https://play.google.com/store/apps/details?id=host.exp.exponent" target="_blank">Google Play</a></li>
+                    </ul>
+                </li>
+                <li><strong>Scannez le QR code</strong> ci-dessus avec l'app Expo Go</li>
+                <li>L'application Sepalis se chargera automatiquement !</li>
+            </ol>
+        </div>
+
+        <div class="instructions" style="margin-top: 15px;">
+            <h3>💻 Ou testez dans votre navigateur :</h3>
+            <p>Cliquez simplement sur : <a href="https://sepalis-mobile.preview.emergentagent.com" target="_blank">https://sepalis-mobile.preview.emergentagent.com</a></p>
+        </div>
+    </div>
+
+    <script>
+        // Générer le QR code
+        new QRCode(document.getElementById("qrcode"), {
+            text: "https://sepalis-mobile.preview.emergentagent.com",
+            width: 256,
+            height: 256,
+            colorDark: "#22C55E",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+    </script>
+</body>
+</html>
