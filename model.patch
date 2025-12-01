@@ -1,0 +1,13 @@
+diff --git a/backend/.env b/backend/.env
+index 0f4322c..c584416 100644
+--- a/backend/.env
++++ b/backend/.env
+@@ -1,2 +1,4 @@
+-MONGO_URL="mongodb://localhost:27017"
+-DB_NAME="test_database"
+\ No newline at end of file
++MONGO_URL=mongodb://mongo:27017
++DB_NAME=sepalis
++PLANTID_API_KEY=TudmUlaO67U8ZT2URniderBcljhm2qY6TEnuKjbC8zzXlRFYAm
++OPENAI_API_KEY=sk-emergent-0Ec6e0b2bA3E0Bf3a7
+\ No newline at end of file
