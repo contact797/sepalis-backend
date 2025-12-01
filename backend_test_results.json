@@ -1,57 +1,57 @@
 {
   "total_tests": 7,
-  "passed": 2,
-  "failed": 5,
-  "success_rate": "28.6%",
+  "passed": 7,
+  "failed": 0,
+  "success_rate": "100.0%",
   "results": [
     {
       "test": "Health Check",
       "success": true,
       "message": "API is running - Sepalis API - Votre jardin connect\u00e9",
       "response_data": null,
-      "timestamp": "2025-12-01T18:33:20.535979"
+      "timestamp": "2025-12-01T18:35:35.895890"
     },
     {
       "test": "User Registration",
-      "success": false,
-      "message": "Request error: HTTPSConnectionPool(host='garden-aide.preview.emergentagent.com', port=443): Read timed out. (read timeout=10)",
+      "success": true,
+      "message": "User already exists (expected), will use login",
       "response_data": null,
-      "timestamp": "2025-12-01T18:33:30.573256"
+      "timestamp": "2025-12-01T18:35:35.937450"
     },
     {
       "test": "User Login",
-      "success": false,
-      "message": "Request error: HTTPSConnectionPool(host='garden-aide.preview.emergentagent.com', port=443): Read timed out. (read timeout=10)",
+      "success": true,
+      "message": "Login successful for: marie.dupont@example.com",
       "response_data": null,
-      "timestamp": "2025-12-01T18:33:40.638007"
+      "timestamp": "2025-12-01T18:35:36.197839"
     },
     {
       "test": "Get Profile",
-      "success": false,
-      "message": "No authentication token available",
+      "success": true,
+      "message": "Profile retrieved: marie.dupont@example.com",
       "response_data": null,
-      "timestamp": "2025-12-01T18:33:40.638024"
+      "timestamp": "2025-12-01T18:35:36.230869"
     },
     {
       "test": "Get Plants",
-      "success": false,
-      "message": "No authentication token available",
+      "success": true,
+      "message": "Plants list retrieved: 0 plants",
       "response_data": null,
-      "timestamp": "2025-12-01T18:33:40.638029"
+      "timestamp": "2025-12-01T18:35:36.268752"
     },
     {
       "test": "Get Tasks",
-      "success": false,
-      "message": "No authentication token available",
+      "success": true,
+      "message": "Tasks list retrieved: 0 tasks",
       "response_data": null,
-      "timestamp": "2025-12-01T18:33:40.638036"
+      "timestamp": "2025-12-01T18:35:36.308768"
     },
     {
       "test": "Get Courses",
       "success": true,
       "message": "Courses list retrieved: 4 courses",
       "response_data": null,
-      "timestamp": "2025-12-01T18:33:40.696015"
+      "timestamp": "2025-12-01T18:35:36.386034"
     }
   ]
 }
