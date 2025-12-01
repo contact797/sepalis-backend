@@ -165,3 +165,5 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: "Corrections effectuées pour la navigation des zones : 1) Ajout de l'import useRouter d'expo-router en haut du fichier zones.tsx, 2) Correction du handler onPress pour utiliser le hook router déjà instancié au lieu de le réimporter dans la fonction. La navigation passe maintenant les données de la zone via JSON.stringify dans les params vers zone-detail.tsx"
+  - agent: "testing"
+    message: "Tests backend complets effectués avec succès. CORRECTION CRITIQUE appliquée: MongoDB URL corrigée de 'mongo:27017' vers 'localhost:27017' dans backend/.env et service redémarré. Tous les endpoints API fonctionnent parfaitement: authentification JWT, CRUD plants/tasks, courses. Base de données opérationnelle. Backend prêt pour utilisation par le frontend."
