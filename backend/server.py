@@ -105,6 +105,30 @@ class CourseResponse(BaseModel):
     duration: Optional[str] = "2h"
     price: Optional[int] = 0
     slug: str
+    instructor: Optional[str] = "Nicolas Blot, MOF"
+    topics: Optional[List[str]] = []
+    image: Optional[str] = None
+
+    class Config:
+        populate_by_name = True
+
+
+# ============ WORKSHOP MODELS ============
+class WorkshopResponse(BaseModel):
+    id: str = Field(alias="_id")
+    title: str
+    description: str
+    date: Optional[str] = None
+    location: Optional[str] = "Pépinière Sepalis"
+    duration: Optional[str] = "3h"
+    price: Optional[int] = 0
+    maxParticipants: Optional[int] = 12
+    availableSpots: Optional[int] = 12
+    slug: str
+    instructor: Optional[str] = "Nicolas Blot, MOF"
+    topics: Optional[List[str]] = []
+    image: Optional[str] = None
+    level: Optional[str] = "Tous niveaux"
 
     class Config:
         populate_by_name = True
