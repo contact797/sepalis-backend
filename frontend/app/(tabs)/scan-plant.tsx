@@ -62,20 +62,20 @@ export default function ScanPlant() {
   const analyzePhoto = async (imageBase64: string) => {
     setAnalyzing(true);
     try {
-      // TODO: Appeler API d'analyse IA
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Appeler l'API Plant.id via notre backend
+      const { aiAPI } = await import('../../services/api');
+      const response = await aiAPI.identifyPlant(imageBase64);
       
-      const mockResult = {
-        name: 'Tomate',
-        scientificName: 'Solanum lycopersicum',
-        confidence: 0.92,
-        wateringFrequency: 3,
-        description: 'Plant de tomate détecté. Nécessite un arrosage régulier et beaucoup de soleil.',
-      };
-      
-      setResult(mockResult);
-    } catch (error) {
-      Alert.alert('Erreur', 'Impossible d\'analyser la photo');
+      setResult({
+        name: response.data.name,
+        scientificName: response.data.scientificName,
+        confidence: response.data.confidence,
+        wateringFrequency: response.data.wateringFrequency || 7,
+        description: response.data.description || 'Plante identifiée avec succès',
+      });
+    } catch (error: any) {
+      console.error('Erreur analyse:', error);
+      Alert.alert('Erreur', 'Impossible d\'identifier la plante. Réessayez avec une photo plus claire.');
     } finally {
       setAnalyzing(false);
     }
