@@ -164,11 +164,11 @@ test_plan:
 
   - task: "Persistance des zones en base de données"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py, frontend/app/(tabs)/zones.tsx, frontend/services/api.ts"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: false
         agent: "user"
@@ -176,6 +176,9 @@ test_plan:
       - working: "NA"
         agent: "main"
         comment: "BACKEND: Ajout des modèles Zone (ZoneBase, ZoneCreate, ZoneResponse) et création de 5 nouveaux endpoints REST: GET /api/user/zones (liste), POST /api/user/zones (création), GET /api/user/zones/{id} (détail), PUT /api/user/zones/{id} (mise à jour), DELETE /api/user/zones/{id} (suppression). Tous les endpoints sont protégés par JWT. FRONTEND: Ajout de zonesAPI dans services/api.ts avec toutes les méthodes CRUD. Modification de zones.tsx pour charger les zones depuis l'API au montage (useEffect) et lors du focus (useFocusEffect), et pour sauvegarder les nouvelles zones dans MongoDB via l'API. Ajout d'un indicateur de chargement."
+      - working: true
+        agent: "testing"
+        comment: "Tests complets des endpoints ZONES effectués avec succès (15/15 tests passés, 100% de réussite). Tous les endpoints CRUD fonctionnent parfaitement: GET /api/user/zones (liste vide et avec données) ✅, POST /api/user/zones (création) ✅, GET /api/user/zones/{id} (récupération par ID) ✅, PUT /api/user/zones/{id} (mise à jour) ✅, DELETE /api/user/zones/{id} (suppression) ✅. Protection JWT validée ✅. Persistance MongoDB confirmée ✅. Les zones sont correctement créées, modifiées, récupérées et supprimées. Toutes les données (nom, type, dimensions, sol, climat, arrosage, etc.) sont bien persistées et récupérées."
 
 agent_communication:
   - agent: "main"
