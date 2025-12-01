@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { plantsAPI } from '../../services/api';
 import { Colors } from '../../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
