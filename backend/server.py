@@ -376,6 +376,96 @@ async def preregister_course(data: dict, credentials: HTTPAuthorizationCredentia
     return {"message": "Pré-inscription enregistrée avec succès"}
 
 
+# ============ WORKSHOPS ROUTES ============
+@api_router.get("/workshops", response_model=List[WorkshopResponse])
+async def get_workshops():
+    # Retourner des ateliers fictifs pour le moment
+    workshops = [
+        {
+            "_id": "1",
+            "title": "Atelier Taille des Fruitiers",
+            "description": "Apprenez les techniques de taille des arbres fruitiers pour optimiser la production. Pratique sur différentes espèces.",
+            "date": "15 Mars 2025",
+            "location": "Pépinière Sepalis, Bordeaux",
+            "duration": "3h",
+            "price": 45,
+            "maxParticipants": 12,
+            "availableSpots": 5,
+            "slug": "taille-fruitiers",
+            "instructor": "Nicolas Blot, Meilleur Ouvrier de France",
+            "topics": ["Taille", "Fruitiers", "Production"],
+            "level": "Tous niveaux"
+        },
+        {
+            "_id": "2",
+            "title": "Atelier Bouturage & Multiplication",
+            "description": "Maîtrisez les techniques de bouturage, marcottage et division pour multiplier vos plantes gratuitement.",
+            "date": "22 Mars 2025",
+            "location": "Pépinière Sepalis, Bordeaux",
+            "duration": "2h30",
+            "price": 35,
+            "maxParticipants": 15,
+            "availableSpots": 8,
+            "slug": "bouturage-multiplication",
+            "instructor": "Nicolas Blot, Meilleur Ouvrier de France",
+            "topics": ["Bouturage", "Multiplication", "Économie"],
+            "level": "Débutant"
+        },
+        {
+            "_id": "3",
+            "title": "Atelier Potager en Permaculture",
+            "description": "Créez un potager productif en suivant les principes de la permaculture. Design, associations, paillage.",
+            "date": "5 Avril 2025",
+            "location": "Jardin-École Sepalis",
+            "duration": "4h",
+            "price": 60,
+            "maxParticipants": 10,
+            "availableSpots": 3,
+            "slug": "potager-permaculture",
+            "instructor": "Nicolas Blot, Meilleur Ouvrier de France",
+            "topics": ["Permaculture", "Potager", "Biodiversité"],
+            "level": "Intermédiaire"
+        },
+        {
+            "_id": "4",
+            "title": "Atelier Reconnaissance des Plantes",
+            "description": "Balade botanique pour apprendre à identifier les plantes sauvages, médicinales et comestibles de votre région.",
+            "date": "12 Avril 2025",
+            "location": "Forêt de Sepalis",
+            "duration": "3h",
+            "price": 40,
+            "maxParticipants": 20,
+            "availableSpots": 12,
+            "slug": "reconnaissance-plantes",
+            "instructor": "Nicolas Blot, Meilleur Ouvrier de France",
+            "topics": ["Botanique", "Plantes sauvages", "Identification"],
+            "level": "Tous niveaux"
+        },
+        {
+            "_id": "5",
+            "title": "Atelier Compost & Sol Vivant",
+            "description": "Tout savoir sur le compost, le lombricompost et comment nourrir votre sol naturellement.",
+            "date": "19 Avril 2025",
+            "location": "Pépinière Sepalis, Bordeaux",
+            "duration": "2h",
+            "price": 30,
+            "maxParticipants": 15,
+            "availableSpots": 15,
+            "slug": "compost-sol-vivant",
+            "instructor": "Nicolas Blot, Meilleur Ouvrier de France",
+            "topics": ["Compost", "Sol", "Fertilité"],
+            "level": "Débutant"
+        }
+    ]
+    return [WorkshopResponse(**workshop) for workshop in workshops]
+
+@api_router.post("/workshops/book")
+async def book_workshop(data: dict, credentials: HTTPAuthorizationCredentials = security):
+    user = await get_current_user(credentials)
+    # Pour l'instant, on enregistre juste la réservation
+    return {"message": "Réservation enregistrée avec succès", "workshopId": data.get("workshopSlug")}
+
+
 # ============ ZONES ROUTES ============
 @api_router.get("/user/zones", response_model=List[ZoneResponse])
 async def get_zones(credentials: HTTPAuthorizationCredentials = Depends(security)):
