@@ -144,54 +144,63 @@ export default function Zones() {
     { id: 'humid', label: 'Humide', icon: 'water' },
   ];
 
-  const handleAddZone = () => {
+  const handleAddZone = async () => {
     if (!newZone.name || !newZone.length || !newZone.width) {
       Alert.alert('Erreur', 'Veuillez remplir tous les champs obligatoires');
       return;
     }
 
-    const selectedType = zoneTypes.find(t => t.id === newZone.type);
-    const area = parseFloat(newZone.length) * parseFloat(newZone.width);
-    
-    const zone: Zone = {
-      id: Date.now().toString(),
-      name: newZone.name,
-      type: newZone.type,
-      length: parseFloat(newZone.length),
-      width: parseFloat(newZone.width),
-      area: area,
-      soilType: newZone.soilType,
-      soilPH: newZone.soilPH,
-      drainage: newZone.drainage,
-      sunExposure: newZone.sunExposure,
-      climateZone: newZone.climateZone,
-      windProtection: newZone.windProtection,
-      wateringSystem: newZone.wateringSystem,
-      humidity: newZone.humidity,
-      notes: newZone.notes,
-      plantsCount: 0,
-      color: selectedType?.color || Colors.primary,
-    };
+    try {
+      const selectedType = zoneTypes.find(t => t.id === newZone.type);
+      const area = parseFloat(newZone.length) * parseFloat(newZone.width);
+      
+      const zoneData = {
+        name: newZone.name,
+        type: newZone.type,
+        length: parseFloat(newZone.length),
+        width: parseFloat(newZone.width),
+        area: area,
+        soilType: newZone.soilType,
+        soilPH: newZone.soilPH,
+        drainage: newZone.drainage,
+        sunExposure: newZone.sunExposure,
+        climateZone: newZone.climateZone,
+        windProtection: newZone.windProtection,
+        wateringSystem: newZone.wateringSystem,
+        humidity: newZone.humidity,
+        notes: newZone.notes,
+        color: selectedType?.color || Colors.primary,
+      };
 
-    setZones([...zones, zone]);
-    setNewZone({
-      name: '',
-      type: 'vegetable',
-      length: '',
-      width: '',
-      soilType: 'loamy',
-      soilPH: 'neutral',
-      drainage: 'good',
-      sunExposure: 'full_sun',
-      climateZone: 'temperate',
-      windProtection: 'moderate',
-      wateringSystem: 'manual',
-      humidity: 'normal',
-      notes: '',
-    });
-    setCurrentStep(1);
-    setModalVisible(false);
-    Alert.alert('Succès', 'Zone créée avec succès !');
+      // Sauvegarder dans l'API
+      await zonesAPI.createZone(zoneData);
+
+      // Recharger la liste des zones
+      await loadZones();
+
+      // Réinitialiser le formulaire
+      setNewZone({
+        name: '',
+        type: 'vegetable',
+        length: '',
+        width: '',
+        soilType: 'loamy',
+        soilPH: 'neutral',
+        drainage: 'good',
+        sunExposure: 'full_sun',
+        climateZone: 'temperate',
+        windProtection: 'moderate',
+        wateringSystem: 'manual',
+        humidity: 'normal',
+        notes: '',
+      });
+      setCurrentStep(1);
+      setModalVisible(false);
+      Alert.alert('Succès', 'Zone créée avec succès !');
+    } catch (error) {
+      console.error('Erreur lors de la création de la zone:', error);
+      Alert.alert('Erreur', 'Impossible de créer la zone');
+    }
   };
 
   const renderStep1 = () => (
