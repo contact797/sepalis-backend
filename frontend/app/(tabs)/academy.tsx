@@ -9,26 +9,32 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { coursesAPI } from '../../services/api';
+import { coursesAPI, workshopsAPI } from '../../services/api';
 import { Colors } from '../../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function Academy() {
   const [courses, setCourses] = useState([]);
+  const [workshops, setWorkshops] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [activeTab, setActiveTab] = useState<'courses' | 'workshops'>('courses');
 
   useEffect(() => {
-    loadCourses();
+    loadData();
   }, []);
 
-  const loadCourses = async () => {
+  const loadData = async () => {
     try {
-      const response = await coursesAPI.getCourses();
-      setCourses(response.data);
+      const [coursesResponse, workshopsResponse] = await Promise.all([
+        coursesAPI.getCourses(),
+        workshopsAPI.getWorkshops(),
+      ]);
+      setCourses(coursesResponse.data);
+      setWorkshops(workshopsResponse.data);
     } catch (error) {
-      console.error('Erreur chargement formations:', error);
-      Alert.alert('Erreur', 'Impossible de charger les formations');
+      console.error('Erreur chargement données:', error);
+      Alert.alert('Erreur', 'Impossible de charger les formations et ateliers');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -37,13 +43,13 @@ export default function Academy() {
 
   const onRefresh = () => {
     setRefreshing(true);
-    loadCourses();
+    loadData();
   };
 
-  const handlePreregister = async (course: any) => {
+  const handlePreregisterCourse = async (course: any) => {
     Alert.alert(
       'Pré-inscription',
-      `Souhaitez-vous vous pré-inscrire à "${course.title}" ?`,
+      `Souhaitez-vous vous pré-inscrire à la formation "${course.title}" ?`,
       [
         { text: 'Annuler', style: 'cancel' },
         {
@@ -51,9 +57,35 @@ export default function Academy() {
           onPress: async () => {
             try {
               await coursesAPI.preregister({ courseSlug: course.slug });
-              Alert.alert('Succès', 'Pré-inscription enregistrée !');
+              Alert.alert('Succès', 'Pré-inscription enregistrée ! Vous recevrez un email de confirmation.');
             } catch (error) {
               Alert.alert('Erreur', 'Impossible de s\'inscrire');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleBookWorkshop = async (workshop: any) => {
+    if (workshop.availableSpots === 0) {
+      Alert.alert('Complet', 'Cet atelier est complet. Voulez-vous être ajouté sur liste d\'attente ?');
+      return;
+    }
+
+    Alert.alert(
+      'Réservation',
+      `Souhaitez-vous réserver une place pour l'atelier "${workshop.title}" ?\n\nDate : ${workshop.date}\nLieu : ${workshop.location}\nPrix : ${workshop.price}€`,
+      [
+        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Réserver',
+          onPress: async () => {
+            try {
+              await workshopsAPI.bookWorkshop({ workshopSlug: workshop.slug });
+              Alert.alert('Succès', 'Votre place est réservée ! Vous recevrez un email de confirmation.');
+            } catch (error) {
+              Alert.alert('Erreur', 'Impossible de réserver');
             }
           },
         },
@@ -64,7 +96,7 @@ export default function Academy() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={Colors.primary} />
+        <ActivityIndicator size="large" color={Colors.accent} />
       </View>
     );
   }
@@ -76,76 +108,189 @@ export default function Academy() {
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          tintColor={Colors.primary}
+          tintColor={Colors.accent}
         />
       }
     >
+      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Académie Sepalis</Text>
         <Text style={styles.headerSubtitle}>
-          Formations et ateliers pour devenir un expert du jardinage
+          Formations et ateliers avec Nicolas Blot, Meilleur Ouvrier de France
         </Text>
       </View>
 
-      <View style={styles.coursesContainer}>
-        {courses.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Ionicons name="school-outline" size={80} color={Colors.mediumGray} />
-            <Text style={styles.emptyTitle}>Aucune formation disponible</Text>
-            <Text style={styles.emptyText}>
-              Les formations seront bientôt disponibles
-            </Text>
-          </View>
+      {/* Tabs */}
+      <View style={styles.tabsContainer}>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'courses' && styles.tabActive]}
+          onPress={() => setActiveTab('courses')}
+        >
+          <Ionicons 
+            name="play-circle-outline" 
+            size={20} 
+            color={activeTab === 'courses' ? Colors.dark : Colors.textSecondary} 
+          />
+          <Text style={[styles.tabText, activeTab === 'courses' && styles.tabTextActive]}>
+            Formations ({courses.length})
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'workshops' && styles.tabActive]}
+          onPress={() => setActiveTab('workshops')}
+        >
+          <Ionicons 
+            name="people-outline" 
+            size={20} 
+            color={activeTab === 'workshops' ? Colors.dark : Colors.textSecondary} 
+          />
+          <Text style={[styles.tabText, activeTab === 'workshops' && styles.tabTextActive]}>
+            Ateliers ({workshops.length})
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Content */}
+      <View style={styles.content}>
+        {activeTab === 'courses' ? (
+          // Formations
+          courses.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Ionicons name="school-outline" size={80} color={Colors.textSecondary} />
+              <Text style={styles.emptyTitle}>Aucune formation disponible</Text>
+              <Text style={styles.emptyText}>
+                Les formations seront bientôt disponibles
+              </Text>
+            </View>
+          ) : (
+            courses.map((course: any) => (
+              <TouchableOpacity
+                key={course.id}
+                style={styles.card}
+                onPress={() => handlePreregisterCourse(course)}
+              >
+                <View style={styles.cardImage}>
+                  <Ionicons name="play-circle" size={60} color={Colors.accent} />
+                  <View style={styles.levelBadge}>
+                    <Text style={styles.levelBadgeText}>{course.level}</Text>
+                  </View>
+                </View>
+
+                <View style={styles.cardContent}>
+                  <Text style={styles.cardTitle}>{course.title}</Text>
+                  <Text style={styles.cardInstructor}>
+                    <Ionicons name="person" size={14} color={Colors.textSecondary} /> {course.instructor}
+                  </Text>
+                  <Text style={styles.cardDescription} numberOfLines={3}>
+                    {course.description}
+                  </Text>
+
+                  {course.topics && course.topics.length > 0 && (
+                    <View style={styles.topics}>
+                      {course.topics.slice(0, 3).map((topic: string, index: number) => (
+                        <View key={index} style={styles.topicChip}>
+                          <Text style={styles.topicText}>{topic}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+
+                  <View style={styles.cardFooter}>
+                    <View style={styles.cardMeta}>
+                      <Ionicons name="time-outline" size={16} color={Colors.textSecondary} />
+                      <Text style={styles.cardMetaText}>{course.duration}</Text>
+                    </View>
+                    <View style={styles.priceTag}>
+                      <Text style={styles.priceText}>
+                        {course.price > 0 ? `${course.price}€` : 'Gratuit'}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            ))
+          )
         ) : (
-          courses.map((course: any) => (
-            <TouchableOpacity
-              key={course._id}
-              style={styles.courseCard}
-              onPress={() => handlePreregister(course)}
-            >
-              <View style={styles.courseImage}>
-                <Ionicons name="play-circle" size={60} color={Colors.primary} />
-              </View>
-              <View style={styles.courseContent}>
-                <View style={styles.courseBadge}>
-                  <Text style={styles.courseBadgeText}>{course.level || 'Tous niveaux'}</Text>
+          // Ateliers
+          workshops.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Ionicons name="people-outline" size={80} color={Colors.textSecondary} />
+              <Text style={styles.emptyTitle}>Aucun atelier disponible</Text>
+              <Text style={styles.emptyText}>
+                Les ateliers seront bientôt disponibles
+              </Text>
+            </View>
+          ) : (
+            workshops.map((workshop: any) => (
+              <TouchableOpacity
+                key={workshop.id}
+                style={styles.card}
+                onPress={() => handleBookWorkshop(workshop)}
+              >
+                <View style={styles.cardImage}>
+                  <Ionicons name="people" size={60} color={Colors.primary} />
+                  {workshop.availableSpots <= 3 && (
+                    <View style={styles.urgencyBadge}>
+                      <Text style={styles.urgencyBadgeText}>
+                        {workshop.availableSpots === 0 ? 'COMPLET' : `${workshop.availableSpots} places`}
+                      </Text>
+                    </View>
+                  )}
                 </View>
-                <Text style={styles.courseTitle}>{course.title}</Text>
-                <Text style={styles.courseDescription} numberOfLines={3}>
-                  {course.description}
-                </Text>
-                <View style={styles.courseFooter}>
-                  <View style={styles.courseMeta}>
-                    <Ionicons name="time-outline" size={16} color={Colors.mediumGray} />
-                    <Text style={styles.courseMetaText}>
-                      {course.duration || '2h'}
-                    </Text>
+
+                <View style={styles.cardContent}>
+                  <Text style={styles.cardTitle}>{workshop.title}</Text>
+                  <Text style={styles.cardInstructor}>
+                    <Ionicons name="person" size={14} color={Colors.textSecondary} /> {workshop.instructor}
+                  </Text>
+                  <Text style={styles.cardDescription} numberOfLines={3}>
+                    {workshop.description}
+                  </Text>
+
+                  <View style={styles.workshopInfo}>
+                    <View style={styles.workshopInfoItem}>
+                      <Ionicons name="calendar-outline" size={16} color={Colors.accent} />
+                      <Text style={styles.workshopInfoText}>{workshop.date}</Text>
+                    </View>
+                    <View style={styles.workshopInfoItem}>
+                      <Ionicons name="location-outline" size={16} color={Colors.accent} />
+                      <Text style={styles.workshopInfoText}>{workshop.location}</Text>
+                    </View>
                   </View>
-                  <View style={styles.coursePrice}>
-                    <Text style={styles.coursePriceText}>
-                      {course.price ? `${course.price}€` : 'Gratuit'}
-                    </Text>
+
+                  {workshop.topics && workshop.topics.length > 0 && (
+                    <View style={styles.topics}>
+                      {workshop.topics.slice(0, 3).map((topic: string, index: number) => (
+                        <View key={index} style={styles.topicChip}>
+                          <Text style={styles.topicText}>{topic}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+
+                  <View style={styles.cardFooter}>
+                    <View style={styles.cardMeta}>
+                      <Ionicons name="time-outline" size={16} color={Colors.textSecondary} />
+                      <Text style={styles.cardMetaText}>{workshop.duration}</Text>
+                    </View>
+                    <View style={styles.priceTag}>
+                      <Text style={styles.priceText}>{workshop.price}€</Text>
+                    </View>
                   </View>
                 </View>
-              </View>
-            </TouchableOpacity>
-          ))
+              </TouchableOpacity>
+            ))
+          )
         )}
       </View>
 
-      {/* Section Ateliers */}
-      <View style={styles.workshopsSection}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Ateliers pratiques 2026</Text>
-          <Ionicons name="calendar-outline" size={20} color={Colors.mediumGray} />
-        </View>
-        <Text style={styles.sectionSubtitle}>
-          Découvrez nos ateliers pratiques pour apprendre en groupe
+      {/* Footer Info */}
+      <View style={styles.footerInfo}>
+        <Ionicons name="shield-checkmark" size={24} color={Colors.accent} />
+        <Text style={styles.footerInfoText}>
+          Toutes les formations sont certifiées par Nicolas Blot, Meilleur Ouvrier de France Paysagiste
         </Text>
-        <TouchableOpacity style={styles.workshopButton}>
-          <Text style={styles.workshopButtonText}>Voir les ateliers</Text>
-          <Ionicons name="arrow-forward" size={20} color={Colors.primary} />
-        </TouchableOpacity>
       </View>
     </ScrollView>
   );
@@ -160,23 +305,56 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: Colors.background,
   },
   header: {
     padding: 24,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.card,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
   },
   headerTitle: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: Colors.dark,
+    color: Colors.text,
     marginBottom: 8,
   },
   headerSubtitle: {
-    fontSize: 16,
-    color: Colors.mediumGray,
-    lineHeight: 22,
+    fontSize: 14,
+    color: Colors.textSecondary,
+    lineHeight: 20,
   },
-  coursesContainer: {
+  tabsContainer: {
+    flexDirection: 'row',
+    padding: 16,
+    gap: 12,
+  },
+  tab: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: Colors.card,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  tabActive: {
+    backgroundColor: Colors.accent,
+    borderColor: Colors.accent,
+  },
+  tabText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.textSecondary,
+  },
+  tabTextActive: {
+    color: Colors.dark,
+  },
+  content: {
     padding: 16,
   },
   emptyContainer: {
@@ -187,126 +365,153 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: Colors.dark,
+    color: Colors.text,
     marginTop: 16,
     marginBottom: 8,
   },
   emptyText: {
-    fontSize: 16,
-    color: Colors.mediumGray,
+    fontSize: 14,
+    color: Colors.textSecondary,
     textAlign: 'center',
   },
-  courseCard: {
-    backgroundColor: Colors.white,
+  card: {
+    backgroundColor: Colors.card,
     borderRadius: 16,
     marginBottom: 16,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
-  courseImage: {
-    height: 180,
-    backgroundColor: Colors.lightGray,
+  cardImage: {
+    height: 160,
+    backgroundColor: Colors.backgroundLight,
     justifyContent: 'center',
     alignItems: 'center',
+    position: 'relative',
   },
-  courseContent: {
+  levelBadge: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    backgroundColor: Colors.accent,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  levelBadgeText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: Colors.dark,
+  },
+  urgencyBadge: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    backgroundColor: Colors.error,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  urgencyBadgeText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: Colors.white,
+  },
+  cardContent: {
     padding: 16,
   },
-  courseBadge: {
-    alignSelf: 'flex-start',
-    backgroundColor: Colors.primary + '20',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
+  cardTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: Colors.text,
+    marginBottom: 6,
+  },
+  cardInstructor: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    marginBottom: 8,
+  },
+  cardDescription: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    lineHeight: 20,
     marginBottom: 12,
   },
-  courseBadgeText: {
-    fontSize: 12,
+  workshopInfo: {
+    marginBottom: 12,
+    gap: 8,
+  },
+  workshopInfoItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  workshopInfoText: {
+    fontSize: 13,
+    color: Colors.text,
+    fontWeight: '500',
+  },
+  topics: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 12,
+  },
+  topicChip: {
+    backgroundColor: Colors.primary + '20',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  topicText: {
+    fontSize: 11,
     fontWeight: '600',
     color: Colors.primary,
   },
-  courseTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: Colors.dark,
-    marginBottom: 8,
-  },
-  courseDescription: {
-    fontSize: 14,
-    color: Colors.mediumGray,
-    lineHeight: 20,
-    marginBottom: 16,
-  },
-  courseFooter: {
+  cardFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
   },
-  courseMeta: {
+  cardMeta: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
   },
-  courseMetaText: {
+  cardMetaText: {
     fontSize: 14,
-    color: Colors.mediumGray,
+    color: Colors.textSecondary,
+    fontWeight: '500',
   },
-  coursePrice: {
-    backgroundColor: Colors.primary,
+  priceTag: {
+    backgroundColor: Colors.accent,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
   },
-  coursePriceText: {
+  priceText: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: Colors.white,
-  },
-  workshopsSection: {
-    margin: 16,
-    padding: 24,
-    backgroundColor: Colors.white,
-    borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  sectionTitle: {
-    fontSize: 20,
     fontWeight: 'bold',
     color: Colors.dark,
   },
-  sectionSubtitle: {
-    fontSize: 14,
-    color: Colors.mediumGray,
-    marginBottom: 16,
-    lineHeight: 20,
-  },
-  workshopButton: {
+  footerInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    padding: 12,
-    borderWidth: 2,
-    borderColor: Colors.primary,
+    gap: 12,
+    margin: 16,
+    padding: 20,
+    backgroundColor: Colors.card,
     borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
-  workshopButtonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: Colors.primary,
+  footerInfoText: {
+    flex: 1,
+    fontSize: 13,
+    color: Colors.textSecondary,
+    lineHeight: 18,
   },
 });
