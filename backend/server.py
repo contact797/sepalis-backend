@@ -251,7 +251,7 @@ async def create_task(task_data: TaskCreate, credentials: HTTPAuthorizationCrede
     return TaskResponse(**task)
 
 @api_router.post("/user/tasks/{task_id}/complete")
-async def complete_task(task_id: str, credentials: HTTPAuthorizationCredentials = security):
+async def complete_task(task_id: str, credentials: HTTPAuthorizationCredentials = Depends(security)):
     user = await get_current_user(credentials)
     result = await db.tasks.update_one(
         {"_id": task_id, "userId": user["_id"]},
@@ -262,7 +262,7 @@ async def complete_task(task_id: str, credentials: HTTPAuthorizationCredentials 
     return {"message": "Task completed"}
 
 @api_router.delete("/user/tasks/{task_id}")
-async def delete_task(task_id: str, credentials: HTTPAuthorizationCredentials = security):
+async def delete_task(task_id: str, credentials: HTTPAuthorizationCredentials = Depends(security)):
     user = await get_current_user(credentials)
     result = await db.tasks.delete_one({"_id": task_id, "userId": user["_id"]})
     if result.deleted_count == 0:
