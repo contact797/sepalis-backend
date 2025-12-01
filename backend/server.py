@@ -199,7 +199,7 @@ async def get_me(credentials: HTTPAuthorizationCredentials = security):
 
 # ============ PLANTS ROUTES ============
 @api_router.get("/user/plants", response_model=List[PlantResponse])
-async def get_user_plants(credentials: HTTPAuthorizationCredentials = security):
+async def get_user_plants(credentials: HTTPAuthorizationCredentials = Depends(security)):
     user = await get_current_user(credentials)
     plants = await db.plants.find({"userId": user["_id"]}).to_list(100)
     return [PlantResponse(**{**plant, "_id": plant["_id"]}) for plant in plants]
