@@ -1,0 +1,387 @@
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+  Image,
+} from 'react-native';
+import { useRouter } from 'expo-router';
+import { Camera } from 'expo-camera';
+import * as ImagePicker from 'expo-image-picker';
+import { Colors } from '../../constants/Colors';
+import { Ionicons } from '@expo/vector-icons';
+import { plantsAPI } from '../../services/api';
+
+export default function ScanPlant() {
+  const router = useRouter();
+  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+  const [photo, setPhoto] = useState<string | null>(null);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [result, setResult] = useState<any>(null);
+
+  useEffect(() => {
+    (async () => {
+      const { status } = await Camera.requestCameraPermissionsAsync();
+      setHasPermission(status === 'granted');
+    })();
+  }, []);
+
+  const handleTakePhoto = async () => {
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.7,
+      base64: true,
+    });
+
+    if (!result.canceled && result.assets[0].base64) {
+      setPhoto(`data:image/jpeg;base64,${result.assets[0].base64}`);
+      await analyzePhoto(result.assets[0].base64);
+    }
+  };
+
+  const handlePickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.7,
+      base64: true,
+    });
+
+    if (!result.canceled && result.assets[0].base64) {
+      setPhoto(`data:image/jpeg;base64,${result.assets[0].base64}`);
+      await analyzePhoto(result.assets[0].base64);
+    }
+  };
+
+  const analyzePhoto = async (imageBase64: string) => {
+    setAnalyzing(true);
+    try {
+      // TODO: Appeler API d'analyse IA
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      const mockResult = {
+        name: 'Tomate',
+        scientificName: 'Solanum lycopersicum',
+        confidence: 0.92,
+        wateringFrequency: 3,
+        description: 'Plant de tomate détecté. Nécessite un arrosage régulier et beaucoup de soleil.',
+      };
+      
+      setResult(mockResult);
+    } catch (error) {
+      Alert.alert('Erreur', 'Impossible d\'analyser la photo');
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
+  const handleAddPlant = async () => {
+    if (!result) return;
+
+    try {
+      await plantsAPI.addPlant({
+        name: result.name,
+        scientificName: result.scientificName,
+        wateringFrequency: result.wateringFrequency,
+        description: result.description,
+      });
+
+      Alert.alert('Succès', 'Plante ajoutée à votre jardin !', [
+        { text: 'OK', onPress: () => router.back() },
+      ]);
+    } catch (error) {
+      Alert.alert('Erreur', 'Impossible d\'ajouter la plante');
+    }
+  };
+
+  if (hasPermission === null) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color={Colors.accent} />
+      </View>
+    );
+  }
+
+  if (hasPermission === false) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color={Colors.text} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Scanner une plante</Text>
+          <View style={{ width: 24 }} />
+        </View>
+        <View style={styles.permissionContainer}>
+          <Ionicons name="camera-off" size={80} color={Colors.textSecondary} />
+          <Text style={styles.permissionTitle}>Accès caméra refusé</Text>
+          <Text style={styles.permissionText}>
+            Veuillez autoriser l'accès à la caméra dans les paramètres
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={24} color={Colors.text} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Scanner une plante</Text>
+        <View style={{ width: 24 }} />
+      </View>
+
+      {!photo ? (
+        <View style={styles.cameraContainer}>
+          <View style={styles.cameraPlaceholder}>
+            <Ionicons name="camera" size={80} color={Colors.textSecondary} />
+            <Text style={styles.cameraText}>Prenez une photo de votre plante</Text>
+          </View>
+
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={styles.actionButton} onPress={handleTakePhoto}>
+              <Ionicons name="camera" size={32} color={Colors.dark} />
+              <Text style={styles.actionButtonText}>Prendre une photo</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={[styles.actionButton, styles.actionButtonSecondary]} onPress={handlePickImage}>
+              <Ionicons name="images" size={32} color={Colors.text} />
+              <Text style={[styles.actionButtonText, styles.actionButtonTextSecondary]}>Galerie</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      ) : (
+        <View style={styles.resultContainer}>
+          <Image source={{ uri: photo }} style={styles.photo} />
+
+          {analyzing ? (
+            <View style={styles.analyzingContainer}>
+              <ActivityIndicator size="large" color={Colors.accent} />
+              <Text style={styles.analyzingText}>Analyse en cours...</Text>
+            </View>
+          ) : result ? (
+            <View style={styles.resultCard}>
+              <View style={styles.resultHeader}>
+                <View>
+                  <Text style={styles.plantName}>{result.name}</Text>
+                  <Text style={styles.plantScientific}>{result.scientificName}</Text>
+                </View>
+                <View style={styles.confidenceBadge}>
+                  <Text style={styles.confidenceText}>{Math.round(result.confidence * 100)}%</Text>
+                </View>
+              </View>
+
+              <Text style={styles.plantDescription}>{result.description}</Text>
+
+              <View style={styles.actionButtons}>
+                <TouchableOpacity style={styles.addButton} onPress={handleAddPlant}>
+                  <Ionicons name="add-circle" size={20} color={Colors.dark} />
+                  <Text style={styles.addButtonText}>Ajouter à mon jardin</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.retryButton}
+                  onPress={() => {
+                    setPhoto(null);
+                    setResult(null);
+                  }}
+                >
+                  <Ionicons name="refresh" size={20} color={Colors.text} />
+                  <Text style={styles.retryButtonText}>Réessayer</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ) : null}
+        </View>
+      )}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  backButton: {
+    padding: 8,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: Colors.text,
+  },
+  permissionContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 32,
+  },
+  permissionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: Colors.text,
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  permissionText: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+  },
+  cameraContainer: {
+    flex: 1,
+    padding: 16,
+  },
+  cameraPlaceholder: {
+    flex: 1,
+    backgroundColor: Colors.card,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+    borderWidth: 2,
+    borderColor: Colors.border,
+    borderStyle: 'dashed',
+  },
+  cameraText: {
+    fontSize: 16,
+    color: Colors.textSecondary,
+    marginTop: 16,
+  },
+  buttonContainer: {
+    gap: 12,
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    backgroundColor: Colors.accent,
+    paddingVertical: 16,
+    borderRadius: 12,
+  },
+  actionButtonSecondary: {
+    backgroundColor: Colors.card,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  actionButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: Colors.dark,
+  },
+  actionButtonTextSecondary: {
+    color: Colors.text,
+  },
+  resultContainer: {
+    flex: 1,
+    padding: 16,
+  },
+  photo: {
+    width: '100%',
+    height: 250,
+    borderRadius: 16,
+    marginBottom: 16,
+  },
+  analyzingContainer: {
+    padding: 32,
+    alignItems: 'center',
+  },
+  analyzingText: {
+    fontSize: 16,
+    color: Colors.textSecondary,
+    marginTop: 16,
+  },
+  resultCard: {
+    backgroundColor: Colors.card,
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  resultHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 16,
+  },
+  plantName: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: Colors.text,
+    marginBottom: 4,
+  },
+  plantScientific: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    fontStyle: 'italic',
+  },
+  confidenceBadge: {
+    backgroundColor: Colors.primary + '20',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  confidenceText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: Colors.primary,
+  },
+  plantDescription: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    lineHeight: 20,
+    marginBottom: 16,
+  },
+  actionButtons: {
+    gap: 12,
+  },
+  addButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: Colors.accent,
+    paddingVertical: 14,
+    borderRadius: 12,
+  },
+  addButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: Colors.dark,
+  },
+  retryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: Colors.backgroundLight,
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  retryButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.text,
+  },
+});
