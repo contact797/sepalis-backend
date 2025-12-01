@@ -9,7 +9,7 @@
 ### Étape 1 : Ouvrir l'application
 👉 **Cliquez sur ce lien :**
 ```
-https://sepalis-mobile.preview.emergentagent.com
+https://garden-aide.preview.emergentagent.com
 ```
 
 ### Étape 2 : Créer un compte
@@ -133,4 +133,4 @@ Je peux ensuite développer :
 
 ---
 
-**Testez maintenant : https://sepalis-mobile.preview.emergentagent.com** 🌱
+**Testez maintenant : https://garden-aide.preview.emergentagent.com** 🌱
