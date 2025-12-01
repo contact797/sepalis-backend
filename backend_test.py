@@ -237,6 +237,289 @@ class SepalisAPITester:
             self.log_test("Get Courses", False, f"Request error: {str(e)}")
             return False
     
+    def test_zones_empty(self):
+        """Test GET /user/zones endpoint (protected) - should return empty list initially"""
+        if not self.token:
+            self.log_test("Get Zones (Empty)", False, "No authentication token available")
+            return False
+            
+        try:
+            headers = {"Authorization": f"Bearer {self.token}"}
+            response = requests.get(
+                f"{self.base_url}/user/zones",
+                headers=headers,
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    self.log_test("Get Zones (Empty)", True, f"Zones list retrieved: {len(data)} zones (expected empty)")
+                    return True
+                else:
+                    self.log_test("Get Zones (Empty)", False, f"Expected list, got: {type(data)}")
+                    return False
+            else:
+                self.log_test("Get Zones (Empty)", False, f"HTTP {response.status_code}: {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Get Zones (Empty)", False, f"Request error: {str(e)}")
+            return False
+    
+    def test_create_zone(self):
+        """Test POST /user/zones endpoint (protected) - create a new zone"""
+        if not self.token:
+            self.log_test("Create Zone", False, "No authentication token available")
+            return False
+            
+        try:
+            headers = {"Authorization": f"Bearer {self.token}"}
+            zone_data = {
+                "name": "Terrasse Sud Test",
+                "type": "vegetable",
+                "length": 5.0,
+                "width": 3.0,
+                "area": 15.0,
+                "soilType": "Terreau enrichi",
+                "soilPH": "6.5-7.0",
+                "drainage": "Bon",
+                "sunExposure": "Plein soleil",
+                "climateZone": "Tempéré océanique",
+                "windProtection": "Partiellement protégé",
+                "wateringSystem": "Arrosage manuel",
+                "humidity": "Modérée",
+                "notes": "Zone test pour validation API",
+                "color": "#4CAF50"
+            }
+            
+            response = requests.post(
+                f"{self.base_url}/user/zones",
+                json=zone_data,
+                headers=headers,
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "id" in data and "userId" in data and data["name"] == zone_data["name"]:
+                    self.created_zone_id = data["id"]
+                    self.log_test("Create Zone", True, f"Zone created successfully: {data['name']} (ID: {data['id']})")
+                    return True
+                else:
+                    self.log_test("Create Zone", False, f"Missing required fields in response: {data}")
+                    return False
+            else:
+                self.log_test("Create Zone", False, f"HTTP {response.status_code}: {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Create Zone", False, f"Request error: {str(e)}")
+            return False
+    
+    def test_get_zone_by_id(self):
+        """Test GET /user/zones/{zone_id} endpoint (protected) - get specific zone"""
+        if not self.token:
+            self.log_test("Get Zone by ID", False, "No authentication token available")
+            return False
+        
+        if not hasattr(self, 'created_zone_id') or not self.created_zone_id:
+            self.log_test("Get Zone by ID", False, "No zone ID available from previous test")
+            return False
+            
+        try:
+            headers = {"Authorization": f"Bearer {self.token}"}
+            response = requests.get(
+                f"{self.base_url}/user/zones/{self.created_zone_id}",
+                headers=headers,
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "id" in data and data["id"] == self.created_zone_id:
+                    self.log_test("Get Zone by ID", True, f"Zone retrieved successfully: {data['name']}")
+                    return True
+                else:
+                    self.log_test("Get Zone by ID", False, f"Zone ID mismatch or missing: {data}")
+                    return False
+            else:
+                self.log_test("Get Zone by ID", False, f"HTTP {response.status_code}: {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Get Zone by ID", False, f"Request error: {str(e)}")
+            return False
+    
+    def test_update_zone(self):
+        """Test PUT /user/zones/{zone_id} endpoint (protected) - update zone"""
+        if not self.token:
+            self.log_test("Update Zone", False, "No authentication token available")
+            return False
+        
+        if not hasattr(self, 'created_zone_id') or not self.created_zone_id:
+            self.log_test("Update Zone", False, "No zone ID available from previous test")
+            return False
+            
+        try:
+            headers = {"Authorization": f"Bearer {self.token}"}
+            updated_zone_data = {
+                "name": "Terrasse Sud Test - Modifiée",
+                "type": "vegetable",
+                "length": 5.0,
+                "width": 3.0,
+                "area": 15.0,
+                "soilType": "Terreau enrichi bio",
+                "soilPH": "6.5-7.0",
+                "drainage": "Excellent",
+                "sunExposure": "Plein soleil",
+                "climateZone": "Tempéré océanique",
+                "windProtection": "Bien protégé",
+                "wateringSystem": "Goutte à goutte",
+                "humidity": "Modérée",
+                "notes": "Zone mise à jour via API",
+                "color": "#2196F3"
+            }
+            
+            response = requests.put(
+                f"{self.base_url}/user/zones/{self.created_zone_id}",
+                json=updated_zone_data,
+                headers=headers,
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "name" in data and data["name"] == updated_zone_data["name"]:
+                    self.log_test("Update Zone", True, f"Zone updated successfully: {data['name']}")
+                    return True
+                else:
+                    self.log_test("Update Zone", False, f"Update verification failed: {data}")
+                    return False
+            else:
+                self.log_test("Update Zone", False, f"HTTP {response.status_code}: {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Update Zone", False, f"Request error: {str(e)}")
+            return False
+    
+    def test_zones_with_data(self):
+        """Test GET /user/zones endpoint (protected) - should now return the created zone"""
+        if not self.token:
+            self.log_test("Get Zones (With Data)", False, "No authentication token available")
+            return False
+            
+        try:
+            headers = {"Authorization": f"Bearer {self.token}"}
+            response = requests.get(
+                f"{self.base_url}/user/zones",
+                headers=headers,
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list) and len(data) > 0:
+                    zone = data[0]
+                    if hasattr(self, 'created_zone_id') and zone.get("id") == self.created_zone_id:
+                        self.log_test("Get Zones (With Data)", True, f"Zone appears in list: {zone['name']}")
+                        return True
+                    else:
+                        self.log_test("Get Zones (With Data)", True, f"Zones list retrieved: {len(data)} zones")
+                        return True
+                else:
+                    self.log_test("Get Zones (With Data)", False, f"Expected non-empty list, got: {data}")
+                    return False
+            else:
+                self.log_test("Get Zones (With Data)", False, f"HTTP {response.status_code}: {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Get Zones (With Data)", False, f"Request error: {str(e)}")
+            return False
+    
+    def test_delete_zone(self):
+        """Test DELETE /user/zones/{zone_id} endpoint (protected) - delete zone"""
+        if not self.token:
+            self.log_test("Delete Zone", False, "No authentication token available")
+            return False
+        
+        if not hasattr(self, 'created_zone_id') or not self.created_zone_id:
+            self.log_test("Delete Zone", False, "No zone ID available from previous test")
+            return False
+            
+        try:
+            headers = {"Authorization": f"Bearer {self.token}"}
+            response = requests.delete(
+                f"{self.base_url}/user/zones/{self.created_zone_id}",
+                headers=headers,
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "message" in data:
+                    self.log_test("Delete Zone", True, f"Zone deleted successfully: {data['message']}")
+                    return True
+                else:
+                    self.log_test("Delete Zone", False, f"Unexpected response format: {data}")
+                    return False
+            else:
+                self.log_test("Delete Zone", False, f"HTTP {response.status_code}: {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Delete Zone", False, f"Request error: {str(e)}")
+            return False
+    
+    def test_zones_after_delete(self):
+        """Test GET /user/zones endpoint (protected) - should be empty after deletion"""
+        if not self.token:
+            self.log_test("Get Zones (After Delete)", False, "No authentication token available")
+            return False
+            
+        try:
+            headers = {"Authorization": f"Bearer {self.token}"}
+            response = requests.get(
+                f"{self.base_url}/user/zones",
+                headers=headers,
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    self.log_test("Get Zones (After Delete)", True, f"Zones list after delete: {len(data)} zones")
+                    return True
+                else:
+                    self.log_test("Get Zones (After Delete)", False, f"Expected list, got: {type(data)}")
+                    return False
+            else:
+                self.log_test("Get Zones (After Delete)", False, f"HTTP {response.status_code}: {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Get Zones (After Delete)", False, f"Request error: {str(e)}")
+            return False
+    
+    def test_jwt_protection_zones(self):
+        """Test that zones endpoints are properly protected by JWT"""
+        try:
+            # Test without token
+            response = requests.get(f"{self.base_url}/user/zones", timeout=10)
+            
+            if response.status_code == 403:
+                self.log_test("JWT Protection (Zones)", True, "Zones endpoint properly protected - unauthorized access blocked")
+                return True
+            else:
+                self.log_test("JWT Protection (Zones)", False, f"Expected 403, got {response.status_code}")
+                return False
+                
+        except Exception as e:
+            self.log_test("JWT Protection (Zones)", False, f"Request error: {str(e)}")
+            return False
+    
     def run_all_tests(self):
         """Run all backend tests in sequence"""
         print(f"🚀 Starting Sepalis Backend API Tests")
