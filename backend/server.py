@@ -352,6 +352,65 @@ async def preregister_course(data: dict, credentials: HTTPAuthorizationCredentia
     return {"message": "Pré-inscription enregistrée avec succès"}
 
 
+# ============ ZONES ROUTES ============
+@api_router.get("/user/zones", response_model=List[ZoneResponse])
+async def get_zones(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    user = await get_current_user(credentials)
+    zones = await db.zones.find({"userId": user["_id"]}).to_list(100)
+    return [ZoneResponse(**zone) for zone in zones]
+
+@api_router.post("/user/zones", response_model=ZoneResponse)
+async def create_zone(zone_data: ZoneCreate, credentials: HTTPAuthorizationCredentials = Depends(security)):
+    user = await get_current_user(credentials)
+    
+    zone_id = str(uuid.uuid4())
+    new_zone = {
+        "_id": zone_id,
+        "userId": user["_id"],
+        **zone_data.model_dump(),
+        "plantsCount": 0,
+        "createdAt": datetime.utcnow()
+    }
+    
+    await db.zones.insert_one(new_zone)
+    return ZoneResponse(**new_zone)
+
+@api_router.get("/user/zones/{zone_id}", response_model=ZoneResponse)
+async def get_zone(zone_id: str, credentials: HTTPAuthorizationCredentials = Depends(security)):
+    user = await get_current_user(credentials)
+    zone = await db.zones.find_one({"_id": zone_id, "userId": user["_id"]})
+    if not zone:
+        raise HTTPException(status_code=404, detail="Zone non trouvée")
+    return ZoneResponse(**zone)
+
+@api_router.put("/user/zones/{zone_id}", response_model=ZoneResponse)
+async def update_zone(zone_id: str, zone_data: ZoneCreate, credentials: HTTPAuthorizationCredentials = Depends(security)):
+    user = await get_current_user(credentials)
+    
+    existing_zone = await db.zones.find_one({"_id": zone_id, "userId": user["_id"]})
+    if not existing_zone:
+        raise HTTPException(status_code=404, detail="Zone non trouvée")
+    
+    updated_data = zone_data.model_dump()
+    await db.zones.update_one(
+        {"_id": zone_id, "userId": user["_id"]},
+        {"$set": updated_data}
+    )
+    
+    updated_zone = await db.zones.find_one({"_id": zone_id})
+    return ZoneResponse(**updated_zone)
+
+@api_router.delete("/user/zones/{zone_id}")
+async def delete_zone(zone_id: str, credentials: HTTPAuthorizationCredentials = Depends(security)):
+    user = await get_current_user(credentials)
+    
+    result = await db.zones.delete_one({"_id": zone_id, "userId": user["_id"]})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Zone non trouvée")
+    
+    return {"message": "Zone supprimée avec succès"}
+
+
 # ============ AI RECOGNITION ROUTES ============
 @api_router.post("/ai/identify-plant")
 async def identify_plant(data: dict):
