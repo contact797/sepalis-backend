@@ -453,9 +453,6 @@ export default function Zones() {
                 key={zone.id} 
                 style={styles.zoneCard}
                 onPress={() => {
-                  // Navigation vers le détail de la zone
-                  const { useRouter } = require('expo-router');
-                  const router = useRouter();
                   router.push({
                     pathname: '/(tabs)/zone-detail',
                     params: { zone: JSON.stringify(zone) }
