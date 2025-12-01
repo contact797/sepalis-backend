@@ -71,11 +71,11 @@ export default function Register() {
 
         <View style={styles.form}>
           <View style={styles.inputContainer}>
-            <Ionicons name="person-outline" size={20} color={Colors.mediumGray} style={styles.inputIcon} />
+            <Ionicons name="person-outline" size={20} color={Colors.textSecondary} style={styles.inputIcon} />
             <TextInput
               style={styles.input}
               placeholder="Nom complet"
-              placeholderTextColor={Colors.mediumGray}
+              placeholderTextColor={Colors.textSecondary}
               value={name}
               onChangeText={setName}
               autoCapitalize="words"
@@ -84,11 +84,11 @@ export default function Register() {
           </View>
 
           <View style={styles.inputContainer}>
-            <Ionicons name="mail-outline" size={20} color={Colors.mediumGray} style={styles.inputIcon} />
+            <Ionicons name="mail-outline" size={20} color={Colors.textSecondary} style={styles.inputIcon} />
             <TextInput
               style={styles.input}
               placeholder="Email"
-              placeholderTextColor={Colors.mediumGray}
+              placeholderTextColor={Colors.textSecondary}
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
@@ -98,11 +98,11 @@ export default function Register() {
           </View>
 
           <View style={styles.inputContainer}>
-            <Ionicons name="lock-closed-outline" size={20} color={Colors.mediumGray} style={styles.inputIcon} />
+            <Ionicons name="lock-closed-outline" size={20} color={Colors.textSecondary} style={styles.inputIcon} />
             <TextInput
               style={styles.input}
               placeholder="Mot de passe"
-              placeholderTextColor={Colors.mediumGray}
+              placeholderTextColor={Colors.textSecondary}
               value={password}
               onChangeText={setPassword}
               secureTextEntry
@@ -112,11 +112,11 @@ export default function Register() {
           </View>
 
           <View style={styles.inputContainer}>
-            <Ionicons name="lock-closed-outline" size={20} color={Colors.mediumGray} style={styles.inputIcon} />
+            <Ionicons name="lock-closed-outline" size={20} color={Colors.textSecondary} style={styles.inputIcon} />
             <TextInput
               style={styles.input}
               placeholder="Confirmer le mot de passe"
-              placeholderTextColor={Colors.mediumGray}
+              placeholderTextColor={Colors.textSecondary}
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               secureTextEntry
@@ -131,7 +131,7 @@ export default function Register() {
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color={Colors.white} />
+              <ActivityIndicator color={Colors.dark} />
             ) : (
               <Text style={styles.buttonText}>S'inscrire</Text>
             )}
@@ -155,7 +155,7 @@ export default function Register() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.background,
   },
   scrollContent: {
     flexGrow: 1,
@@ -170,20 +170,22 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: Colors.lightGray,
+    backgroundColor: Colors.card,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
+    borderWidth: 2,
+    borderColor: Colors.primary,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: Colors.dark,
+    color: Colors.text,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: Colors.mediumGray,
+    color: Colors.textSecondary,
   },
   form: {
     width: '100%',
@@ -191,11 +193,13 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.lightGray,
+    backgroundColor: Colors.card,
     borderRadius: 12,
     marginBottom: 16,
     paddingHorizontal: 16,
     height: 56,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   inputIcon: {
     marginRight: 12,
@@ -203,10 +207,10 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 16,
-    color: Colors.dark,
+    color: Colors.text,
   },
   button: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.accent,
     borderRadius: 12,
     height: 56,
     justifyContent: 'center',
@@ -217,7 +221,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   buttonText: {
-    color: Colors.white,
+    color: Colors.dark,
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -227,10 +231,10 @@ const styles = StyleSheet.create({
   },
   linkText: {
     fontSize: 14,
-    color: Colors.mediumGray,
+    color: Colors.textSecondary,
   },
   link: {
-    color: Colors.primary,
+    color: Colors.accent,
     fontWeight: 'bold',
   },
 });
