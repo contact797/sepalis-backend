@@ -339,7 +339,8 @@ class SepalisAPITester:
             
             if response.status_code == 200:
                 data = response.json()
-                if "id" in data and data["id"] == self.created_zone_id:
+                zone_id = data.get("id") or data.get("_id")
+                if zone_id and zone_id == self.created_zone_id:
                     self.log_test("Get Zone by ID", True, f"Zone retrieved successfully: {data['name']}")
                     return True
                 else:
