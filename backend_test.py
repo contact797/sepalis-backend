@@ -536,6 +536,14 @@ class SepalisAPITester:
             ("Get Plants", self.test_plants),
             ("Get Tasks", self.test_tasks),
             ("Get Courses", self.test_courses),
+            ("JWT Protection (Zones)", self.test_jwt_protection_zones),
+            ("Get Zones (Empty)", self.test_zones_empty),
+            ("Create Zone", self.test_create_zone),
+            ("Get Zone by ID", self.test_get_zone_by_id),
+            ("Update Zone", self.test_update_zone),
+            ("Get Zones (With Data)", self.test_zones_with_data),
+            ("Delete Zone", self.test_delete_zone),
+            ("Get Zones (After Delete)", self.test_zones_after_delete),
         ]
         
         passed = 0
