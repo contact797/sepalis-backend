@@ -110,6 +110,37 @@ class CourseResponse(BaseModel):
         populate_by_name = True
 
 
+# ============ ZONE MODELS ============
+class ZoneBase(BaseModel):
+    name: str
+    type: str  # vegetable, ornamental, orchard, herb
+    length: float
+    width: float
+    area: float
+    soilType: str
+    soilPH: str
+    drainage: str
+    sunExposure: str
+    climateZone: str
+    windProtection: str
+    wateringSystem: str
+    humidity: str
+    notes: Optional[str] = ""
+    color: str
+
+class ZoneCreate(ZoneBase):
+    pass
+
+class ZoneResponse(ZoneBase):
+    id: str = Field(alias="_id")
+    userId: str
+    plantsCount: int = 0
+    createdAt: datetime
+
+    class Config:
+        populate_by_name = True
+
+
 # ============ AUTH HELPERS ============
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
