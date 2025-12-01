@@ -38,6 +38,7 @@ interface Zone {
 export default function Zones() {
   const router = useRouter();
   const [zones, setZones] = useState<Zone[]>([]);
+  const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [newZone, setNewZone] = useState({
@@ -55,6 +56,32 @@ export default function Zones() {
     humidity: 'normal',
     notes: '',
   });
+
+  // Charger les zones depuis l'API
+  const loadZones = async () => {
+    try {
+      setLoading(true);
+      const response = await zonesAPI.getZones();
+      setZones(response.data);
+    } catch (error) {
+      console.error('Erreur lors du chargement des zones:', error);
+      Alert.alert('Erreur', 'Impossible de charger les zones');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Charger les zones au montage du composant
+  useEffect(() => {
+    loadZones();
+  }, []);
+
+  // Recharger les zones quand l'écran est focus (retour depuis zone-detail par exemple)
+  useFocusEffect(
+    React.useCallback(() => {
+      loadZones();
+    }, [])
+  );
 
   const zoneTypes = [
     { id: 'vegetable', label: 'Potager', icon: 'leaf', color: Colors.primary },
