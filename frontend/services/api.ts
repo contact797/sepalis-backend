@@ -127,3 +127,12 @@ export const subscriptionAPI = {
   cancelSubscription: () =>
     api.post('/cancel-subscription'),
 };
+
+// AI Recognition API
+export const aiAPI = {
+  identifyPlant: (imageBase64: string) =>
+    api.post('/ai/identify-plant', { image: imageBase64 }),
+  
+  diagnoseDisease: (imageBase64: string) =>
+    api.post('/ai/diagnose-disease', { image: imageBase64 }),
+};
