@@ -425,7 +425,8 @@ class SepalisAPITester:
                 data = response.json()
                 if isinstance(data, list) and len(data) > 0:
                     zone = data[0]
-                    if hasattr(self, 'created_zone_id') and zone.get("id") == self.created_zone_id:
+                    zone_id = zone.get("id") or zone.get("_id")
+                    if hasattr(self, 'created_zone_id') and zone_id == self.created_zone_id:
                         self.log_test("Get Zones (With Data)", True, f"Zone appears in list: {zone['name']}")
                         return True
                     else:
