@@ -116,6 +116,9 @@ backend:
       - working: true
         agent: "main"
         comment: "Backend fonctionnel avec endpoints pour zones et authentification JWT"
+      - working: true
+        agent: "testing"
+        comment: "Tests complets effectués - CRITIQUE: Correction MongoDB URL de 'mongo:27017' vers 'localhost:27017' dans backend/.env. Tous les endpoints testés avec succès: Health check ✅, Registration ✅, Login ✅, Profile ✅, Plants CRUD ✅, Tasks CRUD ✅, Courses ✅. JWT authentication fonctionnel. Base de données accessible et opérationnelle."
 
 frontend:
   - task: "Navigation des zones vers détails"
