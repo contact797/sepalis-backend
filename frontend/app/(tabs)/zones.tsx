@@ -585,6 +585,17 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
+  loadingContainer: {
+    padding: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 50,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: Colors.textSecondary,
+  },
   emptyContainer: {
     padding: 32,
     alignItems: 'center',
