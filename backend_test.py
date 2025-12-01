@@ -302,9 +302,11 @@ class SepalisAPITester:
             
             if response.status_code == 200:
                 data = response.json()
-                if "id" in data and "userId" in data and data["name"] == zone_data["name"]:
-                    self.created_zone_id = data["id"]
-                    self.log_test("Create Zone", True, f"Zone created successfully: {data['name']} (ID: {data['id']})")
+                # Handle both 'id' and '_id' field names
+                zone_id = data.get("id") or data.get("_id")
+                if zone_id and "userId" in data and data["name"] == zone_data["name"]:
+                    self.created_zone_id = zone_id
+                    self.log_test("Create Zone", True, f"Zone created successfully: {data['name']} (ID: {zone_id})")
                     return True
                 else:
                     self.log_test("Create Zone", False, f"Missing required fields in response: {data}")
