@@ -130,9 +130,14 @@ export default function Plants() {
         )}
       </ScrollView>
 
-      <TouchableOpacity style={styles.fab} onPress={handleAddPlant}>
-        <Ionicons name="add" size={28} color={Colors.white} />
-      </TouchableOpacity>
+      <View style={styles.fabContainer}>
+        <TouchableOpacity style={styles.fabSecondary} onPress={() => router.push('/(tabs)/scan-plant')}>
+          <Ionicons name="camera" size={24} color={Colors.white} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.fab} onPress={handleAddPlant}>
+          <Ionicons name="add" size={28} color={Colors.white} />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
