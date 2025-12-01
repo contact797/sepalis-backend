@@ -15,6 +15,7 @@ import { Colors } from '../../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function Plants() {
+  const router = useRouter();
   const [plants, setPlants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
