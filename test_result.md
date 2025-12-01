@@ -162,8 +162,25 @@ test_plan:
   test_all: false
   test_priority: "high_first"
 
+  - task: "Persistance des zones en base de données"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py, frontend/app/(tabs)/zones.tsx, frontend/services/api.ts"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "Les zones créées disparaissent lorsqu'on change de page"
+      - working: "NA"
+        agent: "main"
+        comment: "BACKEND: Ajout des modèles Zone (ZoneBase, ZoneCreate, ZoneResponse) et création de 5 nouveaux endpoints REST: GET /api/user/zones (liste), POST /api/user/zones (création), GET /api/user/zones/{id} (détail), PUT /api/user/zones/{id} (mise à jour), DELETE /api/user/zones/{id} (suppression). Tous les endpoints sont protégés par JWT. FRONTEND: Ajout de zonesAPI dans services/api.ts avec toutes les méthodes CRUD. Modification de zones.tsx pour charger les zones depuis l'API au montage (useEffect) et lors du focus (useFocusEffect), et pour sauvegarder les nouvelles zones dans MongoDB via l'API. Ajout d'un indicateur de chargement."
+
 agent_communication:
   - agent: "main"
     message: "Corrections effectuées pour la navigation des zones : 1) Ajout de l'import useRouter d'expo-router en haut du fichier zones.tsx, 2) Correction du handler onPress pour utiliser le hook router déjà instancié au lieu de le réimporter dans la fonction. La navigation passe maintenant les données de la zone via JSON.stringify dans les params vers zone-detail.tsx"
   - agent: "testing"
     message: "Tests backend complets effectués avec succès. CORRECTION CRITIQUE appliquée: MongoDB URL corrigée de 'mongo:27017' vers 'localhost:27017' dans backend/.env et service redémarré. Tous les endpoints API fonctionnent parfaitement: authentification JWT, CRUD plants/tasks, courses. Base de données opérationnelle. Backend prêt pour utilisation par le frontend."
+  - agent: "main"
+    message: "Problème de persistance des zones résolu. Backend: Ajout de la collection 'zones' avec 5 endpoints CRUD complets protégés par JWT. Frontend: Intégration complète de l'API zones avec chargement automatique au montage et au focus de l'écran, sauvegarde persistante lors de la création. Les zones sont maintenant stockées dans MongoDB et persistent entre les sessions."
