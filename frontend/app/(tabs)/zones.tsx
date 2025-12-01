@@ -16,7 +16,23 @@ interface Zone {
   id: string;
   name: string;
   type: string;
+  // Dimensions
+  length: number;
+  width: number;
   area: number;
+  // Sol
+  soilType: string;
+  soilPH: string;
+  drainage: string;
+  // Exposition & Climat
+  sunExposure: string;
+  climateZone: string;
+  windProtection: string;
+  // Arrosage
+  wateringSystem: string;
+  humidity: string;
+  // Autres
+  notes: string;
   plantsCount: number;
   color: string;
 }
