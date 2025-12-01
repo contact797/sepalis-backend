@@ -447,7 +447,19 @@ export default function Zones() {
         ) : (
           <View style={styles.zonesGrid}>
             {zones.map((zone) => (
-              <TouchableOpacity key={zone.id} style={styles.zoneCard}>
+              <TouchableOpacity 
+                key={zone.id} 
+                style={styles.zoneCard}
+                onPress={() => {
+                  // Navigation vers le détail de la zone
+                  const { useRouter } = require('expo-router');
+                  const router = useRouter();
+                  router.push({
+                    pathname: '/(tabs)/zone-detail',
+                    params: { zone: JSON.stringify(zone) }
+                  });
+                }}
+              >
                 <View style={[styles.zoneHeader, { backgroundColor: zone.color + '20' }]}>
                   <View style={[styles.zoneIcon, { backgroundColor: zone.color }]}>
                     <Ionicons name={zoneTypes.find(t => t.id === zone.type)?.icon as any} size={32} color={Colors.white} />
