@@ -1,13 +1,42 @@
-diff --git a/backend/.env b/backend/.env
-index 0f4322c..c584416 100644
---- a/backend/.env
-+++ b/backend/.env
-@@ -1,2 +1,4 @@
--MONGO_URL="mongodb://localhost:27017"
--DB_NAME="test_database"
+diff --git a/model.patch b/model.patch
+index dc640ee..e69de29 100644
+--- a/model.patch
++++ b/model.patch
+@@ -1,13 +0,0 @@
+-diff --git a/backend/.env b/backend/.env
+-index 0f4322c..c584416 100644
+---- a/backend/.env
+-+++ b/backend/.env
+-@@ -1,2 +1,4 @@
+--MONGO_URL="mongodb://localhost:27017"
+--DB_NAME="test_database"
+-\ No newline at end of file
+-+MONGO_URL=mongodb://mongo:27017
+-+DB_NAME=sepalis
+-+PLANTID_API_KEY=TudmUlaO67U8ZT2URniderBcljhm2qY6TEnuKjbC8zzXlRFYAm
+-+OPENAI_API_KEY=sk-emergent-0Ec6e0b2bA3E0Bf3a7
+-\ No newline at end of file
+diff --git a/test_result.md b/test_result.md
+index 34abab7..2fcc985 100644
+--- a/test_result.md
++++ b/test_result.md
+@@ -116,6 +116,9 @@ backend:
+       - working: true
+         agent: "main"
+         comment: "Backend fonctionnel avec endpoints pour zones et authentification JWT"
++      - working: true
++        agent: "testing"
++        comment: "Tests complets effectués - CRITIQUE: Correction MongoDB URL de 'mongo:27017' vers 'localhost:27017' dans backend/.env. Tous les endpoints testés avec succès: Health check ✅, Registration ✅, Login ✅, Profile ✅, Plants CRUD ✅, Tasks CRUD ✅, Courses ✅. JWT authentication fonctionnel. Base de données accessible et opérationnelle."
+ 
+ frontend:
+   - task: "Navigation des zones vers détails"
+@@ -161,4 +164,6 @@ test_plan:
+ 
+ agent_communication:
+   - agent: "main"
+-    message: "Corrections effectuées pour la navigation des zones : 1) Ajout de l'import useRouter d'expo-router en haut du fichier zones.tsx, 2) Correction du handler onPress pour utiliser le hook router déjà instancié au lieu de le réimporter dans la fonction. La navigation passe maintenant les données de la zone via JSON.stringify dans les params vers zone-detail.tsx"
 \ No newline at end of file
-+MONGO_URL=mongodb://mongo:27017
-+DB_NAME=sepalis
-+PLANTID_API_KEY=TudmUlaO67U8ZT2URniderBcljhm2qY6TEnuKjbC8zzXlRFYAm
-+OPENAI_API_KEY=sk-emergent-0Ec6e0b2bA3E0Bf3a7
++    message: "Corrections effectuées pour la navigation des zones : 1) Ajout de l'import useRouter d'expo-router en haut du fichier zones.tsx, 2) Correction du handler onPress pour utiliser le hook router déjà instancié au lieu de le réimporter dans la fonction. La navigation passe maintenant les données de la zone via JSON.stringify dans les params vers zone-detail.tsx"
++  - agent: "testing"
++    message: "Tests backend complets effectués avec succès. CORRECTION CRITIQUE appliquée: MongoDB URL corrigée de 'mongo:27017' vers 'localhost:27017' dans backend/.env et service redémarré. Tous les endpoints API fonctionnent parfaitement: authentification JWT, CRUD plants/tasks, courses. Base de données opérationnelle. Backend prêt pour utilisation par le frontend."
 \ No newline at end of file
