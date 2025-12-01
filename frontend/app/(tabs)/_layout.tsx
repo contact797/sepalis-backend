@@ -62,6 +62,15 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="diagnostic"
+        options={{
+          title: 'Diagnostic',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="medical" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="academy"
         options={{
           title: 'Académie',
@@ -77,6 +86,24 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person" size={size} color={color} />
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="scan-plant"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="add-plant"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="add-task"
+        options={{
+          href: null,
         }}
       />
     </Tabs>
