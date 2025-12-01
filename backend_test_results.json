@@ -1,57 +1,113 @@
 {
-  "total_tests": 7,
-  "passed": 7,
-  "failed": 0,
-  "success_rate": "100.0%",
+  "total_tests": 15,
+  "passed": 11,
+  "failed": 4,
+  "success_rate": "73.3%",
   "results": [
     {
       "test": "Health Check",
       "success": true,
       "message": "API is running - Sepalis API - Votre jardin connect\u00e9",
       "response_data": null,
-      "timestamp": "2025-12-01T18:35:35.895890"
+      "timestamp": "2025-12-01T18:43:58.470446"
     },
     {
       "test": "User Registration",
       "success": true,
       "message": "User already exists (expected), will use login",
       "response_data": null,
-      "timestamp": "2025-12-01T18:35:35.937450"
+      "timestamp": "2025-12-01T18:43:58.568768"
     },
     {
       "test": "User Login",
       "success": true,
       "message": "Login successful for: marie.dupont@example.com",
       "response_data": null,
-      "timestamp": "2025-12-01T18:35:36.197839"
+      "timestamp": "2025-12-01T18:43:58.827503"
     },
     {
       "test": "Get Profile",
       "success": true,
       "message": "Profile retrieved: marie.dupont@example.com",
       "response_data": null,
-      "timestamp": "2025-12-01T18:35:36.230869"
+      "timestamp": "2025-12-01T18:43:58.888797"
     },
     {
       "test": "Get Plants",
       "success": true,
-      "message": "Plants list retrieved: 0 plants",
+      "message": "Plants list retrieved: 1 plants",
       "response_data": null,
-      "timestamp": "2025-12-01T18:35:36.268752"
+      "timestamp": "2025-12-01T18:43:58.927729"
     },
     {
       "test": "Get Tasks",
       "success": true,
-      "message": "Tasks list retrieved: 0 tasks",
+      "message": "Tasks list retrieved: 1 tasks",
       "response_data": null,
-      "timestamp": "2025-12-01T18:35:36.308768"
+      "timestamp": "2025-12-01T18:43:58.967498"
     },
     {
       "test": "Get Courses",
       "success": true,
       "message": "Courses list retrieved: 4 courses",
       "response_data": null,
-      "timestamp": "2025-12-01T18:35:36.386034"
+      "timestamp": "2025-12-01T18:43:59.045821"
+    },
+    {
+      "test": "JWT Protection (Zones)",
+      "success": true,
+      "message": "Zones endpoint properly protected - unauthorized access blocked",
+      "response_data": null,
+      "timestamp": "2025-12-01T18:43:59.082216"
+    },
+    {
+      "test": "Get Zones (Empty)",
+      "success": true,
+      "message": "Zones list retrieved: 0 zones (expected empty)",
+      "response_data": null,
+      "timestamp": "2025-12-01T18:43:59.119481"
+    },
+    {
+      "test": "Create Zone",
+      "success": false,
+      "message": "Missing required fields in response: {'name': 'Terrasse Sud Test', 'type': 'vegetable', 'length': 5.0, 'width': 3.0, 'area': 15.0, 'soilType': 'Terreau enrichi', 'soilPH': '6.5-7.0', 'drainage': 'Bon', 'sunExposure': 'Plein soleil', 'climateZone': 'Temp\u00e9r\u00e9 oc\u00e9anique', 'windProtection': 'Partiellement prot\u00e9g\u00e9', 'wateringSystem': 'Arrosage manuel', 'humidity': 'Mod\u00e9r\u00e9e', 'notes': 'Zone test pour validation API', 'color': '#4CAF50', '_id': 'c56a555c-e683-418c-b38a-5aa0174203d0', 'userId': 'de13614d-fab3-4e90-8074-c6d1bdec15b2', 'plantsCount': 0, 'createdAt': '2025-12-01T18:43:59.150393'}",
+      "response_data": null,
+      "timestamp": "2025-12-01T18:43:59.172592"
+    },
+    {
+      "test": "Get Zone by ID",
+      "success": false,
+      "message": "No zone ID available from previous test",
+      "response_data": null,
+      "timestamp": "2025-12-01T18:43:59.173243"
+    },
+    {
+      "test": "Update Zone",
+      "success": false,
+      "message": "No zone ID available from previous test",
+      "response_data": null,
+      "timestamp": "2025-12-01T18:43:59.173253"
+    },
+    {
+      "test": "Get Zones (With Data)",
+      "success": true,
+      "message": "Zones list retrieved: 1 zones",
+      "response_data": null,
+      "timestamp": "2025-12-01T18:43:59.212433"
+    },
+    {
+      "test": "Delete Zone",
+      "success": false,
+      "message": "No zone ID available from previous test",
+      "response_data": null,
+      "timestamp": "2025-12-01T18:43:59.213111"
+    },
+    {
+      "test": "Get Zones (After Delete)",
+      "success": true,
+      "message": "Zones list after delete: 1 zones",
+      "response_data": null,
+      "timestamp": "2025-12-01T18:43:59.532034"
     }
   ]
 }
