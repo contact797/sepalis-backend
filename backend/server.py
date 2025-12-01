@@ -321,6 +321,123 @@ async def preregister_course(data: dict, credentials: HTTPAuthorizationCredentia
     return {"message": "Pré-inscription enregistrée avec succès"}
 
 
+# ============ AI RECOGNITION ROUTES ============
+@api_router.post("/ai/identify-plant")
+async def identify_plant(data: dict):
+    """Identifier une plante avec Plant.id API"""
+    import requests
+    import base64
+    
+    try:
+        image_base64 = data.get('image')
+        if not image_base64:
+            raise HTTPException(status_code=400, detail="Image requise")
+        
+        # Enlever le préfixe data:image si présent
+        if 'base64,' in image_base64:
+            image_base64 = image_base64.split('base64,')[1]
+        
+        plantid_key = os.getenv('PLANTID_API_KEY')
+        
+        # Appel API Plant.id
+        response = requests.post(
+            'https://plant.id/api/v3/identification',
+            json={
+                'images': [image_base64],
+                'latitude': 48.8566,  # Paris par défaut
+                'longitude': 2.3522,
+                'similar_images': True,
+            },
+            headers={
+                'Api-Key': plantid_key,
+                'Content-Type': 'application/json',
+            },
+            timeout=30
+        )
+        
+        if response.status_code != 200:
+            raise HTTPException(status_code=500, detail="Erreur Plant.id API")
+        
+        result = response.json()
+        
+        # Extraire les informations principales
+        if result.get('result') and result['result'].get('classification'):
+            suggestions = result['result']['classification']['suggestions']
+            if suggestions:
+                best_match = suggestions[0]
+                return {
+                    'name': best_match['name'],
+                    'scientificName': best_match.get('details', {}).get('scientific_name', best_match['name']),
+                    'confidence': best_match['probability'],
+                    'commonNames': best_match.get('details', {}).get('common_names', []),
+                    'description': best_match.get('details', {}).get('description', {}).get('value', 'Plante identifiée'),
+                    'wateringFrequency': 7,  # Valeur par défaut
+                    'images': [img.get('url') for img in best_match.get('similar_images', [])[:3]],
+                }
+        
+        raise HTTPException(status_code=404, detail="Plante non identifiée")
+        
+    except Exception as e:
+        print(f"Erreur identification: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/ai/diagnose-disease")
+async def diagnose_disease(data: dict):
+    """Diagnostiquer une maladie avec OpenAI Vision"""
+    from openai import OpenAI
+    
+    try:
+        image_base64 = data.get('image')
+        if not image_base64:
+            raise HTTPException(status_code=400, detail="Image requise")
+        
+        # S'assurer que l'image a le bon format
+        if not image_base64.startswith('data:image'):
+            image_base64 = f"data:image/jpeg;base64,{image_base64}"
+        
+        client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+        
+        # Appel OpenAI Vision
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "Tu es un expert en pathologie végétale. Analyse l'image de la plante et fournis un diagnostic détaillé en français. Réponds UNIQUEMENT au format JSON suivant sans aucun texte supplémentaire: {\"disease\": \"nom de la maladie\", \"confidence\": 0.XX, \"severity\": \"Léger/Modéré/Grave\", \"description\": \"description\", \"symptoms\": [\"symptome1\", \"symptome2\"], \"solutions\": [\"solution1\", \"solution2\"], \"prevention\": [\"conseil1\", \"conseil2\"]}"
+                },
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "Analyse cette plante et détecte les éventuelles maladies ou problèmes. Si la plante est saine, indique-le."
+                        },
+                        {
+                            "type": "image_url",
+                            "image_url": {"url": image_base64}
+                        }
+                    ]
+                }
+            ],
+            max_tokens=1000,
+            temperature=0.3,
+        )
+        
+        # Extraire la réponse
+        content = response.choices[0].message.content
+        
+        # Parser le JSON
+        import json
+        diagnosis = json.loads(content)
+        
+        return diagnosis
+        
+    except Exception as e:
+        print(f"Erreur diagnostic: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ============ ROOT ROUTE ============
 @api_router.get("/")
 async def root():
