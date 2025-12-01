@@ -333,38 +333,68 @@ async def get_courses():
         {
             "_id": "1",
             "title": "Initiation au jardinage bio",
-            "description": "Découvrez les bases du jardinage biologique et apprenez à cultiver vos premiers légumes sans produits chimiques.",
+            "description": "Découvrez les bases du jardinage biologique et apprenez à cultiver vos premiers légumes sans produits chimiques. Formation vidéo complète avec exercices pratiques.",
             "level": "Débutant",
             "duration": "2h30",
             "price": 39,
-            "slug": "initiation-jardinage-bio"
+            "slug": "initiation-jardinage-bio",
+            "instructor": "Nicolas Blot, Meilleur Ouvrier de France",
+            "topics": ["Jardinage bio", "Légumes", "Sol", "Rotation des cultures"]
         },
         {
             "_id": "2",
             "title": "Maîtriser le compost",
-            "description": "Apprenez toutes les techniques pour réaliser un compost de qualité et enrichir votre sol naturellement.",
+            "description": "Apprenez toutes les techniques pour réaliser un compost de qualité et enrichir votre sol naturellement. Compost chaud, froid, lombricompost.",
             "level": "Intermédiaire",
             "duration": "1h45",
             "price": 29,
-            "slug": "maitriser-compost"
+            "slug": "maitriser-compost",
+            "instructor": "Nicolas Blot, Meilleur Ouvrier de France",
+            "topics": ["Compost", "Recyclage", "Fertilité du sol", "Déchets verts"]
         },
         {
             "_id": "3",
             "title": "Potager urbain",
-            "description": "Créez votre potager sur balcon ou terrasse. Techniques adaptées aux petits espaces.",
+            "description": "Créez votre potager sur balcon ou terrasse. Techniques adaptées aux petits espaces avec rendements optimaux.",
             "level": "Tous niveaux",
             "duration": "3h",
             "price": 49,
-            "slug": "potager-urbain"
+            "slug": "potager-urbain",
+            "instructor": "Nicolas Blot, Meilleur Ouvrier de France",
+            "topics": ["Potager", "Balcon", "Petits espaces", "Conteneurs"]
         },
         {
             "_id": "4",
             "title": "Permaculture avancée",
-            "description": "Conception et gestion d'un jardin en permaculture. Pour jardiniers expérimentés.",
+            "description": "Conception et gestion d'un jardin en permaculture. Pour jardiniers expérimentés. Design, guildes, zones, économie d'eau.",
             "level": "Avancé",
             "duration": "4h",
             "price": 69,
-            "slug": "permaculture-avancee"
+            "slug": "permaculture-avancee",
+            "instructor": "Nicolas Blot, Meilleur Ouvrier de France",
+            "topics": ["Permaculture", "Design", "Biodiversité", "Autonomie"]
+        },
+        {
+            "_id": "5",
+            "title": "Taille des arbres fruitiers",
+            "description": "Maîtrisez la taille de fructification pour tous types d'arbres fruitiers. Théorie et démonstrations pratiques détaillées.",
+            "level": "Intermédiaire",
+            "duration": "3h30",
+            "price": 59,
+            "slug": "taille-arbres-fruitiers",
+            "instructor": "Nicolas Blot, Meilleur Ouvrier de France",
+            "topics": ["Taille", "Fruitiers", "Production", "Santé des arbres"]
+        },
+        {
+            "_id": "6",
+            "title": "Créer un jardin en climat sec",
+            "description": "Aménagez un jardin résistant à la sécheresse. Choix des plantes, techniques d'économie d'eau, paillage et mulching.",
+            "level": "Tous niveaux",
+            "duration": "2h",
+            "price": 45,
+            "slug": "jardin-climat-sec",
+            "instructor": "Nicolas Blot, Meilleur Ouvrier de France",
+            "topics": ["Climat sec", "Économie d'eau", "Xérophytes", "Paillage"]
         }
     ]
     return [CourseResponse(**course) for course in courses]
