@@ -136,3 +136,21 @@ export const aiAPI = {
   diagnoseDisease: (imageBase64: string) =>
     api.post('/ai/diagnose-disease', { image: imageBase64 }),
 };
+
+// Zones API
+export const zonesAPI = {
+  getZones: () =>
+    api.get('/user/zones'),
+  
+  getZone: (zoneId: string) =>
+    api.get(`/user/zones/${zoneId}`),
+  
+  createZone: (zoneData: any) =>
+    api.post('/user/zones', zoneData),
+  
+  updateZone: (zoneId: string, zoneData: any) =>
+    api.put(`/user/zones/${zoneId}`, zoneData),
+  
+  deleteZone: (zoneId: string) =>
+    api.delete(`/user/zones/${zoneId}`),
+};
