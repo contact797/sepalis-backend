@@ -101,3 +101,64 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: "L'utilisateur ne peut pas cliquer sur les zones créées (ex: 'terrasse') pour voir les détails. Besoin de corriger la navigation de zones.tsx vers zone-detail.tsx."
+
+backend:
+  - task: "Authentication et gestion des zones"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Backend fonctionnel avec endpoints pour zones et authentification JWT"
+
+frontend:
+  - task: "Navigation des zones vers détails"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/(tabs)/zones.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "L'utilisateur ne peut pas cliquer sur les zones créées pour voir les détails"
+      - working: "NA"
+        agent: "main"
+        comment: "Ajout de l'import useRouter et correction du handler onPress pour naviguer vers zone-detail avec les données de la zone"
+
+  - task: "Écran de détails de zone"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/(tabs)/zone-detail.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Écran de détails déjà créé, affiche toutes les caractéristiques de la zone (dimensions, sol, climat, arrosage)"
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Navigation des zones vers détails"
+    - "Écran de détails de zone"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: "Corrections effectuées pour la navigation des zones : 1) Ajout de l'import useRouter d'expo-router en haut du fichier zones.tsx, 2) Correction du handler onPress pour utiliser le hook router déjà instancié au lieu de le réimporter dans la fonction. La navigation passe maintenant les données de la zone via JSON.stringify dans les params vers zone-detail.tsx"
