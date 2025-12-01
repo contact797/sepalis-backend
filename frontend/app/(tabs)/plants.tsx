@@ -41,7 +41,7 @@ export default function Plants() {
   };
 
   const handleAddPlant = () => {
-    Alert.alert('Ajouter une plante', 'Fonctionnalité bientôt disponible');
+    router.push('/(tabs)/add-plant');
   };
 
   const handleDeletePlant = async (plantId: string) => {
