@@ -154,11 +154,13 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.lightGray,
+    backgroundColor: Colors.card,
     borderRadius: 12,
     marginBottom: 16,
     paddingHorizontal: 16,
     height: 56,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   inputIcon: {
     marginRight: 12,
@@ -166,10 +168,10 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 16,
-    color: Colors.dark,
+    color: Colors.text,
   },
   button: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.accent,
     borderRadius: 12,
     height: 56,
     justifyContent: 'center',
@@ -180,7 +182,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   buttonText: {
-    color: Colors.white,
+    color: Colors.dark,
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -190,10 +192,10 @@ const styles = StyleSheet.create({
   },
   linkText: {
     fontSize: 14,
-    color: Colors.mediumGray,
+    color: Colors.textSecondary,
   },
   link: {
-    color: Colors.primary,
+    color: Colors.accent,
     fontWeight: 'bold',
   },
 });
