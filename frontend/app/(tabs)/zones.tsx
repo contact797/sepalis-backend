@@ -33,6 +33,7 @@ interface Zone {
 }
 
 export default function Zones() {
+  const router = useRouter();
   const [zones, setZones] = useState<Zone[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
