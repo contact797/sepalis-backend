@@ -51,35 +51,14 @@ export default function Diagnostic() {
   const analyzePlant = async (imageBase64: string) => {
     setAnalyzing(true);
     try {
-      // TODO: Appeler API d'analyse IA pour diagnostic
-      await new Promise(resolve => setTimeout(resolve, 2500));
+      // Appeler l'API OpenAI Vision via notre backend
+      const { aiAPI } = await import('../../services/api');
+      const response = await aiAPI.diagnoseDisease(imageBase64);
       
-      const mockDiagnosis = {
-        disease: 'Mildiou',
-        confidence: 0.87,
-        severity: 'Modéré',
-        description: 'Maladie fongique courante affectant les tomates.',
-        symptoms: [
-          'Taches brunes sur les feuilles',
-          'Feuilles qui jaunissent',
-          'Croissance ralentie',
-        ],
-        solutions: [
-          'Retirer les feuilles infectées',
-          'Appliquer un fongicide biologique',
-          'Améliorer la circulation d\'air',
-          'Éviter d\'arroser le feuillage',
-        ],
-        prevention: [
-          'Espacer les plants',
-          'Arroser le matin',
-          'Rotation des cultures',
-        ],
-      };
-      
-      setDiagnosis(mockDiagnosis);
-    } catch (error) {
-      Alert.alert('Erreur', 'Impossible d\'analyser la photo');
+      setDiagnosis(response.data);
+    } catch (error: any) {
+      console.error('Erreur diagnostic:', error);
+      Alert.alert('Erreur', 'Impossible d\'analyser la plante. Réessayez avec une photo plus claire.');
     } finally {
       setAnalyzing(false);
     }
