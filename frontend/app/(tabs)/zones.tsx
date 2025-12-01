@@ -476,7 +476,12 @@ export default function Zones() {
   return (
     <View style={styles.container}>
       <ScrollView style={styles.scrollView}>
-        {zones.length === 0 ? (
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={Colors.accent} />
+            <Text style={styles.loadingText}>Chargement des zones...</Text>
+          </View>
+        ) : zones.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Ionicons name="grid-outline" size={80} color={Colors.textSecondary} />
             <Text style={styles.emptyTitle}>Aucune zone</Text>
