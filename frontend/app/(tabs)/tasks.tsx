@@ -75,7 +75,7 @@ export default function Tasks() {
   };
 
   const handleAddTask = () => {
-    Alert.alert('Ajouter une tâche', 'Fonctionnalité bientôt disponible');
+    router.push('/(tabs)/add-task');
   };
 
   const getFilteredTasks = () => {
