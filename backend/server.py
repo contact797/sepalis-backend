@@ -192,7 +192,7 @@ async def login(credentials: UserLogin):
     )
 
 @api_router.get("/auth/me", response_model=UserResponse)
-async def get_me(credentials: HTTPAuthorizationCredentials = security):
+async def get_me(credentials: HTTPAuthorizationCredentials = Depends(security)):
     user = await get_current_user(credentials)
     return UserResponse(id=user["_id"], email=user["email"], name=user["name"])
 
@@ -205,7 +205,7 @@ async def get_user_plants(credentials: HTTPAuthorizationCredentials = Depends(se
     return [PlantResponse(**{**plant, "_id": plant["_id"]}) for plant in plants]
 
 @api_router.post("/user/plants", response_model=PlantResponse)
-async def create_plant(plant_data: PlantCreate, credentials: HTTPAuthorizationCredentials = security):
+async def create_plant(plant_data: PlantCreate, credentials: HTTPAuthorizationCredentials = Depends(security)):
     user = await get_current_user(credentials)
     
     plant_id = str(uuid.uuid4())
@@ -220,7 +220,7 @@ async def create_plant(plant_data: PlantCreate, credentials: HTTPAuthorizationCr
     return PlantResponse(**plant)
 
 @api_router.delete("/user/plants/{plant_id}")
-async def delete_plant(plant_id: str, credentials: HTTPAuthorizationCredentials = security):
+async def delete_plant(plant_id: str, credentials: HTTPAuthorizationCredentials = Depends(security)):
     user = await get_current_user(credentials)
     result = await db.plants.delete_one({"_id": plant_id, "userId": user["_id"]})
     if result.deleted_count == 0:
@@ -230,13 +230,13 @@ async def delete_plant(plant_id: str, credentials: HTTPAuthorizationCredentials 
 
 # ============ TASKS ROUTES ============
 @api_router.get("/user/tasks", response_model=List[TaskResponse])
-async def get_user_tasks(credentials: HTTPAuthorizationCredentials = security):
+async def get_user_tasks(credentials: HTTPAuthorizationCredentials = Depends(security)):
     user = await get_current_user(credentials)
     tasks = await db.tasks.find({"userId": user["_id"]}).to_list(100)
     return [TaskResponse(**{**task, "_id": task["_id"]}) for task in tasks]
 
 @api_router.post("/user/tasks", response_model=TaskResponse)
-async def create_task(task_data: TaskCreate, credentials: HTTPAuthorizationCredentials = security):
+async def create_task(task_data: TaskCreate, credentials: HTTPAuthorizationCredentials = Depends(security)):
     user = await get_current_user(credentials)
     
     task_id = str(uuid.uuid4())
