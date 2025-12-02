@@ -366,73 +366,51 @@ async def delete_task(task_id: str, credentials: HTTPAuthorizationCredentials = 
 # ============ COURSES ROUTES ============
 @api_router.get("/courses", response_model=List[CourseResponse])
 async def get_courses():
-    # Retourner des cours fictifs pour le moment
+    # Formations réelles de Nicolas Blot, MOF
     courses = [
         {
             "_id": "1",
-            "title": "Initiation au jardinage bio",
-            "description": "Découvrez les bases du jardinage biologique et apprenez à cultiver vos premiers légumes sans produits chimiques. Formation vidéo complète avec exercices pratiques.",
-            "level": "Débutant",
-            "duration": "2h30",
+            "title": "Massif Fleuri Toute l'Année",
+            "description": "Apprenez à créer et entretenir un massif qui fleurit toute l'année. Techniques professionnelles, sélection de plantes, calendrier d'entretien. 12 modules complets pour maîtriser l'art des massifs fleuris avec des plantes pour chaque saison.",
+            "level": "Tous niveaux",
+            "duration": "4 semaines",
             "price": 39,
-            "slug": "initiation-jardinage-bio",
-            "instructor": "Nicolas Blot, Meilleur Ouvrier de France",
-            "topics": ["Jardinage bio", "Légumes", "Sol", "Rotation des cultures"]
+            "slug": "massif-fleuri",
+            "instructor": "Nicolas Blot, Meilleur Ouvrier de France Paysagiste",
+            "topics": ["Massifs fleuris", "Plantes vivaces", "Association de plantes", "Calendrier d'entretien", "Arrosage", "Fertilisation"]
         },
         {
             "_id": "2",
-            "title": "Maîtriser le compost",
-            "description": "Apprenez toutes les techniques pour réaliser un compost de qualité et enrichir votre sol naturellement. Compost chaud, froid, lombricompost.",
-            "level": "Intermédiaire",
-            "duration": "1h45",
-            "price": 29,
-            "slug": "maitriser-compost",
-            "instructor": "Nicolas Blot, Meilleur Ouvrier de France",
-            "topics": ["Compost", "Recyclage", "Fertilité du sol", "Déchets verts"]
+            "title": "Tailler et Soigner ses Rosiers",
+            "description": "Formation complète dédiée exclusivement aux rosiers. Apprenez à tailler correctement vos rosiers buissons et grimpants pour obtenir une floraison spectaculaire. Maîtrisez les soins essentiels : paillage, plantes auxiliaires, protection hivernale. 10 modules vidéo + livret illustré de 100 pages.",
+            "level": "Tous niveaux",
+            "duration": "5 semaines",
+            "price": 49,
+            "slug": "tailler-rosiers",
+            "instructor": "Nicolas Blot, Meilleur Ouvrier de France Paysagiste",
+            "topics": ["Rosiers buissons", "Rosiers grimpants", "Taille", "Maladies", "Paillage", "Protection hivernale"]
         },
         {
             "_id": "3",
-            "title": "Potager urbain",
-            "description": "Créez votre potager sur balcon ou terrasse. Techniques adaptées aux petits espaces avec rendements optimaux.",
-            "level": "Tous niveaux",
-            "duration": "3h",
+            "title": "Tailler Sans Se Tromper : Arbustes et Rosiers",
+            "description": "Maîtrisez l'art de la taille des rosiers et arbustes. Techniques professionnelles, périodes de taille, matériel adapté. Ne massacrez plus vos plantes ! Apprenez les techniques de récupération et le calendrier complet de taille. Projet final avec correction personnalisée.",
+            "level": "Débutant à Intermédiaire",
+            "duration": "6 semaines",
             "price": 49,
-            "slug": "potager-urbain",
-            "instructor": "Nicolas Blot, Meilleur Ouvrier de France",
-            "topics": ["Potager", "Balcon", "Petits espaces", "Conteneurs"]
+            "slug": "tailler-sans-se-tromper",
+            "instructor": "Nicolas Blot, Meilleur Ouvrier de France Paysage",
+            "topics": ["Taille arbustes", "Taille rosiers", "Haies", "Topiaires", "Calendrier de taille", "Récupération"]
         },
         {
             "_id": "4",
-            "title": "Permaculture avancée",
-            "description": "Conception et gestion d'un jardin en permaculture. Pour jardiniers expérimentés. Design, guildes, zones, économie d'eau.",
-            "level": "Avancé",
-            "duration": "4h",
-            "price": 69,
-            "slug": "permaculture-avancee",
-            "instructor": "Nicolas Blot, Meilleur Ouvrier de France",
-            "topics": ["Permaculture", "Design", "Biodiversité", "Autonomie"]
-        },
-        {
-            "_id": "5",
-            "title": "Taille des arbres fruitiers",
-            "description": "Maîtrisez la taille de fructification pour tous types d'arbres fruitiers. Théorie et démonstrations pratiques détaillées.",
-            "level": "Intermédiaire",
-            "duration": "3h30",
-            "price": 59,
-            "slug": "taille-arbres-fruitiers",
-            "instructor": "Nicolas Blot, Meilleur Ouvrier de France",
-            "topics": ["Taille", "Fruitiers", "Production", "Santé des arbres"]
-        },
-        {
-            "_id": "6",
-            "title": "Créer un jardin en climat sec",
-            "description": "Aménagez un jardin résistant à la sécheresse. Choix des plantes, techniques d'économie d'eau, paillage et mulching.",
-            "level": "Tous niveaux",
-            "duration": "2h",
-            "price": 45,
-            "slug": "jardin-climat-sec",
-            "instructor": "Nicolas Blot, Meilleur Ouvrier de France",
-            "topics": ["Climat sec", "Économie d'eau", "Xérophytes", "Paillage"]
+            "title": "Vivaces Faciles : Jardin Sans Entretien",
+            "description": "Créez un jardin magnifique avec un minimum d'entretien. Découvrez les 40 vivaces increvables, techniques de plantation et associations gagnantes pour un jardin fleuri toute l'année. Une seule séance d'entretien par an ! Économisez 80% sur vos achats grâce à la multiplication.",
+            "level": "Débutant",
+            "duration": "5 semaines",
+            "price": 39,
+            "slug": "vivaces-faciles",
+            "instructor": "Nicolas Blot, Meilleur Ouvrier de France Paysage",
+            "topics": ["Vivaces", "Jardin facile", "Faible entretien", "Graminées", "Multiplication", "Associations"]
         }
     ]
     return [CourseResponse(**course) for course in courses]
