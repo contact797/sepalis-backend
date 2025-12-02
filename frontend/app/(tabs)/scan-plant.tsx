@@ -78,6 +78,10 @@ export default function ScanPlant() {
           confidence: response.data.confidence,
           wateringFrequency: response.data.wateringFrequency || 7,
           description: response.data.description || 'Plante identifiée avec succès',
+          family: response.data.family,
+          sunlight: response.data.sunlight,
+          difficulty: response.data.difficulty,
+          tips: response.data.tips,
         });
       } else {
         throw new Error('Réponse API invalide');
