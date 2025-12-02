@@ -145,6 +145,9 @@ export const zonesAPI = {
   getZone: (zoneId: string) =>
     api.get(`/user/zones/${zoneId}`),
   
+  getZonePlants: (zoneId: string) =>
+    api.get(`/user/zones/${zoneId}/plants`),
+  
   createZone: (zoneData: any) =>
     api.post('/user/zones', zoneData),
   
