@@ -398,8 +398,44 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     marginBottom: 16,
   },
-  actionButtons: {
+  resultScrollContent: {
+    paddingBottom: 100,
+  },
+  tipsCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
     gap: 12,
+    backgroundColor: Colors.accent + '20',
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  tipsText: {
+    flex: 1,
+    fontSize: 13,
+    color: Colors.text,
+    lineHeight: 18,
+  },
+  infoItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  infoLabel: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    fontWeight: '500',
+  },
+  infoValue: {
+    fontSize: 14,
+    color: Colors.text,
+    fontWeight: '600',
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 20,
   },
   addButton: {
     flexDirection: 'row',
