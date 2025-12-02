@@ -633,15 +633,17 @@ class SepalisAPITester:
         print(f"👤 Test User: {TEST_USER_EMAIL}")
         print("=" * 60)
         
-        # Test sequence
+        # Test sequence - Focus on courses with images as requested
         tests = [
             ("Health Check", self.test_health_check),
             ("User Registration", self.test_register),
             ("User Login", self.test_login),
-            ("Get Profile", self.test_profile),
+            ("JWT Authentication", self.test_profile),
+            ("Get Courses", self.test_courses),
+            ("Courses Image Structure", self.test_courses_image_structure),
+            ("Courses Content Validation", self.test_courses_content_validation),
             ("Get Plants", self.test_plants),
             ("Get Tasks", self.test_tasks),
-            ("Get Courses", self.test_courses),
             ("JWT Protection (Zones)", self.test_jwt_protection_zones),
             ("Get Zones (Empty)", self.test_zones_empty),
             ("Create Zone", self.test_create_zone),
