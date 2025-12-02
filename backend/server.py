@@ -646,51 +646,16 @@ async def identify_plant(data: dict):
             }"""
         ).with_model("openai", "gpt-4o")
         
-        # Appel GPT-4 Vision pour identification
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {
-                    "role": "system",
-                    "content": """Tu es un botaniste expert. Identifie précisément la plante dans l'image.
-                    Réponds UNIQUEMENT au format JSON suivant (sans markdown, sans texte supplémentaire):
-                    {
-                        "name": "Nom commun français de la plante",
-                        "scientificName": "Nom scientifique latin",
-                        "confidence": 0.XX,
-                        "family": "Famille botanique",
-                        "description": "Description courte en 2-3 phrases",
-                        "wateringFrequency": 7,
-                        "sunlight": "Plein soleil/Mi-ombre/Ombre",
-                        "difficulty": "Facile/Moyen/Difficile",
-                        "growthRate": "Rapide/Moyen/Lent",
-                        "toxicity": "Non toxique/Légèrement toxique/Toxique",
-                        "commonNames": ["nom1", "nom2"],
-                        "tips": "Conseil d'entretien principal"
-                    }"""
-                },
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": "Identifie cette plante avec précision. Donne le nom commun français, le nom scientifique, et des informations pratiques pour l'entretien."
-                        },
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": image_base64,
-                                "detail": "high"
-                            }
-                        }
-                    ]
-                }
-            ],
-            max_tokens=800,
-            temperature=0.3
+        # Créer le message avec l'image
+        image_content = ImageContent(image_base64=image_base64)
+        
+        user_message = UserMessage(
+            text="Identifie cette plante avec précision. Donne le nom commun français, le nom scientifique, et des informations pratiques pour l'entretien.",
+            file_contents=[image_content]
         )
         
-        result_text = response.choices[0].message.content.strip()
+        # Envoyer le message et obtenir la réponse
+        result_text = await chat.send_message(user_message)
         print(f"📊 Réponse GPT-4: {result_text[:200]}...")
         
         # Parser le JSON
