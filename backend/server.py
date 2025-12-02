@@ -366,7 +366,7 @@ async def delete_task(task_id: str, credentials: HTTPAuthorizationCredentials = 
 # ============ COURSES ROUTES ============
 @api_router.get("/courses", response_model=List[CourseResponse])
 async def get_courses():
-    # Formations réelles de Nicolas Blot, MOF
+    # Formations réelles de Nicolas Blot, MOF avec photos
     courses = [
         {
             "_id": "1",
@@ -377,7 +377,8 @@ async def get_courses():
             "price": 39,
             "slug": "massif-fleuri",
             "instructor": "Nicolas Blot, Meilleur Ouvrier de France Paysagiste",
-            "topics": ["Massifs fleuris", "Plantes vivaces", "Association de plantes", "Calendrier d'entretien", "Arrosage", "Fertilisation"]
+            "topics": ["Massifs fleuris", "Plantes vivaces", "Association de plantes", "Calendrier d'entretien", "Arrosage", "Fertilisation"],
+            "image": "https://images.unsplash.com/photo-1628432923257-cdf42e3dbb64?crop=entropy&cs=srgb&fm=jpg&q=85"
         },
         {
             "_id": "2",
@@ -388,7 +389,8 @@ async def get_courses():
             "price": 49,
             "slug": "tailler-rosiers",
             "instructor": "Nicolas Blot, Meilleur Ouvrier de France Paysagiste",
-            "topics": ["Rosiers buissons", "Rosiers grimpants", "Taille", "Maladies", "Paillage", "Protection hivernale"]
+            "topics": ["Rosiers buissons", "Rosiers grimpants", "Taille", "Maladies", "Paillage", "Protection hivernale"],
+            "image": "https://images.unsplash.com/photo-1655467140395-67898511a759?crop=entropy&cs=srgb&fm=jpg&q=85"
         },
         {
             "_id": "3",
@@ -399,7 +401,8 @@ async def get_courses():
             "price": 49,
             "slug": "tailler-sans-se-tromper",
             "instructor": "Nicolas Blot, Meilleur Ouvrier de France Paysage",
-            "topics": ["Taille arbustes", "Taille rosiers", "Haies", "Topiaires", "Calendrier de taille", "Récupération"]
+            "topics": ["Taille arbustes", "Taille rosiers", "Haies", "Topiaires", "Calendrier de taille", "Récupération"],
+            "image": "https://images.unsplash.com/photo-1680124744736-859f16257ef0?crop=entropy&cs=srgb&fm=jpg&q=85"
         },
         {
             "_id": "4",
@@ -410,7 +413,8 @@ async def get_courses():
             "price": 39,
             "slug": "vivaces-faciles",
             "instructor": "Nicolas Blot, Meilleur Ouvrier de France Paysage",
-            "topics": ["Vivaces", "Jardin facile", "Faible entretien", "Graminées", "Multiplication", "Associations"]
+            "topics": ["Vivaces", "Jardin facile", "Faible entretien", "Graminées", "Multiplication", "Associations"],
+            "image": "https://images.unsplash.com/photo-1704869727879-25ed3c235e7d?crop=entropy&cs=srgb&fm=jpg&q=85"
         }
     ]
     return [CourseResponse(**course) for course in courses]
