@@ -62,6 +62,7 @@ class PlantBase(BaseModel):
     scientificName: Optional[str] = None
     wateringFrequency: Optional[int] = 7
     description: Optional[str] = None
+    zoneId: Optional[str] = None
 
 class PlantCreate(PlantBase):
     pass
@@ -69,6 +70,8 @@ class PlantCreate(PlantBase):
 class PlantResponse(PlantBase):
     id: str = Field(alias="_id")
     userId: str
+    zoneId: Optional[str] = None
+    zoneName: Optional[str] = None
     createdAt: datetime
 
     class Config:
