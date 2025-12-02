@@ -217,7 +217,7 @@ class SepalisAPITester:
             return False
     
     def test_courses(self):
-        """Test GET /courses endpoint (public)"""
+        """Test GET /courses endpoint (public) - Focus on images"""
         try:
             response = requests.get(f"{self.base_url}/courses", timeout=10)
             
@@ -225,6 +225,8 @@ class SepalisAPITester:
                 data = response.json()
                 if isinstance(data, list) and len(data) > 0:
                     self.log_test("Get Courses", True, f"Courses list retrieved: {len(data)} courses")
+                    # Store courses data for detailed image testing
+                    self.courses_data = data
                     return True
                 else:
                     self.log_test("Get Courses", False, f"Expected non-empty list, got: {data}")
@@ -235,6 +237,106 @@ class SepalisAPITester:
                 
         except Exception as e:
             self.log_test("Get Courses", False, f"Request error: {str(e)}")
+            return False
+    
+    def test_courses_image_structure(self):
+        """Test that all courses have proper image fields with valid URLs"""
+        if not hasattr(self, 'courses_data') or not self.courses_data:
+            self.log_test("Courses Image Structure", False, "No courses data available from previous test")
+            return False
+        
+        try:
+            required_fields = ["id", "title", "description", "level", "duration", "price", "slug", "instructor", "topics", "image"]
+            courses_with_images = 0
+            invalid_images = []
+            
+            for i, course in enumerate(self.courses_data):
+                # Check required fields
+                missing_fields = [field for field in required_fields if field not in course]
+                if missing_fields:
+                    self.log_test("Courses Image Structure", False, f"Course {i+1} missing fields: {missing_fields}")
+                    return False
+                
+                # Check image field specifically
+                if course.get("image"):
+                    image_url = course["image"]
+                    
+                    # Validate URL format
+                    if not (image_url.startswith("http://") or image_url.startswith("https://")):
+                        invalid_images.append(f"Course '{course['title']}': Invalid URL format '{image_url}'")
+                    else:
+                        courses_with_images += 1
+                        
+                        # Test image URL accessibility
+                        try:
+                            head_response = requests.head(image_url, timeout=5)
+                            if head_response.status_code not in [200, 301, 302]:
+                                invalid_images.append(f"Course '{course['title']}': Image URL not accessible (status {head_response.status_code})")
+                        except Exception as e:
+                            # Don't fail the test for network issues, just log
+                            print(f"   Warning: Could not verify image URL for '{course['title']}': {str(e)}")
+                else:
+                    invalid_images.append(f"Course '{course['title']}': No image field")
+            
+            if courses_with_images == len(self.courses_data) and len(invalid_images) == 0:
+                self.log_test("Courses Image Structure", True, f"All {len(self.courses_data)} courses have valid image URLs")
+                return True
+            else:
+                error_msg = f"{courses_with_images}/{len(self.courses_data)} courses with valid images. Issues: {'; '.join(invalid_images)}"
+                self.log_test("Courses Image Structure", False, error_msg)
+                return False
+                
+        except Exception as e:
+            self.log_test("Courses Image Structure", False, f"Error validating image structure: {str(e)}")
+            return False
+    
+    def test_courses_content_validation(self):
+        """Test specific course content matches expected data"""
+        if not hasattr(self, 'courses_data') or not self.courses_data:
+            self.log_test("Courses Content Validation", False, "No courses data available")
+            return False
+        
+        try:
+            expected_courses = 4
+            if len(self.courses_data) != expected_courses:
+                self.log_test("Courses Content Validation", False, f"Expected {expected_courses} courses, got {len(self.courses_data)}")
+                return False
+            
+            # Check for expected course titles
+            course_titles = [course["title"] for course in self.courses_data]
+            expected_titles = [
+                "Massif Fleuri Toute l'Année",
+                "Tailler et Soigner ses Rosiers", 
+                "Tailler Sans Se Tromper : Arbustes et Rosiers",
+                "Vivaces Faciles : Jardin Sans Entretien"
+            ]
+            
+            missing_titles = [title for title in expected_titles if title not in course_titles]
+            if missing_titles:
+                self.log_test("Courses Content Validation", False, f"Missing expected courses: {missing_titles}")
+                return False
+            
+            # Check that all courses have Nicolas Blot as instructor
+            non_nicolas_courses = [course["title"] for course in self.courses_data if "Nicolas Blot" not in course.get("instructor", "")]
+            if non_nicolas_courses:
+                self.log_test("Courses Content Validation", False, f"Courses without Nicolas Blot: {non_nicolas_courses}")
+                return False
+            
+            # Check that all courses have Unsplash images
+            non_unsplash_images = []
+            for course in self.courses_data:
+                if course.get("image") and "unsplash.com" not in course["image"]:
+                    non_unsplash_images.append(f"{course['title']}: {course['image']}")
+            
+            if non_unsplash_images:
+                self.log_test("Courses Content Validation", False, f"Non-Unsplash images found: {non_unsplash_images}")
+                return False
+            
+            self.log_test("Courses Content Validation", True, f"All {len(self.courses_data)} courses have correct content and Unsplash images")
+            return True
+            
+        except Exception as e:
+            self.log_test("Courses Content Validation", False, f"Error validating course content: {str(e)}")
             return False
     
     def test_zones_empty(self):
