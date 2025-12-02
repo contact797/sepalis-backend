@@ -138,8 +138,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Navigation des zones vers détails"
-    - "Écran de détails de zone"
+    - "Endpoints API pour formations avec images"
+    - "Affichage d'images pour les formations dans l'académie"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
