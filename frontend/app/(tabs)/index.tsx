@@ -189,9 +189,9 @@ export default function Home() {
       {/* Tâches du jour */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Tâches du jour</Text>
+          <Text style={styles.sectionTitle}>Mes Tâches</Text>
           <TouchableOpacity onPress={() => router.push('/(tabs)/tasks')}>
-            <Ionicons name="calendar-outline" size={20} color={Colors.textSecondary} />
+            <Text style={styles.seeAllText}>Tout voir</Text>
           </TouchableOpacity>
         </View>
 
