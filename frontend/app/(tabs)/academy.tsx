@@ -46,32 +46,11 @@ export default function Academy() {
     loadData();
   };
 
-  const handlePreregisterCourse = async (course: any) => {
-    Alert.alert(
-      course.title,
-      `${course.description}\n\nPrix : ${course.price}€\nDurée : ${course.duration}\nNiveau : ${course.level}`,
-      [
-        { text: 'Fermer', style: 'cancel' },
-        {
-          text: 'Voir les détails',
-          onPress: async () => {
-            try {
-              const { Linking } = await import('react-native');
-              const url = `https://sepalis-garden-2.emergent.host/cours/${course.slug}`;
-              const canOpen = await Linking.canOpenURL(url);
-              if (canOpen) {
-                await Linking.openURL(url);
-              } else {
-                Alert.alert('Erreur', 'Impossible d\'ouvrir le lien');
-              }
-            } catch (error) {
-              console.error('Erreur ouverture lien:', error);
-              Alert.alert('Erreur', 'Impossible d\'ouvrir la page de la formation');
-            }
-          },
-        },
-      ]
-    );
+  const handlePreregisterCourse = (course: any) => {
+    router.push({
+      pathname: '/(tabs)/course-detail',
+      params: { course: JSON.stringify(course) }
+    });
   };
 
   const handleBookWorkshop = async (workshop: any) => {
