@@ -216,16 +216,24 @@ export default function Academy() {
                 style={styles.card}
                 onPress={() => handleBookWorkshop(workshop)}
               >
-                <View style={styles.cardImage}>
-                  <Ionicons name="people" size={60} color={Colors.primary} />
-                  {workshop.availableSpots <= 3 && (
-                    <View style={styles.urgencyBadge}>
-                      <Text style={styles.urgencyBadgeText}>
-                        {workshop.availableSpots === 0 ? 'COMPLET' : `${workshop.availableSpots} places`}
-                      </Text>
-                    </View>
-                  )}
-                </View>
+                {workshop.image ? (
+                  <Image
+                    source={{ uri: workshop.image }}
+                    style={styles.cardImagePhoto}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View style={styles.cardImage}>
+                    <Ionicons name="people" size={60} color={Colors.primary} />
+                  </View>
+                )}
+                {workshop.availableSpots <= 3 && (
+                  <View style={styles.urgencyBadge}>
+                    <Text style={styles.urgencyBadgeText}>
+                      {workshop.availableSpots === 0 ? 'COMPLET' : `${workshop.availableSpots} places`}
+                    </Text>
+                  </View>
+                )}
 
                 <View style={styles.cardContent}>
                   <Text style={styles.cardTitle}>{workshop.title}</Text>
