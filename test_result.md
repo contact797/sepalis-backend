@@ -121,32 +121,17 @@ backend:
         comment: "Tests complets effectués - CRITIQUE: Correction MongoDB URL de 'mongo:27017' vers 'localhost:27017' dans backend/.env. Tous les endpoints testés avec succès: Health check ✅, Registration ✅, Login ✅, Profile ✅, Plants CRUD ✅, Tasks CRUD ✅, Courses ✅. JWT authentication fonctionnel. Base de données accessible et opérationnelle."
 
 frontend:
-  - task: "Navigation des zones vers détails"
+  - task: "Affichage d'images pour les formations dans l'académie"
     implemented: true
     working: "NA"
-    file: "frontend/app/(tabs)/zones.tsx"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: true
-    status_history:
-      - working: false
-        agent: "user"
-        comment: "L'utilisateur ne peut pas cliquer sur les zones créées pour voir les détails"
-      - working: "NA"
-        agent: "main"
-        comment: "Ajout de l'import useRouter et correction du handler onPress pour naviguer vers zone-detail avec les données de la zone"
-
-  - task: "Écran de détails de zone"
-    implemented: true
-    working: "NA"
-    file: "frontend/app/(tabs)/zone-detail.tsx"
+    file: "frontend/app/(tabs)/academy.tsx"
     stuck_count: 0
     priority: "high"
     needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Écran de détails déjà créé, affiche toutes les caractéristiques de la zone (dimensions, sol, climat, arrosage)"
+        comment: "Modification de la section formations pour afficher les vraies images (similaire aux ateliers). Ajout d'un composant Image conditionnel : si course.image existe, affiche l'image réelle via <Image>, sinon affiche l'icône placeholder. Le badge de niveau a été repositionné en absolu pour s'afficher au-dessus de l'image."
 
 metadata:
   created_by: "main_agent"
