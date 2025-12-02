@@ -425,7 +425,7 @@ async def preregister_course(data: dict, credentials: HTTPAuthorizationCredentia
 # ============ WORKSHOPS ROUTES ============
 @api_router.get("/workshops", response_model=List[WorkshopResponse])
 async def get_workshops():
-    # Retourner des ateliers fictifs pour le moment
+    # Ateliers avec photos
     workshops = [
         {
             "_id": "1",
@@ -440,7 +440,8 @@ async def get_workshops():
             "slug": "taille-fruitiers",
             "instructor": "Nicolas Blot, Meilleur Ouvrier de France",
             "topics": ["Taille", "Fruitiers", "Production"],
-            "level": "Tous niveaux"
+            "level": "Tous niveaux",
+            "image": "https://images.unsplash.com/photo-1764421175587-f1fe472c411d?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzh8MHwxfHNlYXJjaHwxfHxmcnVpdCUyMHRyZWUlMjBwcnVuaW5nfGVufDB8fHx8MTc2NDY4OTgwM3ww&ixlib=rb-4.1.0&q=85"
         },
         {
             "_id": "2",
@@ -455,7 +456,8 @@ async def get_workshops():
             "slug": "bouturage-multiplication",
             "instructor": "Nicolas Blot, Meilleur Ouvrier de France",
             "topics": ["Bouturage", "Multiplication", "Économie"],
-            "level": "Débutant"
+            "level": "Débutant",
+            "image": "https://images.unsplash.com/photo-1599228993027-0ab8422edf78?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzV8MHwxfHNlYXJjaHwxfHxwbGFudCUyMGN1dHRpbmdzJTIwcHJvcGFnYXRpb258ZW58MHx8fGdyZWVufDE3NjQ2ODk4MTF8MA&ixlib=rb-4.1.0&q=85"
         },
         {
             "_id": "3",
@@ -470,7 +472,8 @@ async def get_workshops():
             "slug": "potager-permaculture",
             "instructor": "Nicolas Blot, Meilleur Ouvrier de France",
             "topics": ["Permaculture", "Potager", "Biodiversité"],
-            "level": "Intermédiaire"
+            "level": "Intermédiaire",
+            "image": "https://images.unsplash.com/photo-1761074342764-17562b97aaec?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2NDN8MHwxfHNlYXJjaHwzfHxwZXJtYWN1bHR1cmUlMjB2ZWdldGFibGUlMjBnYXJkZW58ZW58MHx8fHwxNzY0Njg5ODE2fDA&ixlib=rb-4.1.0&q=85"
         },
         {
             "_id": "4",
@@ -485,7 +488,8 @@ async def get_workshops():
             "slug": "reconnaissance-plantes",
             "instructor": "Nicolas Blot, Meilleur Ouvrier de France",
             "topics": ["Botanique", "Plantes sauvages", "Identification"],
-            "level": "Tous niveaux"
+            "level": "Tous niveaux",
+            "image": "https://images.unsplash.com/photo-1615038373255-253c3f2c8d22?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2MzR8MHwxfHNlYXJjaHwxfHx3aWxkJTIwcGxhbnRzJTIwYm90YW5pY2FsfGVufDB8fHx8MTc2NDY4OTgyNHww&ixlib=rb-4.1.0&q=85"
         },
         {
             "_id": "5",
@@ -500,7 +504,8 @@ async def get_workshops():
             "slug": "compost-sol-vivant",
             "instructor": "Nicolas Blot, Meilleur Ouvrier de France",
             "topics": ["Compost", "Sol", "Fertilité"],
-            "level": "Débutant"
+            "level": "Débutant",
+            "image": "https://images.pexels.com/photos/8543583/pexels-photo-8543583.jpeg"
         }
     ]
     return [WorkshopResponse(**workshop) for workshop in workshops]
