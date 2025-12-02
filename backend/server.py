@@ -116,6 +116,30 @@ class CourseResponse(BaseModel):
         populate_by_name = True
 
 
+# ============ PREREGISTRATION MODELS ============
+class CoursePreregistration(BaseModel):
+    courseSlug: str
+    firstName: str
+    lastName: str
+    email: EmailStr
+    phone: str
+    message: Optional[str] = ""
+
+class PreregistrationResponse(BaseModel):
+    id: str = Field(alias="_id")
+    courseSlug: str
+    firstName: str
+    lastName: str
+    email: str
+    phone: str
+    message: Optional[str] = ""
+    userId: str
+    createdAt: datetime
+
+    class Config:
+        populate_by_name = True
+
+
 # ============ WORKSHOP MODELS ============
 class WorkshopResponse(BaseModel):
     id: str = Field(alias="_id")
