@@ -7,6 +7,7 @@ import {
   Alert,
   ActivityIndicator,
   Image,
+  ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Camera } from 'expo-camera';
