@@ -105,20 +105,17 @@
 user_problem_statement: "Ajouter des photos pour chaque formation dans l'académie. Les formations doivent afficher des images réelles au lieu de simples icônes."
 
 backend:
-  - task: "Authentication et gestion des zones"
+  - task: "Endpoints API pour formations avec images"
     implemented: true
-    working: true
+    working: "NA"
     file: "backend/server.py"
     stuck_count: 0
-    priority: "medium"
-    needs_retesting: false
+    priority: "high"
+    needs_retesting: true
     status_history:
-      - working: true
+      - working: "NA"
         agent: "main"
-        comment: "Backend fonctionnel avec endpoints pour zones et authentification JWT"
-      - working: true
-        agent: "testing"
-        comment: "Tests complets effectués - CRITIQUE: Correction MongoDB URL de 'mongo:27017' vers 'localhost:27017' dans backend/.env. Tous les endpoints testés avec succès: Health check ✅, Registration ✅, Login ✅, Profile ✅, Plants CRUD ✅, Tasks CRUD ✅, Courses ✅. JWT authentication fonctionnel. Base de données accessible et opérationnelle."
+        comment: "Les URLs d'images ont été ajoutées aux données initial_courses dans le backend. Chaque formation a maintenant un champ 'image' avec une URL d'image appropriée. Le endpoint GET /api/courses retourne ces données avec les images."
 
 frontend:
   - task: "Affichage d'images pour les formations dans l'académie"
