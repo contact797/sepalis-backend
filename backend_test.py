@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 
 # Configuration
-BASE_URL = "https://garden-aide.preview.emergentagent.com/api"
+BASE_URL = "https://sepalis-app.preview.emergentagent.com/api"
 TEST_USER_EMAIL = "marie.dupont@example.com"
 TEST_USER_PASSWORD = "SecurePass123!"
 TEST_USER_NAME = "Marie Dupont"
