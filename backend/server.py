@@ -721,7 +721,11 @@ async def diagnose_disease(data: dict):
         if not image_base64.startswith('data:image'):
             image_base64 = f"data:image/jpeg;base64,{image_base64}"
         
-        client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+        # Utiliser Emergent LLM key
+        client = OpenAI(
+            api_key=os.getenv('OPENAI_API_KEY'),
+            base_url="https://api.emergentmethods.ai/llm/openai/v1"
+        )
         
         # Appel OpenAI Vision
         response = client.chat.completions.create(
