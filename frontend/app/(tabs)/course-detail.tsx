@@ -17,29 +17,11 @@ export default function CourseDetail() {
   const params = useLocalSearchParams();
   const course = params.course ? JSON.parse(params.course as string) : null;
 
-  const handlePreregister = async () => {
-    Alert.alert(
-      'Pré-inscription',
-      `Souhaitez-vous vous pré-inscrire à la formation "${course.title}" ?\n\nVous recevrez un email avec toutes les informations pour finaliser votre inscription.`,
-      [
-        { text: 'Annuler', style: 'cancel' },
-        {
-          text: 'Confirmer',
-          onPress: async () => {
-            try {
-              await coursesAPI.preregister({ courseSlug: course.slug });
-              Alert.alert(
-                'Succès !',
-                'Votre pré-inscription a été enregistrée.\n\nVous recevrez bientôt un email avec les détails pour finaliser votre inscription.',
-                [{ text: 'OK', onPress: () => router.back() }]
-              );
-            } catch (error) {
-              Alert.alert('Erreur', 'Impossible d\'enregistrer votre pré-inscription');
-            }
-          },
-        },
-      ]
-    );
+  const handlePreregister = () => {
+    router.push({
+      pathname: '/(tabs)/course-preregister',
+      params: { course: JSON.stringify(course) },
+    });
   };
 
   if (!course) {
