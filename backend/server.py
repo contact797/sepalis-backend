@@ -595,11 +595,271 @@ async def get_workshops():
     ]
     return [WorkshopResponse(**workshop) for workshop in workshops]
 
+# Helper function to get time slot display
+def get_time_slot_display(slot: str) -> str:
+    return "09:00-12:00" if slot == "morning" else "14:00-17:00"
+
+# Helper function to send confirmation email
+async def send_booking_confirmation_email(booking: dict, workshop_title: str):
+    try:
+        sendgrid_api_key = os.getenv("SENDGRID_API_KEY")
+        from_email = os.getenv("SENDGRID_FROM_EMAIL", "contact@nicolasblot.com")
+        
+        time_slot_display = get_time_slot_display(booking["timeSlot"])
+        
+        message = Mail(
+            from_email=from_email,
+            to_emails=booking["email"],
+            subject=f"Confirmation de réservation - {workshop_title}",
+            html_content=f"""
+            <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <h2 style="color: #2C5F2D;">✅ Réservation confirmée !</h2>
+                    
+                    <p>Bonjour {booking["firstName"]} {booking["lastName"]},</p>
+                    
+                    <p>Votre réservation pour l'atelier <strong>"{workshop_title}"</strong> a été confirmée et payée avec succès.</p>
+                    
+                    <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                        <h3 style="margin-top: 0; color: #2C5F2D;">Détails de votre réservation</h3>
+                        <p><strong>📅 Date :</strong> {booking["selectedDate"]}</p>
+                        <p><strong>🕐 Horaire :</strong> {time_slot_display}</p>
+                        <p><strong>👥 Participants :</strong> {booking["participants"]}</p>
+                        <p><strong>💰 Montant payé :</strong> {booking["totalAmount"]}€</p>
+                        <p><strong>📧 Email :</strong> {booking["email"]}</p>
+                        <p><strong>📞 Téléphone :</strong> {booking["phone"]}</p>
+                    </div>
+                    
+                    <p><strong>📍 Lieu :</strong> Jardin de Suzanne, rue des Bréards, 27260 Saint-Pierre-de-Cormeilles</p>
+                    
+                    <p>Nous vous attendons avec impatience ! N'oubliez pas d'apporter :</p>
+                    <ul>
+                        <li>Des vêtements adaptés au jardinage</li>
+                        <li>Des gants de jardinage (facultatif)</li>
+                        <li>Un cahier pour prendre des notes</li>
+                    </ul>
+                    
+                    <p>En cas de question, n'hésitez pas à nous contacter à {from_email}</p>
+                    
+                    <p style="margin-top: 30px;">À bientôt,<br><strong>Nicolas Blot, Meilleur Ouvrier de France</strong><br>Sepalis</p>
+                </div>
+            </body>
+            </html>
+            """
+        )
+        
+        sg = SendGridAPIClient(sendgrid_api_key)
+        response = sg.send(message)
+        return response.status_code >= 200 and response.status_code < 300
+    except Exception as e:
+        logging.error(f"Error sending confirmation email: {str(e)}")
+        return False
+
 @api_router.post("/workshops/book")
-async def book_workshop(data: dict, credentials: HTTPAuthorizationCredentials = security):
+async def create_workshop_booking(
+    booking_request: WorkshopBookingRequest,
+    credentials: HTTPAuthorizationCredentials = security
+):
+    """Create a workshop booking and initiate Stripe payment"""
     user = await get_current_user(credentials)
-    # Pour l'instant, on enregistre juste la réservation
-    return {"message": "Réservation enregistrée avec succès", "workshopId": data.get("workshopSlug")}
+    
+    # Get workshop details
+    workshops_data = [
+        {"slug": "taille-arbres-fruitiers", "title": "Apprendre la Taille des Arbres Fruitiers", "price": 35},
+        {"slug": "taille-rosiers", "title": "Taille et Soins des Rosiers", "price": 35},
+        {"slug": "massifs-fleuris", "title": "Créer et Entretenir des Massifs Fleuris", "price": 35},
+        {"slug": "arbustes-fleurs", "title": "Tailler et Entretenir les Arbustes à Fleurs", "price": 35},
+        {"slug": "bassin-filtration", "title": "Créer et Gérer un Bassin avec Filtration par les Plantes", "price": 35}
+    ]
+    
+    workshop = next((w for w in workshops_data if w["slug"] == booking_request.workshopSlug), None)
+    if not workshop:
+        raise HTTPException(status_code=404, detail="Atelier non trouvé")
+    
+    # Calculate total amount
+    total_amount = float(workshop["price"] * booking_request.participants)
+    
+    # Create booking record
+    booking_id = str(uuid.uuid4())
+    time_slot_display = get_time_slot_display(booking_request.timeSlot)
+    
+    booking_data = {
+        "_id": booking_id,
+        "workshopSlug": booking_request.workshopSlug,
+        "workshopTitle": workshop["title"],
+        "selectedDate": booking_request.selectedDate,
+        "timeSlot": booking_request.timeSlot,
+        "timeSlotDisplay": time_slot_display,
+        "participants": booking_request.participants,
+        "firstName": booking_request.firstName,
+        "lastName": booking_request.lastName,
+        "email": booking_request.email,
+        "phone": booking_request.phone,
+        "userId": user["_id"],
+        "totalAmount": total_amount,
+        "paymentStatus": "pending",
+        "stripeSessionId": None,
+        "createdAt": datetime.now(),
+        "paidAt": None
+    }
+    
+    # Save booking to database
+    await db.workshop_bookings.insert_one(booking_data)
+    
+    # Initialize Stripe checkout
+    try:
+        stripe_api_key = os.getenv("STRIPE_API_KEY")
+        host_url = booking_request.originUrl
+        webhook_url = f"{host_url}/api/webhook/stripe"
+        
+        stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url=webhook_url)
+        
+        success_url = f"{host_url}/booking-success?session_id={{CHECKOUT_SESSION_ID}}"
+        cancel_url = f"{host_url}/academy"
+        
+        checkout_request = CheckoutSessionRequest(
+            amount=total_amount,
+            currency="eur",
+            success_url=success_url,
+            cancel_url=cancel_url,
+            metadata={
+                "booking_id": booking_id,
+                "workshop_slug": booking_request.workshopSlug,
+                "user_id": user["_id"],
+                "type": "workshop_booking"
+            }
+        )
+        
+        session = await stripe_checkout.create_checkout_session(checkout_request)
+        
+        # Update booking with Stripe session ID
+        await db.workshop_bookings.update_one(
+            {"_id": booking_id},
+            {"$set": {"stripeSessionId": session.session_id}}
+        )
+        
+        # Create payment transaction record
+        await db.payment_transactions.insert_one({
+            "_id": str(uuid.uuid4()),
+            "session_id": session.session_id,
+            "booking_id": booking_id,
+            "user_id": user["_id"],
+            "amount": total_amount,
+            "currency": "eur",
+            "payment_status": "pending",
+            "metadata": checkout_request.metadata,
+            "createdAt": datetime.now()
+        })
+        
+        return {
+            "checkout_url": session.url,
+            "session_id": session.session_id,
+            "booking_id": booking_id
+        }
+        
+    except Exception as e:
+        logging.error(f"Error creating Stripe checkout: {str(e)}")
+        # Delete booking if Stripe checkout fails
+        await db.workshop_bookings.delete_one({"_id": booking_id})
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la création du paiement: {str(e)}")
+
+@api_router.get("/workshops/booking/{session_id}/status")
+async def check_booking_status(
+    session_id: str,
+    credentials: HTTPAuthorizationCredentials = security
+):
+    """Check the payment status of a workshop booking"""
+    user = await get_current_user(credentials)
+    
+    try:
+        stripe_api_key = os.getenv("STRIPE_API_KEY")
+        stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url="")
+        
+        # Get checkout status from Stripe
+        checkout_status: CheckoutStatusResponse = await stripe_checkout.get_checkout_status(session_id)
+        
+        # Find booking by session ID
+        booking = await db.workshop_bookings.find_one({"stripeSessionId": session_id, "userId": user["_id"]})
+        if not booking:
+            raise HTTPException(status_code=404, detail="Réservation non trouvée")
+        
+        # Update booking and transaction status if paid
+        if checkout_status.payment_status == "paid" and booking["paymentStatus"] != "paid":
+            await db.workshop_bookings.update_one(
+                {"_id": booking["_id"]},
+                {"$set": {"paymentStatus": "paid", "paidAt": datetime.now()}}
+            )
+            
+            await db.payment_transactions.update_one(
+                {"session_id": session_id},
+                {"$set": {"payment_status": "paid", "updatedAt": datetime.now()}}
+            )
+            
+            # Send confirmation email
+            await send_booking_confirmation_email(booking, booking["workshopTitle"])
+            
+            return {
+                "status": "paid",
+                "booking": WorkshopBookingResponse(**booking)
+            }
+        
+        elif checkout_status.status == "expired":
+            await db.workshop_bookings.update_one(
+                {"_id": booking["_id"]},
+                {"$set": {"paymentStatus": "expired"}}
+            )
+            await db.payment_transactions.update_one(
+                {"session_id": session_id},
+                {"$set": {"payment_status": "expired", "updatedAt": datetime.now()}}
+            )
+            return {"status": "expired"}
+        
+        return {
+            "status": checkout_status.payment_status,
+            "booking": WorkshopBookingResponse(**booking)
+        }
+        
+    except Exception as e:
+        logging.error(f"Error checking booking status: {str(e)}")
+        raise HTTPException(status_code=500, detail="Erreur lors de la vérification du statut")
+
+@api_router.post("/webhook/stripe")
+async def stripe_webhook(request: Request):
+    """Handle Stripe webhook events"""
+    try:
+        body = await request.body()
+        signature = request.headers.get("Stripe-Signature")
+        
+        stripe_api_key = os.getenv("STRIPE_API_KEY")
+        stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url="")
+        
+        webhook_response = await stripe_checkout.handle_webhook(body, signature)
+        
+        if webhook_response.event_type == "checkout.session.completed":
+            session_id = webhook_response.session_id
+            
+            # Update booking status
+            booking = await db.workshop_bookings.find_one({"stripeSessionId": session_id})
+            if booking and booking["paymentStatus"] != "paid":
+                await db.workshop_bookings.update_one(
+                    {"_id": booking["_id"]},
+                    {"$set": {"paymentStatus": "paid", "paidAt": datetime.now()}}
+                )
+                
+                await db.payment_transactions.update_one(
+                    {"session_id": session_id},
+                    {"$set": {"payment_status": "paid", "updatedAt": datetime.now()}}
+                )
+                
+                # Send confirmation email
+                await send_booking_confirmation_email(booking, booking["workshopTitle"])
+        
+        return {"status": "success"}
+        
+    except Exception as e:
+        logging.error(f"Webhook error: {str(e)}")
+        raise HTTPException(status_code=400, detail="Webhook error")
 
 
 # ============ ZONES ROUTES ============
