@@ -386,6 +386,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     position: 'relative',
   },
+  cardImagePhoto: {
+    width: '100%',
+    height: 160,
+  },
   levelBadge: {
     position: 'absolute',
     top: 12,
