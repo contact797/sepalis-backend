@@ -164,10 +164,4 @@ test_plan:
 
 agent_communication:
   - agent: "main"
-    message: "Corrections effectuées pour la navigation des zones : 1) Ajout de l'import useRouter d'expo-router en haut du fichier zones.tsx, 2) Correction du handler onPress pour utiliser le hook router déjà instancié au lieu de le réimporter dans la fonction. La navigation passe maintenant les données de la zone via JSON.stringify dans les params vers zone-detail.tsx"
-  - agent: "testing"
-    message: "Tests backend complets effectués avec succès. CORRECTION CRITIQUE appliquée: MongoDB URL corrigée de 'mongo:27017' vers 'localhost:27017' dans backend/.env et service redémarré. Tous les endpoints API fonctionnent parfaitement: authentification JWT, CRUD plants/tasks, courses. Base de données opérationnelle. Backend prêt pour utilisation par le frontend."
-  - agent: "main"
-    message: "Problème de persistance des zones résolu. Backend: Ajout de la collection 'zones' avec 5 endpoints CRUD complets protégés par JWT. Frontend: Intégration complète de l'API zones avec chargement automatique au montage et au focus de l'écran, sauvegarde persistante lors de la création. Les zones sont maintenant stockées dans MongoDB et persistent entre les sessions."
-  - agent: "testing"
-    message: "Tests complets des nouveaux endpoints ZONES effectués avec succès (15/15 tests passés). Validation complète du CRUD: création, lecture, mise à jour, suppression des zones. Protection JWT confirmée. Persistance MongoDB validée. Tous les endpoints fonctionnent parfaitement selon les spécifications. La fonctionnalité de persistance des zones est maintenant opérationnelle."
+    message: "Ajout des images aux formations terminé. BACKEND: Les URLs d'images ont déjà été ajoutées aux données initial_courses (4 formations avec leurs images respectives). FRONTEND: Modification de academy.tsx pour afficher les images réelles. La logique est identique à celle des ateliers : si course.image existe, on affiche l'image via <Image>, sinon on affiche un placeholder. Le badge de niveau est positionné en absolu au-dessus de l'image. Le composant utilise le style cardImagePhoto (width: 100%, height: 160) avec resizeMode='cover'."
