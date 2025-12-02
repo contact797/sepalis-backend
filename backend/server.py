@@ -609,8 +609,8 @@ async def delete_zone(zone_id: str, credentials: HTTPAuthorizationCredentials = 
 # ============ AI RECOGNITION ROUTES ============
 @api_router.post("/ai/identify-plant")
 async def identify_plant(data: dict):
-    """Identifier une plante avec GPT-4 Vision (meilleure précision)"""
-    from openai import OpenAI
+    """Identifier une plante avec GPT-4 Vision via Emergent Integrations"""
+    from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
     import json as json_lib
     
     try:
@@ -618,17 +618,33 @@ async def identify_plant(data: dict):
         if not image_base64:
             raise HTTPException(status_code=400, detail="Image requise")
         
-        # S'assurer que l'image a le bon format pour OpenAI
-        if not image_base64.startswith('data:image'):
-            image_base64 = f"data:image/jpeg;base64,{image_base64}"
+        # Extraire seulement le base64 si le préfixe est présent
+        if 'base64,' in image_base64:
+            image_base64 = image_base64.split('base64,')[1]
         
-        print("🔍 Identification avec GPT-4 Vision...")
+        print("🔍 Identification avec GPT-4 Vision via Emergent...")
         
-        # Utiliser Emergent LLM key
-        client = OpenAI(
-            api_key=os.getenv('OPENAI_API_KEY'),
-            base_url="https://api.emergentmethods.ai/llm/openai/v1"
-        )
+        # Créer une session chat avec Emergent Integrations
+        chat = LlmChat(
+            api_key=os.getenv('EMERGENT_LLM_KEY', os.getenv('OPENAI_API_KEY')),
+            session_id=f"plant-id-{uuid.uuid4()}",
+            system_message="""Tu es un botaniste expert. Identifie précisément la plante dans l'image.
+            Réponds UNIQUEMENT au format JSON suivant (sans markdown, sans texte supplémentaire):
+            {
+                "name": "Nom commun français de la plante",
+                "scientificName": "Nom scientifique latin",
+                "confidence": 0.XX,
+                "family": "Famille botanique",
+                "description": "Description courte en 2-3 phrases",
+                "wateringFrequency": 7,
+                "sunlight": "Plein soleil/Mi-ombre/Ombre",
+                "difficulty": "Facile/Moyen/Difficile",
+                "growthRate": "Rapide/Moyen/Lent",
+                "toxicity": "Non toxique/Légèrement toxique/Toxique",
+                "commonNames": ["nom1", "nom2"],
+                "tips": "Conseil d'entretien principal"
+            }"""
+        ).with_model("openai", "gpt-4o")
         
         # Appel GPT-4 Vision pour identification
         response = client.chat.completions.create(
