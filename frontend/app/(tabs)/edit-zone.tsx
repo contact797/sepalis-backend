@@ -289,7 +289,7 @@ export default function EditZone() {
         style={[styles.input, styles.textArea]}
         value={formData.notes}
         onChangeText={(text) => setFormData({ ...formData, notes: text })}
-        placeholder=\"Notes personnelles...\"
+        placeholder="Notes personnelles..."
         multiline
         numberOfLines={4}
         placeholderTextColor={Colors.textSecondary}
