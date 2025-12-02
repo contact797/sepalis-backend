@@ -256,15 +256,34 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.mediumGray,
     marginTop: 4,
-    marginLeft: 4,
   },
-  pickerContainer: {
+  zonesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  zoneOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
     backgroundColor: Colors.lightGray,
-    borderRadius: 12,
-    overflow: 'hidden',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: Colors.lightGray,
   },
-  picker: {
+  zoneOptionSelected: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  zoneOptionText: {
+    fontSize: 14,
     color: Colors.dark,
+    fontWeight: '500',
+  },
+  zoneOptionTextSelected: {
+    color: Colors.white,
   },
   footer: {
     padding: 16,
