@@ -143,6 +143,41 @@ class PreregistrationResponse(BaseModel):
         populate_by_name = True
 
 
+# ============ WORKSHOP BOOKING MODELS ============
+class WorkshopBookingRequest(BaseModel):
+    workshopSlug: str
+    selectedDate: str  # YYYY-MM-DD format
+    timeSlot: str  # "morning" or "afternoon"
+    participants: int = 1
+    firstName: str
+    lastName: str
+    email: EmailStr
+    phone: str
+    originUrl: str  # Frontend URL for redirect
+
+class WorkshopBookingResponse(BaseModel):
+    id: str = Field(alias="_id")
+    workshopSlug: str
+    workshopTitle: str
+    selectedDate: str
+    timeSlot: str  # "morning" or "afternoon"
+    timeSlotDisplay: str  # "09:00-12:00" or "14:00-17:00"
+    participants: int
+    firstName: str
+    lastName: str
+    email: str
+    phone: str
+    userId: str
+    totalAmount: float
+    paymentStatus: str  # "pending", "paid", "failed", "expired"
+    stripeSessionId: Optional[str] = None
+    createdAt: datetime
+    paidAt: Optional[datetime] = None
+
+    class Config:
+        populate_by_name = True
+
+
 # ============ WORKSHOP MODELS ============
 class WorkshopResponse(BaseModel):
     id: str = Field(alias="_id")
