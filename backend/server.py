@@ -443,11 +443,30 @@ async def get_courses():
     ]
     return [CourseResponse(**course) for course in courses]
 
-@api_router.post("/courses/preregister")
-async def preregister_course(data: dict, credentials: HTTPAuthorizationCredentials = security):
+@api_router.post("/courses/preregister", response_model=PreregistrationResponse)
+async def preregister_course(
+    preregistration: CoursePreregistration, 
+    credentials: HTTPAuthorizationCredentials = security
+):
     user = await get_current_user(credentials)
-    # Pour l'instant, on enregistre juste la pré-inscription
-    return {"message": "Pré-inscription enregistrée avec succès"}
+    
+    # Créer la pré-inscription
+    preregistration_data = {
+        "_id": str(uuid.uuid4()),
+        "courseSlug": preregistration.courseSlug,
+        "firstName": preregistration.firstName,
+        "lastName": preregistration.lastName,
+        "email": preregistration.email,
+        "phone": preregistration.phone,
+        "message": preregistration.message,
+        "userId": user["id"],
+        "createdAt": datetime.now()
+    }
+    
+    # Sauvegarder dans MongoDB
+    await db.course_preregistrations.insert_one(preregistration_data)
+    
+    return preregistration_data
 
 
 # ============ WORKSHOPS ROUTES ============
