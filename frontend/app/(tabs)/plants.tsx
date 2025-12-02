@@ -105,6 +105,10 @@ export default function Plants() {
               <TouchableOpacity
                 key={plant._id}
                 style={styles.plantCard}
+                onPress={() => router.push({
+                  pathname: '/(tabs)/plant-detail',
+                  params: { plant: JSON.stringify(plant) }
+                })}
                 onLongPress={() => handleDeletePlant(plant._id)}
               >
                 <View style={styles.plantImage}>
