@@ -183,7 +183,7 @@ export default function ScanPlant() {
           </View>
         </View>
       ) : (
-        <View style={styles.resultContainer}>
+        <ScrollView style={styles.resultContainer} contentContainerStyle={styles.resultScrollContent}>
           <Image source={{ uri: photo }} style={styles.photo} />
 
           {analyzing ? (
@@ -194,7 +194,7 @@ export default function ScanPlant() {
           ) : result ? (
             <View style={styles.resultCard}>
               <View style={styles.resultHeader}>
-                <View>
+                <View style={{ flex: 1 }}>
                   <Text style={styles.plantName}>{result.name}</Text>
                   <Text style={styles.plantScientific}>{result.scientificName}</Text>
                 </View>
@@ -204,6 +204,29 @@ export default function ScanPlant() {
               </View>
 
               <Text style={styles.plantDescription}>{result.description}</Text>
+
+              {result.tips && (
+                <View style={styles.tipsCard}>
+                  <Ionicons name="bulb" size={20} color={Colors.accent} />
+                  <Text style={styles.tipsText}>{result.tips}</Text>
+                </View>
+              )}
+
+              {result.sunlight && (
+                <View style={styles.infoItem}>
+                  <Ionicons name="sunny" size={18} color={Colors.primary} />
+                  <Text style={styles.infoLabel}>Luminosité :</Text>
+                  <Text style={styles.infoValue}>{result.sunlight}</Text>
+                </View>
+              )}
+
+              {result.difficulty && (
+                <View style={styles.infoItem}>
+                  <Ionicons name="stats-chart" size={18} color={Colors.primary} />
+                  <Text style={styles.infoLabel}>Difficulté :</Text>
+                  <Text style={styles.infoValue}>{result.difficulty}</Text>
+                </View>
+              )}
 
               <View style={styles.actionButtons}>
                 <TouchableOpacity style={styles.addButton} onPress={handleAddPlant}>
@@ -224,7 +247,7 @@ export default function ScanPlant() {
               </View>
             </View>
           ) : null}
-        </View>
+        </ScrollView>
       )}
     </View>
   );
