@@ -15,10 +15,17 @@ export default function TabLayout() {
           height: 90,
           paddingBottom: 28,
           paddingTop: 8,
+          paddingHorizontal: 4,
+        },
+        tabBarItemStyle: {
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
         },
         tabBarLabelStyle: {
-          fontSize: 10,
+          fontSize: 9,
           fontWeight: '600',
+          marginTop: 2,
           marginBottom: 2,
         },
         headerStyle: {
