@@ -246,13 +246,21 @@ class SepalisAPITester:
             return False
         
         try:
-            required_fields = ["id", "title", "description", "level", "duration", "price", "slug", "instructor", "topics", "image"]
+            required_fields = ["title", "description", "level", "duration", "price", "slug", "instructor", "topics", "image"]
             courses_with_images = 0
             invalid_images = []
             
             for i, course in enumerate(self.courses_data):
-                # Check required fields
-                missing_fields = [field for field in required_fields if field not in course]
+                # Check required fields (handle both 'id' and '_id')
+                missing_fields = []
+                for field in required_fields:
+                    if field not in course:
+                        missing_fields.append(field)
+                
+                # Check for ID field (either 'id' or '_id')
+                if 'id' not in course and '_id' not in course:
+                    missing_fields.append('id/_id')
+                
                 if missing_fields:
                     self.log_test("Courses Image Structure", False, f"Course {i+1} missing fields: {missing_fields}")
                     return False
