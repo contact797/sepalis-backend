@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "L'utilisateur ne peut pas cliquer sur les zones créées (ex: 'terrasse') pour voir les détails. Besoin de corriger la navigation de zones.tsx vers zone-detail.tsx."
+user_problem_statement: "Ajouter des photos pour chaque formation dans l'académie. Les formations doivent afficher des images réelles au lieu de simples icônes."
 
 backend:
   - task: "Authentication et gestion des zones"
