@@ -58,6 +58,7 @@ export default function AddPlant() {
         scientificName: formData.scientificName || undefined,
         wateringFrequency: parseInt(formData.wateringFrequency) || 7,
         description: formData.description || undefined,
+        zoneId: formData.zoneId || undefined,
       });
       
       Alert.alert('Succès', 'Plante ajoutée avec succès !');
