@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,19 +12,38 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { plantsAPI } from '../../services/api';
+import { Picker } from '@react-native-picker/picker';
+import { plantsAPI, zonesAPI } from '../../services/api';
 import { Colors } from '../../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function AddPlant() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [zones, setZones] = useState([]);
+  const [loadingZones, setLoadingZones] = useState(true);
   const [formData, setFormData] = useState({
     name: '',
     scientificName: '',
     wateringFrequency: '7',
     description: '',
+    zoneId: '',
   });
+
+  useEffect(() => {
+    loadZones();
+  }, []);
+
+  const loadZones = async () => {
+    try {
+      const response = await zonesAPI.getZones();
+      setZones(response.data);
+    } catch (error) {
+      console.error('Erreur chargement zones:', error);
+    } finally {
+      setLoadingZones(false);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!formData.name) {
