@@ -8,6 +8,7 @@ import {
   RefreshControl,
   ActivityIndicator,
   Alert,
+  Image,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { coursesAPI, workshopsAPI } from '../../services/api';
