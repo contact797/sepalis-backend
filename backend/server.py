@@ -446,7 +446,7 @@ async def get_courses():
 @api_router.post("/courses/preregister", response_model=PreregistrationResponse)
 async def preregister_course(
     preregistration: CoursePreregistration, 
-    credentials: HTTPAuthorizationCredentials = security
+    credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
     user = await get_current_user(credentials)
     
@@ -459,8 +459,8 @@ async def preregister_course(
         "email": preregistration.email,
         "phone": preregistration.phone,
         "message": preregistration.message,
-        "userId": user["id"],
-        "createdAt": datetime.now()
+        "userId": user["_id"],
+        "createdAt": datetime.utcnow()
     }
     
     # Sauvegarder dans MongoDB
