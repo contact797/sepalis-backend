@@ -48,18 +48,25 @@ export default function Academy() {
 
   const handlePreregisterCourse = async (course: any) => {
     Alert.alert(
-      'Pré-inscription',
-      `Souhaitez-vous vous pré-inscrire à la formation "${course.title}" ?`,
+      course.title,
+      `${course.description}\n\nPrix : ${course.price}€\nDurée : ${course.duration}\nNiveau : ${course.level}`,
       [
-        { text: 'Annuler', style: 'cancel' },
+        { text: 'Fermer', style: 'cancel' },
         {
-          text: 'Confirmer',
+          text: 'Voir les détails',
           onPress: async () => {
             try {
-              await coursesAPI.preregister({ courseSlug: course.slug });
-              Alert.alert('Succès', 'Pré-inscription enregistrée ! Vous recevrez un email de confirmation.');
+              const { Linking } = await import('react-native');
+              const url = `https://sepalis-garden-2.emergent.host/cours/${course.slug}`;
+              const canOpen = await Linking.canOpenURL(url);
+              if (canOpen) {
+                await Linking.openURL(url);
+              } else {
+                Alert.alert('Erreur', 'Impossible d\'ouvrir le lien');
+              }
             } catch (error) {
-              Alert.alert('Erreur', 'Impossible de s\'inscrire');
+              console.error('Erreur ouverture lien:', error);
+              Alert.alert('Erreur', 'Impossible d\'ouvrir la page de la formation');
             }
           },
         },
