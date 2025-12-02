@@ -153,6 +153,7 @@ metadata:
 
 test_plan:
   current_focus:
+    - "Système de pré-inscription aux formations"
     - "Endpoints API pour formations avec images"
     - "Affichage d'images pour les formations dans l'académie"
   stuck_tasks: []
