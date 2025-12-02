@@ -307,6 +307,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  scrollContent: {
+    paddingBottom: 80,
+  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
