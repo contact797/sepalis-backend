@@ -102,18 +102,49 @@ export default function TabLayout() {
         name="scan-plant"
         options={{
           href: null,
+          tabBarButton: () => null,
         }}
       />
       <Tabs.Screen
         name="add-plant"
         options={{
           href: null,
+          tabBarButton: () => null,
         }}
       />
       <Tabs.Screen
         name="add-task"
         options={{
           href: null,
+          tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="zone-detail"
+        options={{
+          href: null,
+          tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="plant-detail"
+        options={{
+          href: null,
+          tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="course-detail"
+        options={{
+          href: null,
+          tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="course-preregister"
+        options={{
+          href: null,
+          tabBarButton: () => null,
         }}
       />
     </Tabs>
