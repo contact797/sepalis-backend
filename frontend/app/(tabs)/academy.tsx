@@ -56,30 +56,11 @@ export default function Academy() {
     });
   };
 
-  const handleBookWorkshop = async (workshop: any) => {
-    if (workshop.availableSpots === 0) {
-      Alert.alert('Complet', 'Cet atelier est complet. Voulez-vous être ajouté sur liste d\'attente ?');
-      return;
-    }
-
-    Alert.alert(
-      'Réservation',
-      `Souhaitez-vous réserver une place pour l'atelier "${workshop.title}" ?\n\nDate : ${workshop.date}\nLieu : ${workshop.location}\nPrix : ${workshop.price}€`,
-      [
-        { text: 'Annuler', style: 'cancel' },
-        {
-          text: 'Réserver',
-          onPress: async () => {
-            try {
-              await workshopsAPI.bookWorkshop({ workshopSlug: workshop.slug });
-              Alert.alert('Succès', 'Votre place est réservée ! Vous recevrez un email de confirmation.');
-            } catch (error) {
-              Alert.alert('Erreur', 'Impossible de réserver');
-            }
-          },
-        },
-      ]
-    );
+  const handleBookWorkshop = (workshop: any) => {
+    router.push({
+      pathname: '/(tabs)/workshop-detail',
+      params: { workshop: JSON.stringify(workshop) },
+    });
   };
 
   if (loading) {
