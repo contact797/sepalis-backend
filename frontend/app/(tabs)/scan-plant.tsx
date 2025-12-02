@@ -61,23 +61,43 @@ export default function ScanPlant() {
 
   const analyzePhoto = async (imageBase64: string) => {
     setAnalyzing(true);
+    console.log('🔍 Début analyse photo...');
+    
     try {
       // Appeler l'API Plant.id via notre backend
       const { aiAPI } = await import('../../services/api');
-      const response = await aiAPI.identifyPlant(imageBase64);
+      console.log('📡 Appel API identification...');
       
-      setResult({
-        name: response.data.name,
-        scientificName: response.data.scientificName,
-        confidence: response.data.confidence,
-        wateringFrequency: response.data.wateringFrequency || 7,
-        description: response.data.description || 'Plante identifiée avec succès',
-      });
+      const response = await aiAPI.identifyPlant(imageBase64);
+      console.log('✅ Réponse API:', response.data);
+      
+      if (response.data && response.data.name) {
+        setResult({
+          name: response.data.name,
+          scientificName: response.data.scientificName,
+          confidence: response.data.confidence,
+          wateringFrequency: response.data.wateringFrequency || 7,
+          description: response.data.description || 'Plante identifiée avec succès',
+        });
+      } else {
+        throw new Error('Réponse API invalide');
+      }
     } catch (error: any) {
-      console.error('Erreur analyse:', error);
-      Alert.alert('Erreur', 'Impossible d\'identifier la plante. Réessayez avec une photo plus claire.');
+      console.error('❌ Erreur analyse:', error);
+      console.error('Details:', error.response?.data || error.message);
+      
+      const errorMessage = error.response?.data?.detail || error.message || 'Erreur inconnue';
+      Alert.alert(
+        'Erreur d\'identification',
+        `Impossible d'identifier la plante.\n\nDétails: ${errorMessage}\n\nVérifiez votre connexion internet et réessayez.`,
+        [
+          { text: 'Réessayer', onPress: () => setPhoto(null) },
+          { text: 'Annuler', style: 'cancel' }
+        ]
+      );
     } finally {
       setAnalyzing(false);
+      console.log('🏁 Analyse terminée');
     }
   };
 
