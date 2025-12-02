@@ -50,26 +50,26 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Jardin',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home" size={size} color={color} />
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="home" size={20} color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="zones"
         options={{
-          title: 'Mes Zones',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="grid" size={size} color={color} />
+          title: 'Zones',
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="grid" size={20} color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="plants"
         options={{
-          title: 'Mes Plantes',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="leaf" size={size} color={color} />
+          title: 'Plantes',
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="leaf" size={20} color={color} />
           ),
         }}
       />
@@ -77,26 +77,26 @@ export default function TabLayout() {
         name="tasks"
         options={{
           title: 'Tâches',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="checkbox" size={size} color={color} />
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="checkbox" size={20} color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="diagnostic"
         options={{
-          title: 'Diagnostic',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="medical" size={size} color={color} />
+          title: 'Scanner',
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="medical" size={20} color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="academy"
         options={{
-          title: 'Académie',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="school" size={size} color={color} />
+          title: 'Cours',
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="school" size={20} color={color} />
           ),
         }}
       />
@@ -104,8 +104,8 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: 'Profil',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person" size={size} color={color} />
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="person" size={20} color={color} />
           ),
         }}
       />
