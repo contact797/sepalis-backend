@@ -151,6 +151,9 @@ export default function Plants() {
         <TouchableOpacity style={styles.fabSecondary} onPress={() => router.push('/(tabs)/scan-plant')}>
           <Ionicons name="camera" size={24} color={Colors.white} />
         </TouchableOpacity>
+        <TouchableOpacity style={styles.fabTertiary} onPress={() => router.push('/(tabs)/diagnostic')}>
+          <Ionicons name="medical" size={24} color={Colors.white} />
+        </TouchableOpacity>
         <TouchableOpacity style={styles.fab} onPress={handleAddPlant}>
           <Ionicons name="add" size={28} color={Colors.white} />
         </TouchableOpacity>
