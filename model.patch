@@ -1,167 +1,187 @@
-diff --git a/frontend/app/(tabs)/add-plant.tsx b/frontend/app/(tabs)/add-plant.tsx
-index 76ba178..63cb2e1 100644
---- a/frontend/app/(tabs)/add-plant.tsx
-+++ b/frontend/app/(tabs)/add-plant.tsx
-@@ -256,15 +256,34 @@ const styles = StyleSheet.create({
-     fontSize: 12,
-     color: Colors.mediumGray,
-     marginTop: 4,
--    marginLeft: 4,
-   },
--  pickerContainer: {
-+  zonesContainer: {
-+    flexDirection: 'row',
-+    flexWrap: 'wrap',
-+    gap: 8,
-+  },
-+  zoneOption: {
-+    flexDirection: 'row',
-+    alignItems: 'center',
-+    gap: 6,
-+    paddingHorizontal: 14,
-+    paddingVertical: 10,
-     backgroundColor: Colors.lightGray,
--    borderRadius: 12,
--    overflow: 'hidden',
-+    borderRadius: 20,
-+    borderWidth: 1,
-+    borderColor: Colors.lightGray,
-+  },
-+  zoneOptionSelected: {
-+    backgroundColor: Colors.primary,
-+    borderColor: Colors.primary,
-   },
--  picker: {
-+  zoneOptionText: {
-+    fontSize: 14,
-     color: Colors.dark,
-+    fontWeight: '500',
-+  },
-+  zoneOptionTextSelected: {
-+    color: Colors.white,
-   },
-   footer: {
-     padding: 16,
+diff --git a/frontend/app/(tabs)/plants.tsx b/frontend/app/(tabs)/plants.tsx
+index d6bf491..80ce2cc 100644
+--- a/frontend/app/(tabs)/plants.tsx
++++ b/frontend/app/(tabs)/plants.tsx
+@@ -105,6 +105,10 @@ export default function Plants() {
+               <TouchableOpacity
+                 key={plant._id}
+                 style={styles.plantCard}
++                onPress={() => router.push({
++                  pathname: '/(tabs)/plant-detail',
++                  params: { plant: JSON.stringify(plant) }
++                })}
+                 onLongPress={() => handleDeletePlant(plant._id)}
+               >
+                 <View style={styles.plantImage}>
 diff --git a/model.patch b/model.patch
-index 86cfd30..e69de29 100644
+index 2e74eec..e69de29 100644
 --- a/model.patch
 +++ b/model.patch
-@@ -1,118 +0,0 @@
+@@ -1,167 +0,0 @@
 -diff --git a/frontend/app/(tabs)/add-plant.tsx b/frontend/app/(tabs)/add-plant.tsx
--index cc87ffe..bdc548f 100644
+-index 76ba178..63cb2e1 100644
 ---- a/frontend/app/(tabs)/add-plant.tsx
 -+++ b/frontend/app/(tabs)/add-plant.tsx
--@@ -250,6 +250,14 @@ const styles = StyleSheet.create({
+-@@ -256,15 +256,34 @@ const styles = StyleSheet.create({
+-     fontSize: 12,
+-     color: Colors.mediumGray,
 -     marginTop: 4,
--     marginLeft: 4,
+--    marginLeft: 4,
 -   },
--+  pickerContainer: {
--+    backgroundColor: Colors.lightGray,
--+    borderRadius: 12,
--+    overflow: 'hidden',
+--  pickerContainer: {
+-+  zonesContainer: {
+-+    flexDirection: 'row',
+-+    flexWrap: 'wrap',
+-+    gap: 8,
 -+  },
--+  picker: {
--+    color: Colors.dark,
+-+  zoneOption: {
+-+    flexDirection: 'row',
+-+    alignItems: 'center',
+-+    gap: 6,
+-+    paddingHorizontal: 14,
+-+    paddingVertical: 10,
+-     backgroundColor: Colors.lightGray,
+--    borderRadius: 12,
+--    overflow: 'hidden',
+-+    borderRadius: 20,
+-+    borderWidth: 1,
+-+    borderColor: Colors.lightGray,
 -+  },
+-+  zoneOptionSelected: {
+-+    backgroundColor: Colors.primary,
+-+    borderColor: Colors.primary,
+-   },
+--  picker: {
+-+  zoneOptionText: {
+-+    fontSize: 14,
+-     color: Colors.dark,
+-+    fontWeight: '500',
+-+  },
+-+  zoneOptionTextSelected: {
+-+    color: Colors.white,
+-   },
 -   footer: {
 -     padding: 16,
--     borderTopWidth: 1,
 -diff --git a/model.patch b/model.patch
--index 947d17f..e69de29 100644
+-index 86cfd30..e69de29 100644
 ---- a/model.patch
 -+++ b/model.patch
--@@ -1,94 +0,0 @@
+-@@ -1,118 +0,0 @@
+--diff --git a/frontend/app/(tabs)/add-plant.tsx b/frontend/app/(tabs)/add-plant.tsx
+--index cc87ffe..bdc548f 100644
+----- a/frontend/app/(tabs)/add-plant.tsx
+--+++ b/frontend/app/(tabs)/add-plant.tsx
+--@@ -250,6 +250,14 @@ const styles = StyleSheet.create({
+--     marginTop: 4,
+--     marginLeft: 4,
+--   },
+--+  pickerContainer: {
+--+    backgroundColor: Colors.lightGray,
+--+    borderRadius: 12,
+--+    overflow: 'hidden',
+--+  },
+--+  picker: {
+--+    color: Colors.dark,
+--+  },
+--   footer: {
+--     padding: 16,
+--     borderTopWidth: 1,
 --diff --git a/model.patch b/model.patch
---index c37f1c1..e69de29 100644
+--index 947d17f..e69de29 100644
 ----- a/model.patch
 --+++ b/model.patch
---@@ -1,42 +0,0 @@
+--@@ -1,94 +0,0 @@
 ---diff --git a/model.patch b/model.patch
----index dc640ee..e69de29 100644
+---index c37f1c1..e69de29 100644
 ------ a/model.patch
 ---+++ b/model.patch
----@@ -1,13 +0,0 @@
-----diff --git a/backend/.env b/backend/.env
-----index 0f4322c..c584416 100644
-------- a/backend/.env
-----+++ b/backend/.env
-----@@ -1,2 +1,4 @@
------MONGO_URL="mongodb://localhost:27017"
------DB_NAME="test_database"
+---@@ -1,42 +0,0 @@
+----diff --git a/model.patch b/model.patch
+----index dc640ee..e69de29 100644
+------- a/model.patch
+----+++ b/model.patch
+----@@ -1,13 +0,0 @@
+-----diff --git a/backend/.env b/backend/.env
+-----index 0f4322c..c584416 100644
+-------- a/backend/.env
+-----+++ b/backend/.env
+-----@@ -1,2 +1,4 @@
+------MONGO_URL="mongodb://localhost:27017"
+------DB_NAME="test_database"
+-----\ No newline at end of file
+-----+MONGO_URL=mongodb://mongo:27017
+-----+DB_NAME=sepalis
+-----+PLANTID_API_KEY=TudmUlaO67U8ZT2URniderBcljhm2qY6TEnuKjbC8zzXlRFYAm
+-----+OPENAI_API_KEY=sk-emergent-0Ec6e0b2bA3E0Bf3a7
+-----\ No newline at end of file
+----diff --git a/test_result.md b/test_result.md
+----index 34abab7..2fcc985 100644
+------- a/test_result.md
+----+++ b/test_result.md
+----@@ -116,6 +116,9 @@ backend:
+----       - working: true
+----         agent: "main"
+----         comment: "Backend fonctionnel avec endpoints pour zones et authentification JWT"
+----+      - working: true
+----+        agent: "testing"
+----+        comment: "Tests complets effectués - CRITIQUE: Correction MongoDB URL de 'mongo:27017' vers 'localhost:27017' dans backend/.env. Tous les endpoints testés avec succès: Health check ✅, Registration ✅, Login ✅, Profile ✅, Plants CRUD ✅, Tasks CRUD ✅, Courses ✅. JWT authentication fonctionnel. Base de données accessible et opérationnelle."
+---- 
+---- frontend:
+----   - task: "Navigation des zones vers détails"
+----@@ -161,4 +164,6 @@ test_plan:
+---- 
+---- agent_communication:
+----   - agent: "main"
+-----    message: "Corrections effectuées pour la navigation des zones : 1) Ajout de l'import useRouter d'expo-router en haut du fichier zones.tsx, 2) Correction du handler onPress pour utiliser le hook router déjà instancié au lieu de le réimporter dans la fonction. La navigation passe maintenant les données de la zone via JSON.stringify dans les params vers zone-detail.tsx"
 ----\ No newline at end of file
-----+MONGO_URL=mongodb://mongo:27017
-----+DB_NAME=sepalis
-----+PLANTID_API_KEY=TudmUlaO67U8ZT2URniderBcljhm2qY6TEnuKjbC8zzXlRFYAm
-----+OPENAI_API_KEY=sk-emergent-0Ec6e0b2bA3E0Bf3a7
+----+    message: "Corrections effectuées pour la navigation des zones : 1) Ajout de l'import useRouter d'expo-router en haut du fichier zones.tsx, 2) Correction du handler onPress pour utiliser le hook router déjà instancié au lieu de le réimporter dans la fonction. La navigation passe maintenant les données de la zone via JSON.stringify dans les params vers zone-detail.tsx"
+----+  - agent: "testing"
+----+    message: "Tests backend complets effectués avec succès. CORRECTION CRITIQUE appliquée: MongoDB URL corrigée de 'mongo:27017' vers 'localhost:27017' dans backend/.env et service redémarré. Tous les endpoints API fonctionnent parfaitement: authentification JWT, CRUD plants/tasks, courses. Base de données opérationnelle. Backend prêt pour utilisation par le frontend."
 ----\ No newline at end of file
 ---diff --git a/test_result.md b/test_result.md
----index 34abab7..2fcc985 100644
+---index 2e169fe..87d1893 100644
 ------ a/test_result.md
 ---+++ b/test_result.md
----@@ -116,6 +116,9 @@ backend:
----       - working: true
+---@@ -151,7 +151,7 @@ frontend:
+--- metadata:
+---   created_by: "main_agent"
+---   version: "1.0"
+----  test_sequence: 1
+---+  test_sequence: 2
+---   run_ui: false
+--- 
+--- test_plan:
+---@@ -164,11 +164,11 @@ test_plan:
+--- 
+---   - task: "Persistance des zones en base de données"
+---     implemented: true
+----    working: "NA"
+---+    working: true
+---     file: "backend/server.py, frontend/app/(tabs)/zones.tsx, frontend/services/api.ts"
+---     stuck_count: 0
+---     priority: "high"
+----    needs_retesting: true
+---+    needs_retesting: false
+---     status_history:
+---       - working: false
+---         agent: "user"
+---@@ -176,6 +176,9 @@ test_plan:
+---       - working: "NA"
 ---         agent: "main"
----         comment: "Backend fonctionnel avec endpoints pour zones et authentification JWT"
+---         comment: "BACKEND: Ajout des modèles Zone (ZoneBase, ZoneCreate, ZoneResponse) et création de 5 nouveaux endpoints REST: GET /api/user/zones (liste), POST /api/user/zones (création), GET /api/user/zones/{id} (détail), PUT /api/user/zones/{id} (mise à jour), DELETE /api/user/zones/{id} (suppression). Tous les endpoints sont protégés par JWT. FRONTEND: Ajout de zonesAPI dans services/api.ts avec toutes les méthodes CRUD. Modification de zones.tsx pour charger les zones depuis l'API au montage (useEffect) et lors du focus (useFocusEffect), et pour sauvegarder les nouvelles zones dans MongoDB via l'API. Ajout d'un indicateur de chargement."
 ---+      - working: true
 ---+        agent: "testing"
----+        comment: "Tests complets effectués - CRITIQUE: Correction MongoDB URL de 'mongo:27017' vers 'localhost:27017' dans backend/.env. Tous les endpoints testés avec succès: Health check ✅, Registration ✅, Login ✅, Profile ✅, Plants CRUD ✅, Tasks CRUD ✅, Courses ✅. JWT authentication fonctionnel. Base de données accessible et opérationnelle."
---- 
---- frontend:
----   - task: "Navigation des zones vers détails"
----@@ -161,4 +164,6 @@ test_plan:
+---+        comment: "Tests complets des endpoints ZONES effectués avec succès (15/15 tests passés, 100% de réussite). Tous les endpoints CRUD fonctionnent parfaitement: GET /api/user/zones (liste vide et avec données) ✅, POST /api/user/zones (création) ✅, GET /api/user/zones/{id} (récupération par ID) ✅, PUT /api/user/zones/{id} (mise à jour) ✅, DELETE /api/user/zones/{id} (suppression) ✅. Protection JWT validée ✅. Persistance MongoDB confirmée ✅. Les zones sont correctement créées, modifiées, récupérées et supprimées. Toutes les données (nom, type, dimensions, sol, climat, arrosage, etc.) sont bien persistées et récupérées."
 --- 
 --- agent_communication:
 ---   - agent: "main"
-----    message: "Corrections effectuées pour la navigation des zones : 1) Ajout de l'import useRouter d'expo-router en haut du fichier zones.tsx, 2) Correction du handler onPress pour utiliser le hook router déjà instancié au lieu de le réimporter dans la fonction. La navigation passe maintenant les données de la zone via JSON.stringify dans les params vers zone-detail.tsx"
+---@@ -183,4 +186,6 @@ agent_communication:
+---   - agent: "testing"
+---     message: "Tests backend complets effectués avec succès. CORRECTION CRITIQUE appliquée: MongoDB URL corrigée de 'mongo:27017' vers 'localhost:27017' dans backend/.env et service redémarré. Tous les endpoints API fonctionnent parfaitement: authentification JWT, CRUD plants/tasks, courses. Base de données opérationnelle. Backend prêt pour utilisation par le frontend."
+---   - agent: "main"
+----    message: "Problème de persistance des zones résolu. Backend: Ajout de la collection 'zones' avec 5 endpoints CRUD complets protégés par JWT. Frontend: Intégration complète de l'API zones avec chargement automatique au montage et au focus de l'écran, sauvegarde persistante lors de la création. Les zones sont maintenant stockées dans MongoDB et persistent entre les sessions."
 ---\ No newline at end of file
----+    message: "Corrections effectuées pour la navigation des zones : 1) Ajout de l'import useRouter d'expo-router en haut du fichier zones.tsx, 2) Correction du handler onPress pour utiliser le hook router déjà instancié au lieu de le réimporter dans la fonction. La navigation passe maintenant les données de la zone via JSON.stringify dans les params vers zone-detail.tsx"
+---+    message: "Problème de persistance des zones résolu. Backend: Ajout de la collection 'zones' avec 5 endpoints CRUD complets protégés par JWT. Frontend: Intégration complète de l'API zones avec chargement automatique au montage et au focus de l'écran, sauvegarde persistante lors de la création. Les zones sont maintenant stockées dans MongoDB et persistent entre les sessions."
 ---+  - agent: "testing"
----+    message: "Tests backend complets effectués avec succès. CORRECTION CRITIQUE appliquée: MongoDB URL corrigée de 'mongo:27017' vers 'localhost:27017' dans backend/.env et service redémarré. Tous les endpoints API fonctionnent parfaitement: authentification JWT, CRUD plants/tasks, courses. Base de données opérationnelle. Backend prêt pour utilisation par le frontend."
+---+    message: "Tests complets des nouveaux endpoints ZONES effectués avec succès (15/15 tests passés). Validation complète du CRUD: création, lecture, mise à jour, suppression des zones. Protection JWT confirmée. Persistance MongoDB validée. Tous les endpoints fonctionnent parfaitement selon les spécifications. La fonctionnalité de persistance des zones est maintenant opérationnelle."
 ---\ No newline at end of file
---diff --git a/test_result.md b/test_result.md
---index 2e169fe..87d1893 100644
------ a/test_result.md
---+++ b/test_result.md
---@@ -151,7 +151,7 @@ frontend:
--- metadata:
---   created_by: "main_agent"
---   version: "1.0"
----  test_sequence: 1
---+  test_sequence: 2
---   run_ui: false
--- 
--- test_plan:
---@@ -164,11 +164,11 @@ test_plan:
--- 
---   - task: "Persistance des zones en base de données"
---     implemented: true
----    working: "NA"
---+    working: true
---     file: "backend/server.py, frontend/app/(tabs)/zones.tsx, frontend/services/api.ts"
---     stuck_count: 0
---     priority: "high"
----    needs_retesting: true
---+    needs_retesting: false
---     status_history:
---       - working: false
---         agent: "user"
---@@ -176,6 +176,9 @@ test_plan:
---       - working: "NA"
---         agent: "main"
---         comment: "BACKEND: Ajout des modèles Zone (ZoneBase, ZoneCreate, ZoneResponse) et création de 5 nouveaux endpoints REST: GET /api/user/zones (liste), POST /api/user/zones (création), GET /api/user/zones/{id} (détail), PUT /api/user/zones/{id} (mise à jour), DELETE /api/user/zones/{id} (suppression). Tous les endpoints sont protégés par JWT. FRONTEND: Ajout de zonesAPI dans services/api.ts avec toutes les méthodes CRUD. Modification de zones.tsx pour charger les zones depuis l'API au montage (useEffect) et lors du focus (useFocusEffect), et pour sauvegarder les nouvelles zones dans MongoDB via l'API. Ajout d'un indicateur de chargement."
---+      - working: true
---+        agent: "testing"
---+        comment: "Tests complets des endpoints ZONES effectués avec succès (15/15 tests passés, 100% de réussite). Tous les endpoints CRUD fonctionnent parfaitement: GET /api/user/zones (liste vide et avec données) ✅, POST /api/user/zones (création) ✅, GET /api/user/zones/{id} (récupération par ID) ✅, PUT /api/user/zones/{id} (mise à jour) ✅, DELETE /api/user/zones/{id} (suppression) ✅. Protection JWT validée ✅. Persistance MongoDB confirmée ✅. Les zones sont correctement créées, modifiées, récupérées et supprimées. Toutes les données (nom, type, dimensions, sol, climat, arrosage, etc.) sont bien persistées et récupérées."
--- 
--- agent_communication:
---   - agent: "main"
---@@ -183,4 +186,6 @@ agent_communication:
---   - agent: "testing"
---     message: "Tests backend complets effectués avec succès. CORRECTION CRITIQUE appliquée: MongoDB URL corrigée de 'mongo:27017' vers 'localhost:27017' dans backend/.env et service redémarré. Tous les endpoints API fonctionnent parfaitement: authentification JWT, CRUD plants/tasks, courses. Base de données opérationnelle. Backend prêt pour utilisation par le frontend."
---   - agent: "main"
----    message: "Problème de persistance des zones résolu. Backend: Ajout de la collection 'zones' avec 5 endpoints CRUD complets protégés par JWT. Frontend: Intégration complète de l'API zones avec chargement automatique au montage et au focus de l'écran, sauvegarde persistante lors de la création. Les zones sont maintenant stockées dans MongoDB et persistent entre les sessions."
---\ No newline at end of file
---+    message: "Problème de persistance des zones résolu. Backend: Ajout de la collection 'zones' avec 5 endpoints CRUD complets protégés par JWT. Frontend: Intégration complète de l'API zones avec chargement automatique au montage et au focus de l'écran, sauvegarde persistante lors de la création. Les zones sont maintenant stockées dans MongoDB et persistent entre les sessions."
---+  - agent: "testing"
---+    message: "Tests complets des nouveaux endpoints ZONES effectués avec succès (15/15 tests passés). Validation complète du CRUD: création, lecture, mise à jour, suppression des zones. Protection JWT confirmée. Persistance MongoDB validée. Tous les endpoints fonctionnent parfaitement selon les spécifications. La fonctionnalité de persistance des zones est maintenant opérationnelle."
---\ No newline at end of file
