@@ -51,7 +51,7 @@ export default function TabLayout() {
         options={{
           title: 'Jardin',
           tabBarIcon: ({ color }) => (
-            <Ionicons name="home" size={20} color={color} />
+            <Ionicons name="home" size={24} color={color} />
           ),
         }}
       />
@@ -60,7 +60,7 @@ export default function TabLayout() {
         options={{
           title: 'Zones',
           tabBarIcon: ({ color }) => (
-            <Ionicons name="grid" size={20} color={color} />
+            <Ionicons name="grid" size={24} color={color} />
           ),
         }}
       />
@@ -69,25 +69,7 @@ export default function TabLayout() {
         options={{
           title: 'Plantes',
           tabBarIcon: ({ color }) => (
-            <Ionicons name="leaf" size={20} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="tasks"
-        options={{
-          title: 'Tâches',
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="checkbox" size={20} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="diagnostic"
-        options={{
-          title: 'Scanner',
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="medical" size={20} color={color} />
+            <Ionicons name="leaf" size={24} color={color} />
           ),
         }}
       />
@@ -96,7 +78,7 @@ export default function TabLayout() {
         options={{
           title: 'Cours',
           tabBarIcon: ({ color }) => (
-            <Ionicons name="school" size={20} color={color} />
+            <Ionicons name="school" size={24} color={color} />
           ),
         }}
       />
@@ -105,8 +87,20 @@ export default function TabLayout() {
         options={{
           title: 'Profil',
           tabBarIcon: ({ color }) => (
-            <Ionicons name="person" size={20} color={color} />
+            <Ionicons name="person" size={24} color={color} />
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="tasks"
+        options={{
+          tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="diagnostic"
+        options={{
+          tabBarButton: () => null,
         }}
       />
       <Tabs.Screen
