@@ -8,6 +8,7 @@ export default function TabLayout() {
       screenOptions={{
         tabBarActiveTintColor: Colors.accent,
         tabBarInactiveTintColor: Colors.textSecondary,
+        tabBarScrollEnabled: false,
         tabBarStyle: {
           backgroundColor: Colors.card,
           borderTopWidth: 1,
@@ -15,18 +16,19 @@ export default function TabLayout() {
           height: 90,
           paddingBottom: 28,
           paddingTop: 8,
-          paddingHorizontal: 4,
+          paddingHorizontal: 0,
+          justifyContent: 'space-around',
         },
         tabBarItemStyle: {
-          flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
+          paddingHorizontal: 2,
         },
         tabBarLabelStyle: {
           fontSize: 9,
           fontWeight: '600',
           marginTop: 2,
-          marginBottom: 2,
+        },
+        tabBarIconStyle: {
+          marginBottom: 0,
         },
         headerStyle: {
           backgroundColor: Colors.card,
