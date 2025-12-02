@@ -250,6 +250,14 @@ const styles = StyleSheet.create({
     marginTop: 4,
     marginLeft: 4,
   },
+  pickerContainer: {
+    backgroundColor: Colors.lightGray,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  picker: {
+    color: Colors.dark,
+  },
   footer: {
     padding: 16,
     borderTopWidth: 1,
