@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, status, Depends
+from fastapi import FastAPI, APIRouter, HTTPException, status, Depends, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -7,11 +7,14 @@ import os
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field, EmailStr
-from typing import List, Optional
+from typing import List, Optional, Dict
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import jwt
 import bcrypt
+from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 
 
 ROOT_DIR = Path(__file__).parent
