@@ -260,7 +260,18 @@ async def get_me(credentials: HTTPAuthorizationCredentials = Depends(security)):
 async def get_user_plants(credentials: HTTPAuthorizationCredentials = Depends(security)):
     user = await get_current_user(credentials)
     plants = await db.plants.find({"userId": user["_id"]}).to_list(100)
-    return [PlantResponse(**{**plant, "_id": plant["_id"]}) for plant in plants]
+    
+    # Enrichir avec le nom de la zone
+    enriched_plants = []
+    for plant in plants:
+        plant_dict = {**plant, "_id": plant["_id"]}
+        if plant.get("zoneId"):
+            zone = await db.zones.find_one({"_id": plant["zoneId"]})
+            if zone:
+                plant_dict["zoneName"] = zone["name"]
+        enriched_plants.append(PlantResponse(**plant_dict))
+    
+    return enriched_plants
 
 @api_router.post("/user/plants", response_model=PlantResponse)
 async def create_plant(plant_data: PlantCreate, credentials: HTTPAuthorizationCredentials = Depends(security)):
@@ -270,11 +281,22 @@ async def create_plant(plant_data: PlantCreate, credentials: HTTPAuthorizationCr
     plant = {
         "_id": plant_id,
         "userId": user["_id"],
-        **plant_data.dict(),
+        **plant_data.model_dump(),
         "createdAt": datetime.utcnow()
     }
     
     await db.plants.insert_one(plant)
+    
+    # Incrémenter le compteur de plantes dans la zone
+    if plant.get("zoneId"):
+        await db.zones.update_one(
+            {"_id": plant["zoneId"], "userId": user["_id"]},
+            {"$inc": {"plantsCount": 1}}
+        )
+        zone = await db.zones.find_one({"_id": plant["zoneId"]})
+        if zone:
+            plant["zoneName"] = zone["name"]
+    
     return PlantResponse(**plant)
 
 @api_router.delete("/user/plants/{plant_id}")
