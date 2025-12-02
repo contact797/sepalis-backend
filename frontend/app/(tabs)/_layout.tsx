@@ -16,11 +16,13 @@ export default function TabLayout() {
           height: 90,
           paddingBottom: 28,
           paddingTop: 8,
-          paddingHorizontal: 0,
-          justifyContent: 'space-around',
+          paddingLeft: 0,
+          paddingRight: 0,
+          width: '100%',
         },
         tabBarItemStyle: {
-          paddingHorizontal: 2,
+          flex: 1,
+          maxWidth: undefined,
         },
         tabBarLabelStyle: {
           fontSize: 9,
