@@ -194,7 +194,7 @@ export default function ScanPlant() {
           ) : result ? (
             <View style={styles.resultCard}>
               <View style={styles.resultHeader}>
-                <View style={{ flex: 1 }}>
+                <View style={styles.plantNameContainer}>
                   <Text style={styles.plantName}>{result.name}</Text>
                   <Text style={styles.plantScientific}>{result.scientificName}</Text>
                 </View>
