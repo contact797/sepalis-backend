@@ -125,8 +125,8 @@ export default function EditZone() {
             style={styles.input}
             value={formData.length}
             onChangeText={(text) => setFormData({ ...formData, length: text })}
-            placeholder=\"10\"
-            keyboardType=\"numeric\"
+            placeholder="10"
+            keyboardType="numeric"
             placeholderTextColor={Colors.textSecondary}
           />
         </View>
@@ -136,8 +136,8 @@ export default function EditZone() {
             style={styles.input}
             value={formData.width}
             onChangeText={(text) => setFormData({ ...formData, width: text })}
-            placeholder=\"5\"
-            keyboardType=\"numeric\"
+            placeholder="5"
+            keyboardType="numeric"
             placeholderTextColor={Colors.textSecondary}
           />
         </View>
