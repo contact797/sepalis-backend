@@ -8,15 +8,18 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
-import { tasksAPI, plantsAPI } from '../../services/api';
+import { tasksAPI, plantsAPI, zonesAPI } from '../../services/api';
 import { Colors } from '../../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function Home() {
   const { user } = useAuth();
+  const router = useRouter();
   const [tasks, setTasks] = useState([]);
   const [plants, setPlants] = useState([]);
+  const [zones, setZones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -26,12 +29,14 @@ export default function Home() {
 
   const loadData = async () => {
     try {
-      const [tasksResponse, plantsResponse] = await Promise.all([
+      const [tasksResponse, plantsResponse, zonesResponse] = await Promise.all([
         tasksAPI.getTasks(),
         plantsAPI.getUserPlants(),
+        zonesAPI.getZones(),
       ]);
       setTasks(tasksResponse.data.filter((task: any) => !task.completed));
       setPlants(plantsResponse.data);
+      setZones(zonesResponse.data);
     } catch (error) {
       console.error('Erreur chargement données:', error);
     } finally {
@@ -50,10 +55,49 @@ export default function Home() {
     return tasks.filter((task: any) => task.dueDate?.startsWith(today));
   };
 
+  const getPendingTasks = () => {
+    return tasks.filter((task: any) => !task.completed);
+  };
+
+  const getSeasonTip = () => {
+    const month = new Date().getMonth();
+    if (month >= 2 && month <= 4) {
+      return {
+        title: 'Printemps - Temps de plantation',
+        text: "C'est le moment idéal pour semer vos graines et préparer vos semis. N'oubliez pas d'arroser régulièrement !",
+        icon: 'flower',
+        color: Colors.primary,
+      };
+    } else if (month >= 5 && month <= 7) {
+      return {
+        title: 'Été - Arrosage et récoltes',
+        text: "Arrosez tôt le matin ou tard le soir. C'est le moment des premières récoltes !",
+        icon: 'sunny',
+        color: Colors.warning,
+      };
+    } else if (month >= 8 && month <= 10) {
+      return {
+        title: 'Automne - Préparation',
+        text: 'Préparez votre jardin pour l\'hiver. Paillez et protégez vos plantes fragiles.',
+        icon: 'leaf',
+        color: '#FF8C00',
+      };
+    } else {
+      return {
+        title: 'Hiver - Repos végétatif',
+        text: 'Planifiez la saison prochaine et entretenez vos outils. Protégez les plantes sensibles au gel.',
+        icon: 'snow',
+        color: '#4A90E2',
+      };
+    }
+  };
+
+  const seasonTip = getSeasonTip();
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={Colors.primary} />
+        <ActivityIndicator size="large" color={Colors.accent} />
       </View>
     );
   }
@@ -65,19 +109,33 @@ export default function Home() {
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          tintColor={Colors.primary}
+          tintColor={Colors.accent}
         />
       }
     >
+      {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.greeting}>Bonjour {user?.name} !</Text>
-        <Text style={styles.subGreeting}>Bienvenue dans votre jardin</Text>
+        <View>
+          <Text style={styles.greeting}>Bonjour {user?.name} ! 👋</Text>
+          <Text style={styles.subGreeting}>Votre jardin vous attend</Text>
+        </View>
+        <TouchableOpacity style={styles.scanButton} onPress={() => router.push('/(tabs)/scan-plant')}>
+          <Ionicons name="scan" size={24} color={Colors.accent} />
+        </TouchableOpacity>
       </View>
 
       {/* Statistiques */}
       <View style={styles.statsContainer}>
         <View style={styles.statCard}>
-          <View style={[styles.statIcon, { backgroundColor: Colors.primary + '20' }]}>
+          <View style={[styles.statIcon, { backgroundColor: Colors.primary + '30' }]}>
+            <Ionicons name="grid" size={24} color={Colors.primary} />
+          </View>
+          <Text style={styles.statNumber}>{zones.length}</Text>
+          <Text style={styles.statLabel}>Zones</Text>
+        </View>
+
+        <View style={styles.statCard}>
+          <View style={[styles.statIcon, { backgroundColor: Colors.primary + '30' }]}>
             <Ionicons name="leaf" size={24} color={Colors.primary} />
           </View>
           <Text style={styles.statNumber}>{plants.length}</Text>
@@ -85,92 +143,132 @@ export default function Home() {
         </View>
 
         <View style={styles.statCard}>
-          <View style={[styles.statIcon, { backgroundColor: Colors.warning + '20' }]}>
-            <Ionicons name="checkbox" size={24} color={Colors.warning} />
+          <View style={[styles.statIcon, { backgroundColor: Colors.accent + '30' }]}>
+            <Ionicons name="checkbox" size={24} color={Colors.accent} />
           </View>
-          <Text style={styles.statNumber}>{getTodayTasks().length}</Text>
-          <Text style={styles.statLabel}>Tâches du jour</Text>
-        </View>
-
-        <View style={styles.statCard}>
-          <View style={[styles.statIcon, { backgroundColor: Colors.error + '20' }]}>
-            <Ionicons name="water" size={24} color={Colors.error} />
-          </View>
-          <Text style={styles.statNumber}>
-            {tasks.filter((t: any) => t.type === 'watering').length}
-          </Text>
-          <Text style={styles.statLabel}>Arrosages</Text>
+          <Text style={styles.statNumber}>{getPendingTasks().length}</Text>
+          <Text style={styles.statLabel}>Tâches</Text>
         </View>
       </View>
+
+      {/* Mes Zones */}
+      {zones.length > 0 && (
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Mes Zones</Text>
+            <TouchableOpacity onPress={() => router.push('/(tabs)/zones')}>
+              <Text style={styles.seeAllText}>Tout voir</Text>
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.zonesScroll}>
+            {zones.slice(0, 5).map((zone: any) => (
+              <TouchableOpacity
+                key={zone.id}
+                style={styles.zoneCard}
+                onPress={() => router.push({
+                  pathname: '/(tabs)/zone-detail',
+                  params: { zone: JSON.stringify(zone) }
+                })}
+              >
+                <View style={[styles.zoneCardHeader, { backgroundColor: zone.color + '30' }]}>
+                  <Ionicons name="location" size={32} color={zone.color} />
+                </View>
+                <View style={styles.zoneCardContent}>
+                  <Text style={styles.zoneCardName} numberOfLines={1}>{zone.name}</Text>
+                  <Text style={styles.zoneCardInfo}>{zone.area.toFixed(0)} m²</Text>
+                  <Text style={styles.zoneCardPlants}>{zone.plantsCount || 0} plantes</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      )}
 
       {/* Tâches du jour */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Tâches du jour</Text>
-          <Ionicons name="calendar-outline" size={20} color={Colors.mediumGray} />
+          <TouchableOpacity onPress={() => router.push('/(tabs)/tasks')}>
+            <Ionicons name="calendar-outline" size={20} color={Colors.textSecondary} />
+          </TouchableOpacity>
         </View>
 
         {getTodayTasks().length === 0 ? (
           <View style={styles.emptyCard}>
             <Ionicons name="checkmark-circle" size={48} color={Colors.success} />
             <Text style={styles.emptyText}>Aucune tâche pour aujourd'hui !</Text>
+            <Text style={styles.emptySubtext}>Profitez de votre jardin 🌱</Text>
           </View>
         ) : (
           getTodayTasks().slice(0, 3).map((task: any) => (
-            <TouchableOpacity key={task._id} style={styles.taskCard}>
+            <TouchableOpacity key={task.id} style={styles.taskCard}>
               <View style={styles.taskIcon}>
-                <Ionicons name="checkbox-outline" size={24} color={Colors.primary} />
+                <Ionicons name="checkbox-outline" size={24} color={Colors.accent} />
               </View>
               <View style={styles.taskContent}>
                 <Text style={styles.taskTitle}>{task.title}</Text>
-                {task.plant && (
-                  <Text style={styles.taskPlant}>{task.plant.name}</Text>
+                {task.description && (
+                  <Text style={styles.taskDescription} numberOfLines={1}>{task.description}</Text>
                 )}
               </View>
+              <Ionicons name="chevron-forward" size={20} color={Colors.textSecondary} />
             </TouchableOpacity>
           ))
         )}
       </View>
 
-      {/* Conseils saisonniers */}
+      {/* Conseil de saison */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Conseils de saison</Text>
-          <Ionicons name="bulb-outline" size={20} color={Colors.mediumGray} />
+          <Text style={styles.sectionTitle}>Conseil de saison</Text>
+          <Ionicons name="bulb-outline" size={20} color={Colors.textSecondary} />
         </View>
 
         <View style={styles.tipCard}>
-          <View style={styles.tipIcon}>
-            <Ionicons name="sunny" size={32} color={Colors.warning} />
+          <View style={[styles.tipIcon, { backgroundColor: seasonTip.color + '30' }]}>
+            <Ionicons name={seasonTip.icon as any} size={32} color={seasonTip.color} />
           </View>
           <View style={styles.tipContent}>
-            <Text style={styles.tipTitle}>Printemps - Temps de plantation</Text>
-            <Text style={styles.tipText}>
-              C'est le moment idéal pour semer vos graines et préparer vos jardinières.
-              N'oubliez pas d'arroser régulièrement !
-            </Text>
+            <Text style={styles.tipTitle}>{seasonTip.title}</Text>
+            <Text style={styles.tipText}>{seasonTip.text}</Text>
           </View>
         </View>
       </View>
 
-      {/* Plantes nécessitant attention */}
-      {plants.length > 0 && (
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Plantes à surveiller</Text>
-            <Ionicons name="alert-circle-outline" size={20} color={Colors.mediumGray} />
-          </View>
-
-          <View style={styles.plantCard}>
-            <Ionicons name="leaf" size={40} color={Colors.primary} />
-            <View style={styles.plantContent}>
-              <Text style={styles.plantName}>{plants[0].name}</Text>
-              <Text style={styles.plantWarning}>Arrosage prévu dans 2 jours</Text>
+      {/* Actions rapides */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Actions rapides</Text>
+        <View style={styles.quickActions}>
+          <TouchableOpacity style={styles.quickAction} onPress={() => router.push('/(tabs)/scan-plant')}>
+            <View style={[styles.quickActionIcon, { backgroundColor: Colors.primary + '30' }]}>
+              <Ionicons name="scan" size={24} color={Colors.primary} />
             </View>
-            <Ionicons name="chevron-forward" size={20} color={Colors.mediumGray} />
-          </View>
+            <Text style={styles.quickActionText}>Scanner</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.quickAction} onPress={() => router.push('/(tabs)/add-plant')}>
+            <View style={[styles.quickActionIcon, { backgroundColor: Colors.primary + '30' }]}>
+              <Ionicons name="add-circle" size={24} color={Colors.primary} />
+            </View>
+            <Text style={styles.quickActionText}>Plante</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.quickAction} onPress={() => router.push('/(tabs)/add-task')}>
+            <View style={[styles.quickActionIcon, { backgroundColor: Colors.accent + '30' }]}>
+              <Ionicons name="checkbox" size={24} color={Colors.accent} />
+            </View>
+            <Text style={styles.quickActionText}>Tâche</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.quickAction} onPress={() => router.push('/(tabs)/zones')}>
+            <View style={[styles.quickActionIcon, { backgroundColor: Colors.accent + '30' }]}>
+              <Ionicons name="grid" size={24} color={Colors.accent} />
+            </View>
+            <Text style={styles.quickActionText}>Zone</Text>
+          </TouchableOpacity>
         </View>
-      )}
+      </View>
     </ScrollView>
   );
 }
@@ -184,20 +282,37 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: Colors.background,
   },
   header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     padding: 24,
-    backgroundColor: Colors.white,
+    paddingTop: 16,
+    backgroundColor: Colors.card,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
   },
   greeting: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
-    color: Colors.dark,
+    color: Colors.text,
     marginBottom: 4,
   },
   subGreeting: {
-    fontSize: 16,
-    color: Colors.mediumGray,
+    fontSize: 14,
+    color: Colors.textSecondary,
+  },
+  scanButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: Colors.backgroundLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   statsContainer: {
     flexDirection: 'row',
@@ -206,15 +321,12 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.card,
     borderRadius: 16,
     padding: 16,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   statIcon: {
     width: 48,
@@ -227,12 +339,12 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: Colors.dark,
+    color: Colors.text,
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 12,
-    color: Colors.mediumGray,
+    color: Colors.textSecondary,
     textAlign: 'center',
   },
   section: {
@@ -247,36 +359,78 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: Colors.dark,
+    color: Colors.text,
+  },
+  seeAllText: {
+    fontSize: 14,
+    color: Colors.accent,
+    fontWeight: '600',
+  },
+  zonesScroll: {
+    marginHorizontal: -16,
+    paddingHorizontal: 16,
+  },
+  zoneCard: {
+    width: 140,
+    backgroundColor: Colors.card,
+    borderRadius: 16,
+    marginRight: 12,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  zoneCardHeader: {
+    height: 80,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  zoneCardContent: {
+    padding: 12,
+  },
+  zoneCardName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: Colors.text,
+    marginBottom: 4,
+  },
+  zoneCardInfo: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    marginBottom: 2,
+  },
+  zoneCardPlants: {
+    fontSize: 12,
+    color: Colors.primary,
+    fontWeight: '600',
   },
   emptyCard: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.card,
     borderRadius: 16,
     padding: 32,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   emptyText: {
     fontSize: 16,
-    color: Colors.mediumGray,
+    color: Colors.text,
     marginTop: 12,
+    fontWeight: '600',
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    marginTop: 4,
   },
   taskCard: {
     flexDirection: 'row',
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.card,
     borderRadius: 12,
     padding: 16,
     marginBottom: 8,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   taskIcon: {
     marginRight: 12,
@@ -287,25 +441,27 @@ const styles = StyleSheet.create({
   taskTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: Colors.dark,
+    color: Colors.text,
     marginBottom: 4,
   },
-  taskPlant: {
+  taskDescription: {
     fontSize: 14,
-    color: Colors.mediumGray,
+    color: Colors.textSecondary,
   },
   tipCard: {
     flexDirection: 'row',
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.card,
     borderRadius: 16,
     padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   tipIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: 16,
   },
   tipContent: {
@@ -314,38 +470,34 @@ const styles = StyleSheet.create({
   tipTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: Colors.dark,
+    color: Colors.text,
     marginBottom: 8,
   },
   tipText: {
     fontSize: 14,
-    color: Colors.mediumGray,
+    color: Colors.textSecondary,
     lineHeight: 20,
   },
-  plantCard: {
+  quickActions: {
     flexDirection: 'row',
-    backgroundColor: Colors.white,
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    gap: 12,
+    marginTop: 16,
   },
-  plantContent: {
+  quickAction: {
     flex: 1,
-    marginLeft: 12,
+    alignItems: 'center',
+    gap: 8,
   },
-  plantName: {
-    fontSize: 16,
+  quickActionIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  quickActionText: {
+    fontSize: 12,
+    color: Colors.text,
     fontWeight: '600',
-    color: Colors.dark,
-    marginBottom: 4,
-  },
-  plantWarning: {
-    fontSize: 14,
-    color: Colors.warning,
   },
 });
