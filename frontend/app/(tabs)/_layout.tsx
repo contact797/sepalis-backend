@@ -1,40 +1,12 @@
 import { Tabs } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
+import CustomTabBar from '../../components/CustomTabBar';
 
 export default function TabLayout() {
   return (
     <Tabs
+      tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{
-        tabBarActiveTintColor: Colors.accent,
-        tabBarInactiveTintColor: Colors.textSecondary,
-        tabBarScrollEnabled: false,
-        tabBarStyle: {
-          backgroundColor: Colors.card,
-          borderTopWidth: 1,
-          borderTopColor: Colors.border,
-          height: 90,
-          paddingBottom: 28,
-          paddingTop: 8,
-          display: 'flex',
-        },
-        tabBarContentContainerStyle: {
-          width: '100%',
-          justifyContent: 'space-around',
-        },
-        tabBarItemStyle: {
-          flex: 1,
-          width: undefined,
-          minWidth: undefined,
-        },
-        tabBarLabelStyle: {
-          fontSize: 10,
-          fontWeight: '600',
-          marginTop: 4,
-        },
-        tabBarIconStyle: {
-          marginBottom: 0,
-        },
         headerStyle: {
           backgroundColor: Colors.card,
           elevation: 0,
