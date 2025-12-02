@@ -115,6 +115,12 @@ export default function Plants() {
                   {plant.scientificName && (
                     <Text style={styles.plantScientific}>{plant.scientificName}</Text>
                   )}
+                  {plant.zoneName && (
+                    <View style={styles.zoneTag}>
+                      <Ionicons name="location" size={12} color={Colors.accent} />
+                      <Text style={styles.zoneTagText}>{plant.zoneName}</Text>
+                    </View>
+                  )}
                   <View style={styles.plantMeta}>
                     <View style={styles.metaItem}>
                       <Ionicons name="water" size={14} color={Colors.primary} />
