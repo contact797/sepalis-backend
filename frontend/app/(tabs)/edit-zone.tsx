@@ -95,7 +95,7 @@ export default function EditZone() {
         style={styles.input}
         value={formData.name}
         onChangeText={(text) => setFormData({ ...formData, name: text })}
-        placeholder=\"Mon potager\"
+        placeholder="Mon potager"
         placeholderTextColor={Colors.textSecondary}
       />
 
