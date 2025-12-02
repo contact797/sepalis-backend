@@ -302,9 +302,22 @@ async def create_plant(plant_data: PlantCreate, credentials: HTTPAuthorizationCr
 @api_router.delete("/user/plants/{plant_id}")
 async def delete_plant(plant_id: str, credentials: HTTPAuthorizationCredentials = Depends(security)):
     user = await get_current_user(credentials)
-    result = await db.plants.delete_one({"_id": plant_id, "userId": user["_id"]})
-    if result.deleted_count == 0:
+    
+    # Récupérer la plante avant suppression pour décrémenter le compteur
+    plant = await db.plants.find_one({"_id": plant_id, "userId": user["_id"]})
+    if not plant:
         raise HTTPException(status_code=404, detail="Plant not found")
+    
+    # Supprimer la plante
+    result = await db.plants.delete_one({"_id": plant_id, "userId": user["_id"]})
+    
+    # Décrémenter le compteur de plantes dans la zone
+    if plant.get("zoneId"):
+        await db.zones.update_one(
+            {"_id": plant["zoneId"], "userId": user["_id"]},
+            {"$inc": {"plantsCount": -1}}
+        )
+    
     return {"message": "Plant deleted successfully"}
 
 
