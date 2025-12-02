@@ -609,64 +609,98 @@ async def delete_zone(zone_id: str, credentials: HTTPAuthorizationCredentials = 
 # ============ AI RECOGNITION ROUTES ============
 @api_router.post("/ai/identify-plant")
 async def identify_plant(data: dict):
-    """Identifier une plante avec Plant.id API"""
-    import requests
-    import base64
+    """Identifier une plante avec GPT-4 Vision (meilleure précision)"""
+    from openai import OpenAI
+    import json as json_lib
     
     try:
         image_base64 = data.get('image')
         if not image_base64:
             raise HTTPException(status_code=400, detail="Image requise")
         
-        # Enlever le préfixe data:image si présent
-        if 'base64,' in image_base64:
-            image_base64 = image_base64.split('base64,')[1]
+        # S'assurer que l'image a le bon format pour OpenAI
+        if not image_base64.startswith('data:image'):
+            image_base64 = f"data:image/jpeg;base64,{image_base64}"
         
-        plantid_key = os.getenv('PLANTID_API_KEY')
+        print("🔍 Identification avec GPT-4 Vision...")
         
-        # Appel API Plant.id
-        response = requests.post(
-            'https://plant.id/api/v3/identification',
-            json={
-                'images': [image_base64],
-                'latitude': 48.8566,  # Paris par défaut
-                'longitude': 2.3522,
-                'similar_images': True,
-            },
-            headers={
-                'Api-Key': plantid_key,
-                'Content-Type': 'application/json',
-            },
-            timeout=30
+        client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+        
+        # Appel GPT-4 Vision pour identification
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {
+                    "role": "system",
+                    "content": """Tu es un botaniste expert. Identifie précisément la plante dans l'image.
+                    Réponds UNIQUEMENT au format JSON suivant (sans markdown, sans texte supplémentaire):
+                    {
+                        "name": "Nom commun français de la plante",
+                        "scientificName": "Nom scientifique latin",
+                        "confidence": 0.XX,
+                        "family": "Famille botanique",
+                        "description": "Description courte en 2-3 phrases",
+                        "wateringFrequency": 7,
+                        "sunlight": "Plein soleil/Mi-ombre/Ombre",
+                        "difficulty": "Facile/Moyen/Difficile",
+                        "growthRate": "Rapide/Moyen/Lent",
+                        "toxicity": "Non toxique/Légèrement toxique/Toxique",
+                        "commonNames": ["nom1", "nom2"],
+                        "tips": "Conseil d'entretien principal"
+                    }"""
+                },
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "Identifie cette plante avec précision. Donne le nom commun français, le nom scientifique, et des informations pratiques pour l'entretien."
+                        },
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": image_base64,
+                                "detail": "high"
+                            }
+                        }
+                    ]
+                }
+            ],
+            max_tokens=800,
+            temperature=0.3
         )
         
-        if response.status_code != 200:
-            error_detail = f"Plant.id API error: {response.status_code} - {response.text}"
-            print(f"❌ {error_detail}")
-            raise HTTPException(status_code=500, detail=error_detail)
+        result_text = response.choices[0].message.content.strip()
+        print(f"📊 Réponse GPT-4: {result_text[:200]}...")
         
-        result = response.json()
+        # Parser le JSON
+        # Enlever les balises markdown si présentes
+        if result_text.startswith('```'):
+            result_text = result_text.split('```')[1]
+            if result_text.startswith('json'):
+                result_text = result_text[4:]
         
-        # Extraire les informations principales
-        if result.get('result') and result['result'].get('classification'):
-            suggestions = result['result']['classification']['suggestions']
-            if suggestions:
-                best_match = suggestions[0]
-                return {
-                    'name': best_match['name'],
-                    'scientificName': best_match.get('details', {}).get('scientific_name', best_match['name']),
-                    'confidence': best_match['probability'],
-                    'commonNames': best_match.get('details', {}).get('common_names', []),
-                    'description': best_match.get('details', {}).get('description', {}).get('value', 'Plante identifiée'),
-                    'wateringFrequency': 7,  # Valeur par défaut
-                    'images': [img.get('url') for img in best_match.get('similar_images', [])[:3]],
-                }
+        result = json_lib.loads(result_text)
         
-        raise HTTPException(status_code=404, detail="Plante non identifiée")
+        # Ajouter des valeurs par défaut si manquantes
+        result.setdefault('wateringFrequency', 7)
+        result.setdefault('confidence', 0.85)
+        result.setdefault('commonNames', [])
         
+        print(f"✅ Plante identifiée: {result.get('name')}")
+        
+        return result
+        
+    except json_lib.JSONDecodeError as e:
+        print(f"❌ Erreur parsing JSON: {str(e)}")
+        print(f"Réponse brute: {result_text}")
+        raise HTTPException(
+            status_code=500, 
+            detail="Erreur de format de réponse. L'IA n'a pas retourné un JSON valide."
+        )
     except Exception as e:
-        print(f"Erreur identification: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"❌ Erreur identification: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
 
 
 @api_router.post("/ai/diagnose-disease")
