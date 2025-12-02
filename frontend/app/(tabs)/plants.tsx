@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { plantsAPI } from '../../services/api';
 import { Colors } from '../../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
@@ -23,6 +23,13 @@ export default function Plants() {
   useEffect(() => {
     loadPlants();
   }, []);
+
+  // Recharger les plantes quand l'écran est focus (retour depuis scanner par exemple)
+  useFocusEffect(
+    React.useCallback(() => {
+      loadPlants();
+    }, [])
+  );
 
   const loadPlants = async () => {
     try {
