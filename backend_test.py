@@ -634,6 +634,209 @@ class SepalisAPITester:
             self.log_test("JWT Protection (Zones)", False, f"Request error: {str(e)}")
             return False
     
+    def test_preregister_course_success(self):
+        """Test successful course pre-registration with all fields"""
+        if not self.token:
+            self.log_test("Course Preregister (Success)", False, "No authentication token available")
+            return False
+            
+        try:
+            headers = {"Authorization": f"Bearer {self.token}"}
+            preregistration_data = {
+                "courseSlug": "massif-fleuri",
+                "firstName": "Marie",
+                "lastName": "Dupont",
+                "email": "marie.dupont@example.com",
+                "phone": "0123456789",
+                "message": "Je suis très intéressée par cette formation sur les massifs fleuris."
+            }
+            
+            response = requests.post(
+                f"{self.base_url}/courses/preregister",
+                json=preregistration_data,
+                headers=headers,
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Check required fields in response
+                required_fields = ["id", "courseSlug", "firstName", "lastName", "email", "phone", "message", "userId", "createdAt"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if not missing_fields:
+                    # Verify data matches input
+                    if (data["courseSlug"] == preregistration_data["courseSlug"] and
+                        data["firstName"] == preregistration_data["firstName"] and
+                        data["lastName"] == preregistration_data["lastName"] and
+                        data["email"] == preregistration_data["email"] and
+                        data["phone"] == preregistration_data["phone"] and
+                        data["message"] == preregistration_data["message"]):
+                        self.log_test("Course Preregister (Success)", True, f"Pre-registration created successfully with ID: {data.get('id', data.get('_id'))}")
+                        return True
+                    else:
+                        self.log_test("Course Preregister (Success)", False, "Response data doesn't match input data")
+                        return False
+                else:
+                    self.log_test("Course Preregister (Success)", False, f"Missing fields in response: {missing_fields}")
+                    return False
+            else:
+                self.log_test("Course Preregister (Success)", False, f"HTTP {response.status_code}: {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Course Preregister (Success)", False, f"Request error: {str(e)}")
+            return False
+    
+    def test_preregister_course_empty_message(self):
+        """Test course pre-registration with empty message (should succeed)"""
+        if not self.token:
+            self.log_test("Course Preregister (Empty Message)", False, "No authentication token available")
+            return False
+            
+        try:
+            headers = {"Authorization": f"Bearer {self.token}"}
+            preregistration_data = {
+                "courseSlug": "tailler-rosiers",
+                "firstName": "Jean",
+                "lastName": "Martin",
+                "email": "jean.martin@example.com",
+                "phone": "0987654321",
+                "message": ""
+            }
+            
+            response = requests.post(
+                f"{self.base_url}/courses/preregister",
+                json=preregistration_data,
+                headers=headers,
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("message") == "":
+                    self.log_test("Course Preregister (Empty Message)", True, "Empty message accepted correctly")
+                    return True
+                else:
+                    self.log_test("Course Preregister (Empty Message)", False, "Empty message not handled correctly")
+                    return False
+            else:
+                self.log_test("Course Preregister (Empty Message)", False, f"HTTP {response.status_code}: {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Course Preregister (Empty Message)", False, f"Request error: {str(e)}")
+            return False
+    
+    def test_preregister_invalid_email(self):
+        """Test course pre-registration with invalid email (should fail)"""
+        if not self.token:
+            self.log_test("Course Preregister (Invalid Email)", False, "No authentication token available")
+            return False
+            
+        try:
+            headers = {"Authorization": f"Bearer {self.token}"}
+            preregistration_data = {
+                "courseSlug": "vivaces-faciles",
+                "firstName": "Pierre",
+                "lastName": "Durand",
+                "email": "email-invalide",
+                "phone": "0123456789",
+                "message": "Test avec email invalide"
+            }
+            
+            response = requests.post(
+                f"{self.base_url}/courses/preregister",
+                json=preregistration_data,
+                headers=headers,
+                timeout=10
+            )
+            
+            if response.status_code == 422:  # Validation error
+                self.log_test("Course Preregister (Invalid Email)", True, "Invalid email correctly rejected with 422")
+                return True
+            elif response.status_code == 400:
+                self.log_test("Course Preregister (Invalid Email)", True, "Invalid email correctly rejected with 400")
+                return True
+            else:
+                self.log_test("Course Preregister (Invalid Email)", False, f"Invalid email accepted - Status: {response.status_code}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Course Preregister (Invalid Email)", False, f"Request error: {str(e)}")
+            return False
+    
+    def test_preregister_missing_fields(self):
+        """Test course pre-registration with missing required fields (should fail)"""
+        if not self.token:
+            self.log_test("Course Preregister (Missing Fields)", False, "No authentication token available")
+            return False
+            
+        try:
+            headers = {"Authorization": f"Bearer {self.token}"}
+            # Missing firstName
+            incomplete_data = {
+                "courseSlug": "tailler-sans-se-tromper",
+                "lastName": "Test",
+                "email": "test@example.com",
+                "phone": "0123456789"
+            }
+            
+            response = requests.post(
+                f"{self.base_url}/courses/preregister",
+                json=incomplete_data,
+                headers=headers,
+                timeout=10
+            )
+            
+            if response.status_code == 422:  # Validation error
+                self.log_test("Course Preregister (Missing Fields)", True, "Missing fields correctly rejected with 422")
+                return True
+            elif response.status_code == 400:
+                self.log_test("Course Preregister (Missing Fields)", True, "Missing fields correctly rejected with 400")
+                return True
+            else:
+                self.log_test("Course Preregister (Missing Fields)", False, f"Missing fields accepted - Status: {response.status_code}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Course Preregister (Missing Fields)", False, f"Request error: {str(e)}")
+            return False
+    
+    def test_preregister_without_auth(self):
+        """Test course pre-registration without authentication (should fail)"""
+        try:
+            preregistration_data = {
+                "courseSlug": "massif-fleuri",
+                "firstName": "Test",
+                "lastName": "NoAuth",
+                "email": "noauth@example.com",
+                "phone": "0123456789",
+                "message": "Test sans auth"
+            }
+            
+            response = requests.post(
+                f"{self.base_url}/courses/preregister",
+                json=preregistration_data,
+                timeout=10
+                # No authorization headers
+            )
+            
+            if response.status_code == 401:  # Unauthorized
+                self.log_test("Course Preregister (No Auth)", True, "Authentication correctly required (401)")
+                return True
+            elif response.status_code == 403:
+                self.log_test("Course Preregister (No Auth)", True, "Authentication correctly required (403)")
+                return True
+            else:
+                self.log_test("Course Preregister (No Auth)", False, f"Authentication not required - Status: {response.status_code}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Course Preregister (No Auth)", False, f"Request error: {str(e)}")
+            return False
+    
     def run_all_tests(self):
         """Run all backend tests in sequence"""
         print(f"🚀 Starting Sepalis Backend API Tests")
