@@ -624,7 +624,11 @@ async def identify_plant(data: dict):
         
         print("🔍 Identification avec GPT-4 Vision...")
         
-        client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+        # Utiliser Emergent LLM key
+        client = OpenAI(
+            api_key=os.getenv('OPENAI_API_KEY'),
+            base_url="https://api.emergentmethods.ai/llm/openai/v1"
+        )
         
         # Appel GPT-4 Vision pour identification
         response = client.chat.completions.create(
