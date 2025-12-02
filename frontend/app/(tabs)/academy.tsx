@@ -159,11 +159,19 @@ export default function Academy() {
                 style={styles.card}
                 onPress={() => handlePreregisterCourse(course)}
               >
-                <View style={styles.cardImage}>
-                  <Ionicons name="play-circle" size={60} color={Colors.accent} />
-                  <View style={styles.levelBadge}>
-                    <Text style={styles.levelBadgeText}>{course.level}</Text>
+                {course.image ? (
+                  <Image
+                    source={{ uri: course.image }}
+                    style={styles.cardImagePhoto}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View style={styles.cardImage}>
+                    <Ionicons name="play-circle" size={60} color={Colors.accent} />
                   </View>
+                )}
+                <View style={styles.levelBadge}>
+                  <Text style={styles.levelBadgeText}>{course.level}</Text>
                 </View>
 
                 <View style={styles.cardContent}>
