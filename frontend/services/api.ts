@@ -112,8 +112,11 @@ export const workshopsAPI = {
   getWorkshop: (slug: string) =>
     api.get(`/workshops/${slug}`),
   
-  bookWorkshop: (workshopData: any) =>
-    api.post('/workshops/book', workshopData),
+  createBooking: (bookingData: any) =>
+    api.post('/workshops/book', bookingData),
+  
+  checkBookingStatus: (sessionId: string) =>
+    api.get(`/workshops/booking/${sessionId}/status`),
 };
 
 // Subscription API
