@@ -1,21 +1,86 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { Colors } from '../../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
+import { zonesAPI } from '../../services/api';
 
 export default function ZoneDetail() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  
-  // Décoder les données de la zone
   const zone = params.zone ? JSON.parse(params.zone as string) : null;
+
+  const [plants, setPlants] = useState([]);
+  const [loadingPlants, setLoadingPlants] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  useEffect(() => {
+    if (zone?.id) {
+      loadPlants();
+    }
+  }, [zone?.id]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (zone?.id) {
+        loadPlants();
+      }
+    }, [zone?.id])
+  );
+
+  const loadPlants = async () => {
+    try {
+      setLoadingPlants(true);
+      const response = await zonesAPI.getZonePlants(zone.id);
+      setPlants(response.data);
+    } catch (error) {
+      console.error('Erreur chargement plantes:', error);
+    } finally {
+      setLoadingPlants(false);
+    }
+  };
+
+  const handleEdit = () => {
+    router.push({
+      pathname: '/(tabs)/edit-zone',
+      params: { zone: JSON.stringify(zone) }
+    });
+  };
+
+  const handleDelete = () => {
+    Alert.alert(
+      'Supprimer la zone',
+      `Êtes-vous sûr de vouloir supprimer "${zone.name}" ?\n\nCette action est irréversible.`,
+      [
+        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Supprimer',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setDeleting(true);
+              await zonesAPI.deleteZone(zone.id);
+              Alert.alert('Succès', 'Zone supprimée avec succès');
+              router.back();
+            } catch (error) {
+              console.error('Erreur suppression zone:', error);
+              Alert.alert('Erreur', 'Impossible de supprimer la zone');
+            } finally {
+              setDeleting(false);
+            }
+          },
+        },
+      ]
+    );
+  };
 
   if (!zone) {
     return (
@@ -32,58 +97,57 @@ export default function ZoneDetail() {
     { id: 'herb', label: 'Aromates', icon: 'sparkles', color: '#9C27B0' },
   ];
 
-  const soilTypes = {
+  const soilTypes: any = {
     clay: 'Argileux',
     sandy: 'Sableux',
     loamy: 'Limoneux',
     humic: 'Humifère',
   };
 
-  const soilPHLabels = {
+  const soilPHLabels: any = {
     acidic: 'Acide (< 6.5)',
     neutral: 'Neutre (6.5-7.5)',
     alkaline: 'Alcalin (> 7.5)',
   };
 
-  const drainageLabels = {
+  const drainageLabels: any = {
     excellent: 'Excellent',
     good: 'Bon',
     moderate: 'Moyen',
-    poor: 'Mauvais',
+    poor: 'Faible',
   };
 
-  const sunExposureLabels = {
-    full_sun: 'Plein soleil (> 6h/jour)',
-    partial_sun: 'Mi-ombre (3-6h/jour)',
-    shade: 'Ombre (< 3h/jour)',
-    deep_shade: 'Ombre dense',
+  const sunExposureLabels: any = {
+    full_sun: 'Plein soleil',
+    partial_shade: 'Mi-ombre',
+    shade: 'Ombre',
   };
 
-  const climateLabels = {
+  const climateLabels: any = {
     mediterranean: 'Méditerranéen',
     oceanic: 'Océanique',
     continental: 'Continental',
-    mountain: 'Montagne',
     temperate: 'Tempéré',
   };
 
-  const windLabels = {
-    exposed: 'Exposé',
-    moderate: 'Protégé',
-    sheltered: 'Abrité',
+  const windLabels: any = {
+    high: 'Bien protégé',
+    moderate: 'Modéré',
+    low: 'Exposé',
   };
 
-  const wateringLabels = {
+  const wateringLabels: any = {
     manual: 'Manuel',
+    drip: 'Goutte-à-goutte',
+    sprinkler: 'Aspersion',
     automatic: 'Automatique',
-    drip: 'Goutte à goutte',
-    none: 'Aucun',
   };
 
-  const humidityLabels = {
+  const humidityLabels: any = {
     dry: 'Sec',
     normal: 'Normal',
-    humid: 'Humide',
+    moist: 'Humide',
+    wet: 'Très humide',
   };
 
   const zoneType = zoneTypes.find(t => t.id === zone.type);
@@ -95,41 +159,43 @@ export default function ZoneDetail() {
           <Ionicons name="arrow-back" size={24} color={Colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Détails de la zone</Text>
-        <TouchableOpacity style={styles.editButton}>
-          <Ionicons name="create-outline" size={24} color={Colors.accent} />
-        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          <TouchableOpacity onPress={handleEdit} style={styles.actionButton}>
+            <Ionicons name="create-outline" size={24} color={Colors.accent} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleDelete} style={styles.actionButton} disabled={deleting}>
+            {deleting ? (
+              <ActivityIndicator color={Colors.error} size="small" />
+            ) : (
+              <Ionicons name="trash-outline" size={24} color={Colors.error} />
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView style={styles.scrollView}>
-        {/* En-tête zone */}
-        <View style={[styles.zoneHeader, { backgroundColor: zoneType?.color + '20' }]}>
-          <View style={[styles.zoneIcon, { backgroundColor: zoneType?.color }]}>
-            <Ionicons name={zoneType?.icon as any} size={48} color={Colors.white} />
-          </View>
+        {/* En-tête de la zone */}
+        <View style={[styles.zoneHeader, { backgroundColor: zone.color + '30' }]}>
+          <Ionicons name={zoneType?.icon as any} size={64} color={zone.color} />
           <Text style={styles.zoneName}>{zone.name}</Text>
           <Text style={styles.zoneType}>{zoneType?.label}</Text>
-          <View style={styles.plantsBadge}>
-            <Ionicons name="leaf" size={16} color={Colors.primary} />
-            <Text style={styles.plantsText}>{zone.plantsCount} plantes</Text>
-          </View>
         </View>
 
         {/* Dimensions */}
         <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Ionicons name="resize" size={24} color={Colors.accent} />
-            <Text style={styles.sectionTitle}>Dimensions</Text>
-          </View>
+          <Text style={styles.sectionTitle}>
+            <Ionicons name="resize" size={20} color={Colors.accent} /> Dimensions
+          </Text>
           <View style={styles.infoGrid}>
-            <View style={styles.infoCard}>
+            <View style={styles.infoItem}>
               <Text style={styles.infoLabel}>Longueur</Text>
               <Text style={styles.infoValue}>{zone.length} m</Text>
             </View>
-            <View style={styles.infoCard}>
+            <View style={styles.infoItem}>
               <Text style={styles.infoLabel}>Largeur</Text>
               <Text style={styles.infoValue}>{zone.width} m</Text>
             </View>
-            <View style={styles.infoCard}>
+            <View style={styles.infoItem}>
               <Text style={styles.infoLabel}>Surface</Text>
               <Text style={styles.infoValue}>{zone.area.toFixed(1)} m²</Text>
             </View>
@@ -138,62 +204,59 @@ export default function ZoneDetail() {
 
         {/* Sol */}
         <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Ionicons name="earth" size={24} color={Colors.accent} />
-            <Text style={styles.sectionTitle}>Caractéristiques du sol</Text>
-          </View>
-          <View style={styles.detailsList}>
-            <View style={styles.detailItem}>
-              <Text style={styles.detailLabel}>Type de sol</Text>
-              <Text style={styles.detailValue}>{soilTypes[zone.soilType as keyof typeof soilTypes]}</Text>
+          <Text style={styles.sectionTitle}>
+            <Ionicons name="layers" size={20} color={Colors.accent} /> Sol
+          </Text>
+          <View style={styles.infoList}>
+            <View style={styles.infoRow}>
+              <Text style={styles.rowLabel}>Type de sol</Text>
+              <Text style={styles.rowValue}>{soilTypes[zone.soilType]}</Text>
             </View>
-            <View style={styles.detailItem}>
-              <Text style={styles.detailLabel}>pH du sol</Text>
-              <Text style={styles.detailValue}>{soilPHLabels[zone.soilPH as keyof typeof soilPHLabels]}</Text>
+            <View style={styles.infoRow}>
+              <Text style={styles.rowLabel}>pH</Text>
+              <Text style={styles.rowValue}>{soilPHLabels[zone.soilPH]}</Text>
             </View>
-            <View style={styles.detailItem}>
-              <Text style={styles.detailLabel}>Drainage</Text>
-              <Text style={styles.detailValue}>{drainageLabels[zone.drainage as keyof typeof drainageLabels]}</Text>
+            <View style={styles.infoRow}>
+              <Text style={styles.rowLabel}>Drainage</Text>
+              <Text style={styles.rowValue}>{drainageLabels[zone.drainage]}</Text>
             </View>
           </View>
         </View>
 
         {/* Exposition & Climat */}
         <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Ionicons name="sunny" size={24} color={Colors.accent} />
-            <Text style={styles.sectionTitle}>Exposition & Climat</Text>
-          </View>
-          <View style={styles.detailsList}>
-            <View style={styles.detailItem}>
-              <Text style={styles.detailLabel}>Exposition solaire</Text>
-              <Text style={styles.detailValue}>{sunExposureLabels[zone.sunExposure as keyof typeof sunExposureLabels]}</Text>
+          <Text style={styles.sectionTitle}>
+            <Ionicons name="sunny" size={20} color={Colors.accent} /> Exposition & Climat
+          </Text>
+          <View style={styles.infoList}>
+            <View style={styles.infoRow}>
+              <Text style={styles.rowLabel}>Exposition solaire</Text>
+              <Text style={styles.rowValue}>{sunExposureLabels[zone.sunExposure]}</Text>
             </View>
-            <View style={styles.detailItem}>
-              <Text style={styles.detailLabel}>Zone climatique</Text>
-              <Text style={styles.detailValue}>{climateLabels[zone.climateZone as keyof typeof climateLabels]}</Text>
+            <View style={styles.infoRow}>
+              <Text style={styles.rowLabel}>Zone climatique</Text>
+              <Text style={styles.rowValue}>{climateLabels[zone.climateZone]}</Text>
             </View>
-            <View style={styles.detailItem}>
-              <Text style={styles.detailLabel}>Protection au vent</Text>
-              <Text style={styles.detailValue}>{windLabels[zone.windProtection as keyof typeof windLabels]}</Text>
+            <View style={styles.infoRow}>
+              <Text style={styles.rowLabel}>Protection au vent</Text>
+              <Text style={styles.rowValue}>{windLabels[zone.windProtection]}</Text>
             </View>
           </View>
         </View>
 
-        {/* Arrosage */}
+        {/* Arrosage & Humidité */}
         <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Ionicons name="water" size={24} color={Colors.accent} />
-            <Text style={styles.sectionTitle}>Arrosage & Humidité</Text>
-          </View>
-          <View style={styles.detailsList}>
-            <View style={styles.detailItem}>
-              <Text style={styles.detailLabel}>Système d'arrosage</Text>
-              <Text style={styles.detailValue}>{wateringLabels[zone.wateringSystem as keyof typeof wateringLabels]}</Text>
+          <Text style={styles.sectionTitle}>
+            <Ionicons name="water" size={20} color={Colors.accent} /> Arrosage & Humidité
+          </Text>
+          <View style={styles.infoList}>
+            <View style={styles.infoRow}>
+              <Text style={styles.rowLabel}>Système d'arrosage</Text>
+              <Text style={styles.rowValue}>{wateringLabels[zone.wateringSystem]}</Text>
             </View>
-            <View style={styles.detailItem}>
-              <Text style={styles.detailLabel}>Niveau d'humidité</Text>
-              <Text style={styles.detailValue}>{humidityLabels[zone.humidity as keyof typeof humidityLabels]}</Text>
+            <View style={styles.infoRow}>
+              <Text style={styles.rowLabel}>Humidité</Text>
+              <Text style={styles.rowValue}>{humidityLabels[zone.humidity]}</Text>
             </View>
           </View>
         </View>
@@ -201,28 +264,51 @@ export default function ZoneDetail() {
         {/* Notes */}
         {zone.notes && (
           <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Ionicons name="document-text" size={24} color={Colors.accent} />
-              <Text style={styles.sectionTitle}>Notes</Text>
-            </View>
-            <View style={styles.notesCard}>
-              <Text style={styles.notesText}>{zone.notes}</Text>
-            </View>
+            <Text style={styles.sectionTitle}>
+              <Ionicons name="document-text" size={20} color={Colors.accent} /> Notes
+            </Text>
+            <Text style={styles.notesText}>{zone.notes}</Text>
           </View>
         )}
 
-        {/* Actions */}
-        <View style={styles.actionsSection}>
-          <TouchableOpacity style={styles.actionButton}>
-            <Ionicons name="leaf" size={20} color={Colors.white} />
-            <Text style={styles.actionButtonText}>Voir les plantes</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.actionButton, styles.actionButtonSecondary]}>
-            <Ionicons name="add-circle" size={20} color={Colors.text} />
-            <Text style={[styles.actionButtonText, styles.actionButtonTextSecondary]}>
-              Ajouter une plante
+        {/* Plantes de cette zone */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeaderRow}>
+            <Text style={styles.sectionTitle}>
+              <Ionicons name="leaf" size={20} color={Colors.accent} /> Plantes ({plants.length})
             </Text>
-          </TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push('/(tabs)/add-plant')}>
+              <Ionicons name="add-circle" size={28} color={Colors.primary} />
+            </TouchableOpacity>
+          </View>
+
+          {loadingPlants ? (
+            <ActivityIndicator color={Colors.accent} style={{ marginTop: 20 }} />
+          ) : plants.length === 0 ? (
+            <View style={styles.emptyPlants}>
+              <Ionicons name="leaf-outline" size={48} color={Colors.textSecondary} />
+              <Text style={styles.emptyPlantsText}>Aucune plante dans cette zone</Text>
+              <TouchableOpacity
+                style={styles.addPlantButton}
+                onPress={() => router.push('/(tabs)/add-plant')}
+              >
+                <Text style={styles.addPlantButtonText}>Ajouter une plante</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            plants.map((plant: any) => (
+              <View key={plant.id} style={styles.plantCard}>
+                <Ionicons name="leaf" size={32} color={Colors.primary} />
+                <View style={styles.plantInfo}>
+                  <Text style={styles.plantName}>{plant.name}</Text>
+                  {plant.scientificName && (
+                    <Text style={styles.plantScientific}>{plant.scientificName}</Text>
+                  )}
+                </View>
+                <Ionicons name="chevron-forward" size={20} color={Colors.textSecondary} />
+              </View>
+            ))
+          )}
         </View>
       </ScrollView>
     </View>
@@ -236,10 +322,11 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    alignItems: 'center',
+    padding: 16,
+    paddingTop: 50,
+    backgroundColor: Colors.card,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
   },
@@ -250,71 +337,65 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: Colors.text,
+    flex: 1,
+    textAlign: 'center',
   },
-  editButton: {
+  headerActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  actionButton: {
     padding: 8,
+  },
+  errorText: {
+    fontSize: 16,
+    color: Colors.error,
+    textAlign: 'center',
+    marginTop: 50,
   },
   scrollView: {
     flex: 1,
   },
   zoneHeader: {
-    alignItems: 'center',
     padding: 32,
-    marginBottom: 8,
-  },
-  zoneIcon: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
   },
   zoneName: {
     fontSize: 28,
     fontWeight: 'bold',
     color: Colors.text,
-    marginBottom: 4,
+    marginTop: 16,
+    textAlign: 'center',
   },
   zoneType: {
     fontSize: 16,
     color: Colors.textSecondary,
-    marginBottom: 16,
-  },
-  plantsBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: Colors.card,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  plantsText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: Colors.text,
+    marginTop: 4,
   },
   section: {
-    padding: 16,
-    marginBottom: 8,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 16,
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: Colors.text,
+    marginBottom: 16,
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
   },
   infoGrid: {
     flexDirection: 'row',
     gap: 12,
   },
-  infoCard: {
+  infoItem: {
     flex: 1,
     backgroundColor: Colors.card,
     borderRadius: 12,
@@ -329,75 +410,86 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   infoValue: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
-    color: Colors.accent,
+    color: Colors.text,
   },
-  detailsList: {
-    backgroundColor: Colors.card,
-    borderRadius: 12,
-    padding: 16,
+  infoList: {
     gap: 12,
-    borderWidth: 1,
-    borderColor: Colors.border,
   },
-  detailItem: {
+  infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    backgroundColor: Colors.card,
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
-  detailLabel: {
+  rowLabel: {
     fontSize: 14,
     color: Colors.textSecondary,
   },
-  detailValue: {
+  rowValue: {
     fontSize: 14,
     fontWeight: '600',
     color: Colors.text,
   },
-  notesCard: {
-    backgroundColor: Colors.card,
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
   notesText: {
     fontSize: 14,
     color: Colors.text,
-    lineHeight: 20,
-  },
-  actionsSection: {
-    padding: 16,
-    gap: 12,
-    marginBottom: 32,
-  },
-  actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: Colors.primary,
-    paddingVertical: 14,
-    borderRadius: 12,
-  },
-  actionButtonSecondary: {
+    lineHeight: 22,
     backgroundColor: Colors.card,
+    borderRadius: 12,
+    padding: 16,
     borderWidth: 1,
     borderColor: Colors.border,
   },
-  actionButtonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
+  emptyPlants: {
+    alignItems: 'center',
+    padding: 32,
+  },
+  emptyPlantsText: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    marginTop: 12,
+    marginBottom: 16,
+  },
+  addPlantButton: {
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  addPlantButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
     color: Colors.white,
   },
-  actionButtonTextSecondary: {
-    color: Colors.text,
+  plantCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.card,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
-  errorText: {
+  plantInfo: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  plantName: {
     fontSize: 16,
-    color: Colors.error,
-    textAlign: 'center',
-    marginTop: 32,
+    fontWeight: '600',
+    color: Colors.text,
+    marginBottom: 4,
+  },
+  plantScientific: {
+    fontSize: 12,
+    fontStyle: 'italic',
+    color: Colors.textSecondary,
   },
 });
