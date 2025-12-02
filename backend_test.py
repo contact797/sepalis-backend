@@ -661,9 +661,13 @@ class SepalisAPITester:
             if response.status_code == 200:
                 data = response.json()
                 
-                # Check required fields in response
-                required_fields = ["id", "courseSlug", "firstName", "lastName", "email", "phone", "message", "userId", "createdAt"]
+                # Check required fields in response (handle both 'id' and '_id')
+                required_fields = ["courseSlug", "firstName", "lastName", "email", "phone", "message", "userId", "createdAt"]
                 missing_fields = [field for field in required_fields if field not in data]
+                
+                # Check for ID field (either 'id' or '_id')
+                if 'id' not in data and '_id' not in data:
+                    missing_fields.append('id/_id')
                 
                 if not missing_fields:
                     # Verify data matches input
