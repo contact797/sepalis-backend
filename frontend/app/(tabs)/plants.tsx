@@ -230,7 +230,23 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.mediumGray,
     fontStyle: 'italic',
+    marginBottom: 4,
+  },
+  zoneTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: Colors.accent + '20',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
     marginBottom: 8,
+  },
+  zoneTagText: {
+    fontSize: 11,
+    color: Colors.accent,
+    fontWeight: '600',
   },
   plantMeta: {
     flexDirection: 'row',
