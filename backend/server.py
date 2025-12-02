@@ -541,6 +541,19 @@ async def get_zones(credentials: HTTPAuthorizationCredentials = Depends(security
     zones = await db.zones.find({"userId": user["_id"]}).to_list(100)
     return [ZoneResponse(**zone) for zone in zones]
 
+@api_router.get("/user/zones/{zone_id}/plants", response_model=List[PlantResponse])
+async def get_zone_plants(zone_id: str, credentials: HTTPAuthorizationCredentials = Depends(security)):
+    user = await get_current_user(credentials)
+    
+    # Vérifier que la zone appartient à l'utilisateur
+    zone = await db.zones.find_one({"_id": zone_id, "userId": user["_id"]})
+    if not zone:
+        raise HTTPException(status_code=404, detail="Zone non trouvée")
+    
+    # Récupérer les plantes de cette zone
+    plants = await db.plants.find({"userId": user["_id"], "zoneId": zone_id}).to_list(100)
+    return [PlantResponse(**{**plant, "_id": plant["_id"], "zoneName": zone["name"]}) for plant in plants]
+
 @api_router.post("/user/zones", response_model=ZoneResponse)
 async def create_zone(zone_data: ZoneCreate, credentials: HTTPAuthorizationCredentials = Depends(security)):
     user = await get_current_user(credentials)
