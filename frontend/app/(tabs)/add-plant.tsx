@@ -112,6 +112,29 @@ export default function AddPlant() {
           </View>
 
           <View style={styles.inputGroup}>
+            <Text style={styles.label}>Zone (optionnel)</Text>
+            {loadingZones ? (
+              <ActivityIndicator color={Colors.primary} />
+            ) : zones.length > 0 ? (
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={formData.zoneId}
+                  onValueChange={(value) => setFormData({ ...formData, zoneId: value })}
+                  style={styles.picker}
+                  dropdownIconColor={Colors.mediumGray}
+                >
+                  <Picker.Item label="Aucune zone" value="" />
+                  {zones.map((zone: any) => (
+                    <Picker.Item key={zone.id} label={zone.name} value={zone.id} />
+                  ))}
+                </Picker>
+              </View>
+            ) : (
+              <Text style={styles.hint}>Créez d'abord une zone dans l'onglet Zones</Text>
+            )}
+          </View>
+
+          <View style={styles.inputGroup}>
             <Text style={styles.label}>Fréquence d'arrosage (jours)</Text>
             <View style={styles.inputContainer}>
               <Ionicons name="water-outline" size={20} color={Colors.mediumGray} />
