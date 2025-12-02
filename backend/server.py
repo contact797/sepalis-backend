@@ -641,7 +641,9 @@ async def identify_plant(data: dict):
         )
         
         if response.status_code != 200:
-            raise HTTPException(status_code=500, detail="Erreur Plant.id API")
+            error_detail = f"Plant.id API error: {response.status_code} - {response.text}"
+            print(f"❌ {error_detail}")
+            raise HTTPException(status_code=500, detail=error_detail)
         
         result = response.json()
         
