@@ -115,18 +115,27 @@ export default function AddPlant() {
             {loadingZones ? (
               <ActivityIndicator color={Colors.primary} />
             ) : zones.length > 0 ? (
-              <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={formData.zoneId}
-                  onValueChange={(value) => setFormData({ ...formData, zoneId: value })}
-                  style={styles.picker}
-                  dropdownIconColor={Colors.mediumGray}
+              <View style={styles.zonesContainer}>
+                <TouchableOpacity
+                  style={[styles.zoneOption, !formData.zoneId && styles.zoneOptionSelected]}
+                  onPress={() => setFormData({ ...formData, zoneId: '' })}
                 >
-                  <Picker.Item label="Aucune zone" value="" />
-                  {zones.map((zone: any) => (
-                    <Picker.Item key={zone.id} label={zone.name} value={zone.id} />
-                  ))}
-                </Picker>
+                  <Text style={[styles.zoneOptionText, !formData.zoneId && styles.zoneOptionTextSelected]}>
+                    Aucune zone
+                  </Text>
+                </TouchableOpacity>
+                {zones.map((zone: any) => (
+                  <TouchableOpacity
+                    key={zone.id}
+                    style={[styles.zoneOption, formData.zoneId === zone.id && styles.zoneOptionSelected]}
+                    onPress={() => setFormData({ ...formData, zoneId: zone.id })}
+                  >
+                    <Ionicons name="location" size={16} color={formData.zoneId === zone.id ? Colors.white : Colors.primary} />
+                    <Text style={[styles.zoneOptionText, formData.zoneId === zone.id && styles.zoneOptionTextSelected]}>
+                      {zone.name}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
               </View>
             ) : (
               <Text style={styles.hint}>Créez d'abord une zone dans l'onglet Zones</Text>
