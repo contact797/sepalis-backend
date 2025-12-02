@@ -370,6 +370,10 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginBottom: 16,
   },
+  plantNameContainer: {
+    flex: 1,
+    marginRight: 12,
+  },
   plantName: {
     fontSize: 24,
     fontWeight: 'bold',
