@@ -16,18 +16,14 @@ export default function TabLayout() {
           height: 90,
           paddingBottom: 28,
           paddingTop: 8,
-          paddingLeft: 0,
-          paddingRight: 0,
         },
         tabBarItemStyle: {
           flex: 1,
-          minWidth: 0,
-          paddingHorizontal: 0,
         },
         tabBarLabelStyle: {
-          fontSize: 8,
+          fontSize: 10,
           fontWeight: '600',
-          marginTop: 1,
+          marginTop: 4,
         },
         tabBarIconStyle: {
           marginBottom: 0,
