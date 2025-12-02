@@ -107,15 +107,18 @@ user_problem_statement: "Ajouter des photos pour chaque formation dans l'académ
 backend:
   - task: "Endpoints API pour formations avec images"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Les URLs d'images ont été ajoutées aux données initial_courses dans le backend. Chaque formation a maintenant un champ 'image' avec une URL d'image appropriée. Le endpoint GET /api/courses retourne ces données avec les images."
+      - working: true
+        agent: "testing"
+        comment: "Tests complets du backend Sepalis effectués avec succès (17/17 tests passés, 100% de réussite). ENDPOINT GET /api/courses ✅: Retourne correctement 4 formations avec toutes les images. STRUCTURE DES DONNÉES ✅: Chaque formation contient tous les champs requis (_id, title, description, level, duration, price, slug, instructor, topics, image). IMAGES VALIDES ✅: Toutes les 4 formations ont des URLs d'images Unsplash valides et accessibles. CONTENU VALIDÉ ✅: Les 4 formations attendues sont présentes (Massif Fleuri, Tailler Rosiers, Tailler Sans Se Tromper, Vivaces Faciles) avec Nicolas Blot comme instructeur. HEALTH CHECK ✅: API répond correctement. AUTHENTIFICATION JWT ✅: Fonctionne parfaitement. Tous les endpoints backend fonctionnent correctement."
 
 frontend:
   - task: "Affichage d'images pour les formations dans l'académie"
