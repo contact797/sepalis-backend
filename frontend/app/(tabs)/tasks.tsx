@@ -246,6 +246,16 @@ export default function Tasks() {
       <TouchableOpacity style={styles.fab} onPress={handleAddTask}>
         <Ionicons name="add" size={28} color={Colors.white} />
       </TouchableOpacity>
+
+      {/* Suggestions Modal */}
+      <TaskSuggestionsModal
+        visible={showSuggestionsModal}
+        onClose={() => setShowSuggestionsModal(false)}
+        onTasksAdded={() => {
+          loadTasks();
+          setShowSuggestionsModal(false);
+        }}
+      />
     </View>
   );
 }
