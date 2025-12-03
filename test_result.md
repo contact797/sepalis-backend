@@ -191,15 +191,18 @@ test_plan:
 
   - task: "Backend endpoint pour l'historique des réservations"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Endpoint GET /api/user/bookings créé. Récupère toutes les réservations d'ateliers (workshop_bookings) et de formations (course_bookings) pour l'utilisateur authentifié. Formate les données avec tous les champs nécessaires (id, type, title, date, participants, totalAmount, paymentStatus, etc.). Retourne aussi les statistiques (total, workshops, courses). Les réservations sont triées par date de création (plus récentes en premier)."
+      - working: true
+        agent: "testing"
+        comment: "Tests complets de l'endpoint GET /api/user/bookings RÉUSSIS ✅ (27/27 tests passés, 100% de réussite). AUTHENTIFICATION ✅: Accès correctement protégé par JWT (403 sans token). STRUCTURE VIDE ✅: Retourne correctement {bookings: [], total: 0, workshops: 0, courses: 0} pour utilisateur sans réservations. DONNÉES COMPLÈTES ✅: Avec réservations test, retourne structure correcte avec 2 réservations (1 atelier + 1 formation). FORMATAGE ATELIERS ✅: Champs requis présents (id, type, title, slug, date, timeSlot, timeSlotDisplay, participants, totalAmount, paymentStatus, createdAt, paidAt). FORMATAGE FORMATIONS ✅: Champs requis présents (id, type, title, slug, duration, level, totalAmount, paymentStatus, createdAt, paidAt). TRI CORRECT ✅: Réservations triées par date de création (plus récentes en premier). TYPES DE DONNÉES ✅: totalAmount numérique, participants entier, dates ISO format. L'endpoint fonctionne parfaitement selon les spécifications."
 
 agent_communication:
   - agent: "main"
