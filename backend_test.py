@@ -1147,7 +1147,7 @@ class SepalisAPITester:
         print(f"👤 Test User: {TEST_USER_EMAIL}")
         print("=" * 60)
         
-        # Test sequence - Focus on course pre-registration system as requested
+        # Test sequence - Focus on user bookings endpoint as requested
         tests = [
             ("Health Check", self.test_health_check),
             ("User Registration", self.test_register),
@@ -1156,6 +1156,11 @@ class SepalisAPITester:
             ("Get Courses", self.test_courses),
             ("Courses Image Structure", self.test_courses_image_structure),
             ("Courses Content Validation", self.test_courses_content_validation),
+            # User Bookings System Tests (NEW FOCUS)
+            ("User Bookings (No Auth)", self.test_user_bookings_without_auth),
+            ("User Bookings (Empty)", self.test_user_bookings_empty),
+            ("User Bookings (With Data)", self.test_user_bookings_with_data),
+            ("User Bookings (Data Format)", self.test_user_bookings_data_format),
             # Course Pre-registration System Tests
             ("Course Preregister (Success)", self.test_preregister_course_success),
             ("Course Preregister (Empty Message)", self.test_preregister_course_empty_message),
