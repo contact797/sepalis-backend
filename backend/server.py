@@ -1294,6 +1294,66 @@ async def diagnose_disease(data: dict):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ============ USER BOOKINGS ROUTE ============
+@api_router.get("/user/bookings")
+async def get_user_bookings(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Get all bookings (workshops + courses) for the current user"""
+    user = await get_current_user(credentials)
+    
+    # Get workshop bookings
+    workshop_bookings_cursor = db.workshop_bookings.find({"userId": user["_id"]})
+    workshop_bookings = await workshop_bookings_cursor.to_list(length=100)
+    
+    # Get course bookings
+    course_bookings_cursor = db.course_bookings.find({"userId": user["_id"]})
+    course_bookings = await course_bookings_cursor.to_list(length=100)
+    
+    # Format workshop bookings
+    formatted_workshops = []
+    for booking in workshop_bookings:
+        formatted_workshops.append({
+            "id": booking["_id"],
+            "type": "workshop",
+            "title": booking["workshopTitle"],
+            "slug": booking["workshopSlug"],
+            "date": booking["selectedDate"],
+            "timeSlot": booking["timeSlot"],
+            "timeSlotDisplay": booking["timeSlotDisplay"],
+            "participants": booking["participants"],
+            "totalAmount": booking["totalAmount"],
+            "paymentStatus": booking["paymentStatus"],
+            "createdAt": booking["createdAt"].isoformat() if booking.get("createdAt") else None,
+            "paidAt": booking["paidAt"].isoformat() if booking.get("paidAt") else None,
+        })
+    
+    # Format course bookings
+    formatted_courses = []
+    for booking in course_bookings:
+        formatted_courses.append({
+            "id": booking["_id"],
+            "type": "course",
+            "title": booking["courseTitle"],
+            "slug": booking["courseSlug"],
+            "duration": booking.get("duration", ""),
+            "level": booking.get("level", ""),
+            "totalAmount": booking["totalAmount"],
+            "paymentStatus": booking["paymentStatus"],
+            "createdAt": booking["createdAt"].isoformat() if booking.get("createdAt") else None,
+            "paidAt": booking["paidAt"].isoformat() if booking.get("paidAt") else None,
+        })
+    
+    # Combine and sort by creation date (most recent first)
+    all_bookings = formatted_workshops + formatted_courses
+    all_bookings.sort(key=lambda x: x["createdAt"] if x["createdAt"] else "", reverse=True)
+    
+    return {
+        "bookings": all_bookings,
+        "total": len(all_bookings),
+        "workshops": len(formatted_workshops),
+        "courses": len(formatted_courses)
+    }
+
+
 # ============ ROOT ROUTE ============
 @api_router.get("/")
 async def root():
