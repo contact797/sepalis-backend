@@ -13,6 +13,7 @@ import { useRouter } from 'expo-router';
 import { tasksAPI } from '../../services/api';
 import { Colors } from '../../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
+import TaskSuggestionsModal from '../../components/TaskSuggestionsModal';
 
 export default function Tasks() {
   const router = useRouter();
@@ -20,6 +21,7 @@ export default function Tasks() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('pending');
+  const [showSuggestionsModal, setShowSuggestionsModal] = useState(false);
 
   useEffect(() => {
     loadTasks();
