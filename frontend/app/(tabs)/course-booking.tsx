@@ -69,7 +69,7 @@ export default function CourseBooking() {
     try {
       const originUrl = Constants.expoConfig?.extra?.backendUrl || 
                        process.env.EXPO_PUBLIC_BACKEND_URL || 
-                       'https://sepalis-app.preview.emergentagent.com';
+                       'https://garden-booking-2.preview.emergentagent.com';
 
       console.log('🔵 Formation booking - Course:', course.slug);
       console.log('🔵 Origin URL:', originUrl);
