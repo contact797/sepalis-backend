@@ -193,3 +193,12 @@ export const weatherAPI = {
   getForecast: (lat: number, lon: number, days: number = 7) =>
     api.get('/weather/forecast', { params: { lat, lon, days } }),
 };
+
+// Notifications API
+export const notificationsAPI = {
+  registerPushToken: (token: string, deviceType: string) =>
+    api.post('/user/push-token', { token, deviceType }),
+  
+  deletePushToken: () =>
+    api.delete('/user/push-token'),
+};
