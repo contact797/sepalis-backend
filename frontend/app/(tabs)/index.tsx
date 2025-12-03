@@ -23,6 +23,7 @@ import TasksChart from '../../components/TasksChart';
 import TemperatureChart from '../../components/TemperatureChart';
 import StatCard from '../../components/StatCard';
 import { notificationService } from '../../services/notificationService';
+import { syncService } from '../../services/syncService';
 
 export default function Home() {
   const { user } = useAuth();
