@@ -228,6 +228,38 @@ export default function Home() {
 
   const seasonTip = getSeasonTip();
 
+  // Préparer les données du graphique des tâches (7 derniers jours)
+  const getTasksChartData = () => {
+    const last7Days = [];
+    const counts = [];
+    
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
+      
+      // Compter les tâches complétées ce jour-là
+      const completedOnDay = allTasks.filter((task: any) => 
+        task.completed && task.completedAt && task.completedAt.startsWith(dateStr)
+      ).length;
+      
+      last7Days.push(date.toLocaleDateString('fr-FR', { weekday: 'short' }).slice(0, 3));
+      counts.push(completedOnDay);
+    }
+    
+    return {
+      labels: last7Days,
+      datasets: [{ data: counts.length > 0 ? counts : [0, 0, 0, 0, 0, 0, 0] }],
+    };
+  };
+
+  // Calculer le taux de complétion
+  const getCompletionRate = () => {
+    if (allTasks.length === 0) return 0;
+    const completed = allTasks.filter((task: any) => task.completed).length;
+    return Math.round((completed / allTasks.length) * 100);
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
