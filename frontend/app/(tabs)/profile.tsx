@@ -36,6 +36,12 @@ export default function Profile() {
 
   const menuItems = [
     {
+      title: 'Premium',
+      icon: 'diamond-outline',
+      badge: '✨',
+      onPress: () => router.push('/(tabs)/paywall' as any),
+    },
+    {
       title: 'Mes réservations',
       icon: 'calendar-outline',
       onPress: () => router.push('/(tabs)/my-bookings' as any),
