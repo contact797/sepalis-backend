@@ -1,19 +1,20 @@
 #!/usr/bin/env python3
 """
-Backend API Tests for Sepalis Application
-Tests all backend endpoints including authentication and protected routes
+Tests complets pour les endpoints météo de l'API Sepalis
+Teste les nouveaux endpoints utilisant l'API Open-Meteo
 """
 
-import requests
+import asyncio
+import httpx
 import json
-import sys
 from datetime import datetime
+import sys
+import os
 
 # Configuration
 BASE_URL = "https://garden-booking-2.preview.emergentagent.com/api"
-TEST_USER_EMAIL = "marie.dupont@example.com"
-TEST_USER_PASSWORD = "SecurePass123!"
-TEST_USER_NAME = "Marie Dupont"
+PARIS_LAT = 48.8566
+PARIS_LON = 2.3522
 
 class SepalisAPITester:
     def __init__(self):
