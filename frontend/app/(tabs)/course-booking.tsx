@@ -57,8 +57,14 @@ export default function CourseBooking() {
   };
 
   const handleBooking = async () => {
-    if (!validateForm()) return;
+    console.log('🟢 DÉBUT handleBooking - Bouton cliqué !');
+    
+    if (!validateForm()) {
+      console.log('❌ Validation échouée');
+      return;
+    }
 
+    console.log('✅ Validation OK, début traitement...');
     setLoading(true);
     try {
       const originUrl = Constants.expoConfig?.extra?.backendUrl || 
