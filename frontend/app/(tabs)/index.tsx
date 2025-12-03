@@ -156,16 +156,17 @@ export default function Home() {
         plantsAPI.getUserPlants(),
         zonesAPI.getZones(),
       ]);
-      const allTasks = tasksResponse.data;
-      setTasks(allTasks.filter((task: any) => !task.completed));
+      const fetchedTasks = tasksResponse.data;
+      setAllTasks(fetchedTasks);
+      setTasks(fetchedTasks.filter((task: any) => !task.completed));
       setPlants(plantsResponse.data);
       setZones(zonesResponse.data);
 
       // Programmer les notifications pour les tâches du jour
-      await notificationService.scheduleDailyTaskReminder(allTasks);
+      await notificationService.scheduleDailyTaskReminder(fetchedTasks);
       
       // Mettre à jour le badge avec le nombre de tâches non complétées
-      const pendingTasksCount = allTasks.filter((task: any) => !task.completed).length;
+      const pendingTasksCount = fetchedTasks.filter((task: any) => !task.completed).length;
       await notificationService.setBadgeCount(pendingTasksCount);
     } catch (error) {
       console.error('Erreur chargement données:', error);
