@@ -202,3 +202,9 @@ export const notificationsAPI = {
   deletePushToken: () =>
     api.delete('/user/push-token'),
 };
+
+// Gamification API
+export const gamificationAPI = {
+  getGamification: () =>
+    api.get('/user/gamification'),
+};
