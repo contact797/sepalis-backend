@@ -12,12 +12,10 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
 import { subscriptionService } from '../../services/subscriptionService';
-import { useSubscription } from '../../contexts/SubscriptionContext';
-import { PurchasesOffering } from 'react-native-purchases';
+import { subscriptionAPI } from '../../services/api';
 
 export default function Paywall() {
   const router = useRouter();
-  const { startTrial, checkSubscription } = useSubscription();
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
   const [offering, setOffering] = useState<PurchasesOffering | null>(null);
