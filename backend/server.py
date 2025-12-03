@@ -66,6 +66,16 @@ class PushTokenRequest(BaseModel):
     deviceType: str  # "ios" or "android" or "web"
 
 
+# ============ SUBSCRIPTION MODELS ============
+class SubscriptionStatus(BaseModel):
+    isActive: bool
+    isTrial: bool
+    type: Optional[str] = None  # "monthly" or "yearly"
+    expiresAt: Optional[datetime] = None
+    provider: Optional[str] = None  # "revenuecat" or "stripe"
+    customerId: Optional[str] = None
+
+
 # ============ PLANT MODELS ============
 class PlantBase(BaseModel):
     name: str
