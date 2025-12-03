@@ -506,6 +506,224 @@ async def preregister_course(
     
     return preregistration_data
 
+# Helper function to send course booking confirmation email
+async def send_course_booking_confirmation_email(booking: dict, course_title: str):
+    try:
+        sendgrid_api_key = os.getenv("SENDGRID_API_KEY")
+        from_email = os.getenv("SENDGRID_FROM_EMAIL", "contact@nicolasblot.com")
+        
+        message = Mail(
+            from_email=from_email,
+            to_emails=booking["email"],
+            subject=f"Confirmation d'inscription - {course_title}",
+            html_content=f"""
+            <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <h2 style="color: #2C5F2D;">✅ Inscription confirmée !</h2>
+                    
+                    <p>Bonjour {booking["firstName"]} {booking["lastName"]},</p>
+                    
+                    <p>Votre inscription à la formation <strong>"{course_title}"</strong> a été confirmée et payée avec succès.</p>
+                    
+                    <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                        <h3 style="margin-top: 0; color: #2C5F2D;">Détails de votre inscription</h3>
+                        <p><strong>📚 Formation :</strong> {course_title}</p>
+                        <p><strong>🎓 Niveau :</strong> {booking.get("level", "Tous niveaux")}</p>
+                        <p><strong>⏱️ Durée :</strong> {booking.get("duration", "")}</p>
+                        <p><strong>💰 Montant payé :</strong> {booking["totalAmount"]}€</p>
+                        <p><strong>📧 Email :</strong> {booking["email"]}</p>
+                        <p><strong>📞 Téléphone :</strong> {booking["phone"]}</p>
+                    </div>
+                    
+                    <h3>🎯 Prochaines étapes</h3>
+                    <p>Vous recevrez :</p>
+                    <ul>
+                        <li><strong>Dans les 24h</strong> : Email de bienvenue avec accès à la plateforme de formation</li>
+                        <li><strong>Chaque semaine</strong> : Nouveaux modules et exercices pratiques</li>
+                        <li><strong>Support continu</strong> : Réponses à vos questions par email</li>
+                    </ul>
+                    
+                    <p>En cas de question, n'hésitez pas à nous contacter à {from_email}</p>
+                    
+                    <p style="margin-top: 30px;">À très bientôt dans la formation,<br><strong>Nicolas Blot, Meilleur Ouvrier de France</strong><br>Sepalis</p>
+                </div>
+            </body>
+            </html>
+            """
+        )
+        
+        sg = SendGridAPIClient(sendgrid_api_key)
+        response = sg.send(message)
+        return response.status_code >= 200 and response.status_code < 300
+    except Exception as e:
+        logging.error(f"Error sending course confirmation email: {str(e)}")
+        return False
+
+@api_router.post("/courses/book")
+async def create_course_booking(
+    booking_request: WorkshopBookingRequest,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Create a course booking and initiate Stripe payment"""
+    user = await get_current_user(credentials)
+    
+    # Get course details
+    courses_data = [
+        {"slug": "massif-fleuri", "title": "Massif Fleuri Toute l'Année", "price": 39, "duration": "4 semaines", "level": "Tous niveaux"},
+        {"slug": "taille-rosiers", "title": "Tailler et Soigner ses Rosiers", "price": 49, "duration": "5 semaines", "level": "Tous niveaux"},
+        {"slug": "potager-bio", "title": "Créer son Potager Bio et Productif", "price": 59, "duration": "8 semaines", "level": "Débutant"},
+        {"slug": "jardin-autonome", "title": "Vers un Jardin Autonome et Résilient", "price": 79, "duration": "12 semaines", "level": "Intermédiaire"}
+    ]
+    
+    course = next((c for c in courses_data if c["slug"] == booking_request.workshopSlug), None)
+    if not course:
+        raise HTTPException(status_code=404, detail="Formation non trouvée")
+    
+    # Calculate total amount
+    total_amount = float(course["price"])
+    
+    # Create booking record
+    booking_id = str(uuid.uuid4())
+    
+    booking_data = {
+        "_id": booking_id,
+        "courseSlug": booking_request.workshopSlug,
+        "courseTitle": course["title"],
+        "firstName": booking_request.firstName,
+        "lastName": booking_request.lastName,
+        "email": booking_request.email,
+        "phone": booking_request.phone,
+        "userId": user["_id"],
+        "totalAmount": total_amount,
+        "duration": course["duration"],
+        "level": course["level"],
+        "paymentStatus": "pending",
+        "stripeSessionId": None,
+        "createdAt": datetime.now(),
+        "paidAt": None
+    }
+    
+    # Save booking to database
+    await db.course_bookings.insert_one(booking_data)
+    
+    # Initialize Stripe checkout
+    try:
+        stripe_api_key = os.getenv("STRIPE_API_KEY")
+        host_url = booking_request.originUrl
+        webhook_url = f"{host_url}/api/webhook/stripe"
+        
+        stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url=webhook_url)
+        
+        success_url = f"{host_url}/course-booking-success?session_id={{CHECKOUT_SESSION_ID}}"
+        cancel_url = f"{host_url}/academy"
+        
+        checkout_request = CheckoutSessionRequest(
+            amount=total_amount,
+            currency="eur",
+            success_url=success_url,
+            cancel_url=cancel_url,
+            metadata={
+                "booking_id": booking_id,
+                "course_slug": booking_request.workshopSlug,
+                "user_id": user["_id"],
+                "type": "course_booking"
+            }
+        )
+        
+        session = await stripe_checkout.create_checkout_session(checkout_request)
+        
+        # Update booking with Stripe session ID
+        await db.course_bookings.update_one(
+            {"_id": booking_id},
+            {"$set": {"stripeSessionId": session.session_id}}
+        )
+        
+        # Create payment transaction record
+        await db.payment_transactions.insert_one({
+            "_id": str(uuid.uuid4()),
+            "session_id": session.session_id,
+            "booking_id": booking_id,
+            "user_id": user["_id"],
+            "amount": total_amount,
+            "currency": "eur",
+            "payment_status": "pending",
+            "metadata": checkout_request.metadata,
+            "createdAt": datetime.now()
+        })
+        
+        return {
+            "checkout_url": session.url,
+            "session_id": session.session_id,
+            "booking_id": booking_id
+        }
+        
+    except Exception as e:
+        logging.error(f"Error creating Stripe checkout for course: {str(e)}")
+        # Delete booking if Stripe checkout fails
+        await db.course_bookings.delete_one({"_id": booking_id})
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la création du paiement: {str(e)}")
+
+@api_router.get("/courses/booking/{session_id}/status")
+async def check_course_booking_status(
+    session_id: str,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Check the payment status of a course booking"""
+    user = await get_current_user(credentials)
+    
+    try:
+        stripe_api_key = os.getenv("STRIPE_API_KEY")
+        stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url="")
+        
+        # Get checkout status from Stripe
+        checkout_status: CheckoutStatusResponse = await stripe_checkout.get_checkout_status(session_id)
+        
+        # Find booking by session ID
+        booking = await db.course_bookings.find_one({"stripeSessionId": session_id, "userId": user["_id"]})
+        if not booking:
+            raise HTTPException(status_code=404, detail="Inscription non trouvée")
+        
+        # Update booking and transaction status if paid
+        if checkout_status.payment_status == "paid" and booking["paymentStatus"] != "paid":
+            await db.course_bookings.update_one(
+                {"_id": booking["_id"]},
+                {"$set": {"paymentStatus": "paid", "paidAt": datetime.now()}}
+            )
+            
+            await db.payment_transactions.update_one(
+                {"session_id": session_id},
+                {"$set": {"payment_status": "paid", "updatedAt": datetime.now()}}
+            )
+            
+            # Send confirmation email
+            await send_course_booking_confirmation_email(booking, booking["courseTitle"])
+            
+            return {
+                "status": "paid",
+                "booking": booking
+            }
+        
+        elif checkout_status.status == "expired":
+            await db.course_bookings.update_one(
+                {"_id": booking["_id"]},
+                {"$set": {"paymentStatus": "expired"}}
+            )
+            await db.payment_transactions.update_one(
+                {"session_id": session_id},
+                {"$set": {"payment_status": "expired", "updatedAt": datetime.now()}}
+            )
+            return {"status": "expired"}
+        
+        return {
+            "status": checkout_status.payment_status,
+            "booking": booking
+        }
+        
+    except Exception as e:
+        logging.error(f"Error checking course booking status: {str(e)}")
+        raise HTTPException(status_code=500, detail="Erreur lors de la vérification du statut")
+
 
 # ============ WORKSHOPS ROUTES ============
 @api_router.get("/workshops", response_model=List[WorkshopResponse])
