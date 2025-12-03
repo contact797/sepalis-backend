@@ -178,6 +178,30 @@ test_plan:
         agent: "testing"
         comment: "Tests complets des endpoints ZONES effectués avec succès (15/15 tests passés, 100% de réussite). Tous les endpoints CRUD fonctionnent parfaitement: GET /api/user/zones (liste vide et avec données) ✅, POST /api/user/zones (création) ✅, GET /api/user/zones/{id} (récupération par ID) ✅, PUT /api/user/zones/{id} (mise à jour) ✅, DELETE /api/user/zones/{id} (suppression) ✅. Protection JWT validée ✅. Persistance MongoDB confirmée ✅. Les zones sont correctement créées, modifiées, récupérées et supprimées. Toutes les données (nom, type, dimensions, sol, climat, arrosage, etc.) sont bien persistées et récupérées."
 
+  - task: "Page Mes réservations - Historique des réservations"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/(tabs)/my-bookings.tsx, frontend/app/(tabs)/_layout.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Page my-bookings.tsx complète avec interface utilisateur entièrement construite. Affichage des statistiques (total, ateliers, formations), filtres (toutes/ateliers/formations), liste des réservations avec détails (date, heure, participants, prix, statut de paiement). Gestion du chargement et du pull-to-refresh. La route a été ajoutée dans _layout.tsx avec tabBarButton: () => null pour la masquer de la barre d'onglets. Design cohérent avec le thème sombre de l'app."
+
+  - task: "Backend endpoint pour l'historique des réservations"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Endpoint GET /api/user/bookings créé. Récupère toutes les réservations d'ateliers (workshop_bookings) et de formations (course_bookings) pour l'utilisateur authentifié. Formate les données avec tous les champs nécessaires (id, type, title, date, participants, totalAmount, paymentStatus, etc.). Retourne aussi les statistiques (total, workshops, courses). Les réservations sont triées par date de création (plus récentes en premier)."
+
 agent_communication:
   - agent: "main"
     message: "Ajout des images aux formations terminé. BACKEND: Les URLs d'images ont déjà été ajoutées aux données initial_courses (4 formations avec leurs images respectives). FRONTEND: Modification de academy.tsx pour afficher les images réelles. La logique est identique à celle des ateliers : si course.image existe, on affiche l'image via <Image>, sinon on affiche un placeholder. Le badge de niveau est positionné en absolu au-dessus de l'image. Le composant utilise le style cardImagePhoto (width: 100%, height: 160) avec resizeMode='cover'."
@@ -185,3 +209,5 @@ agent_communication:
     message: "Tests backend Sepalis COMPLETS et RÉUSSIS ✅ (17/17 tests passés, 100%). ENDPOINT GET /api/courses fonctionne parfaitement : retourne 4 formations avec images Unsplash valides et accessibles. Structure des données correcte avec tous les champs requis. Authentification JWT opérationnelle. Health check OK. Toutes les formations ont Nicolas Blot comme instructeur et les images sont bien présentes dans la réponse API. Le backend est prêt pour le frontend. Recommandation : Le main agent peut maintenant résumer et terminer la tâche car le backend fonctionne parfaitement avec les images."
   - agent: "testing"
     message: "Tests du système de pré-inscription aux formations COMPLETS et RÉUSSIS ✅ (22/22 tests passés, 100%). ENDPOINT POST /api/courses/preregister fonctionne parfaitement de bout en bout. CORRECTIONS APPLIQUÉES: Fixé user['id'] → user['_id'] et ajouté Depends(security) pour l'authentification. SAUVEGARDE MONGODB CONFIRMÉE: 4 pré-inscriptions créées et persistées dans la collection 'course_preregistrations'. VALIDATION COMPLÈTE: Email invalide rejeté ✅, champs manquants rejetés ✅, message optionnel vide accepté ✅, authentification JWT requise ✅. Le système de pré-inscription fonctionne parfaitement et est prêt pour la production."
+  - agent: "main"
+    message: "Implémentation de la page 'Mes réservations' (Historique des réservations) complétée. FRONTEND: Création complète de my-bookings.tsx avec interface utilisateur entière (statistiques, filtres, liste détaillée). Route ajoutée dans _layout.tsx et masquée de la barre d'onglets. BACKEND: Endpoint /api/user/bookings déjà existant, récupère et formate toutes les réservations d'ateliers et formations. Prêt pour les tests backend."
