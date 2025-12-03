@@ -41,6 +41,12 @@ export default function Profile() {
       onPress: () => router.push('/(tabs)/my-bookings' as any),
     },
     {
+      title: 'Achievements',
+      icon: 'trophy-outline',
+      badge: '🏆',
+      onPress: () => router.push('/(tabs)/achievements' as any),
+    },
+    {
       title: 'Informations personnelles',
       icon: 'person-outline',
       onPress: () => Alert.alert('Info', 'Fonctionnalité bientôt disponible'),
