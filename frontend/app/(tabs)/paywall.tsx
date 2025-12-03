@@ -16,32 +16,16 @@ import { subscriptionAPI } from '../../services/api';
 
 export default function Paywall() {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [purchasing, setPurchasing] = useState(false);
-  const [offering, setOffering] = useState<PurchasesOffering | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('yearly');
-
-  useEffect(() => {
-    loadOfferings();
-  }, []);
-
-  const loadOfferings = async () => {
-    try {
-      const currentOffering = await subscriptionService.getOfferings();
-      setOffering(currentOffering);
-    } catch (error) {
-      console.error('Erreur chargement offres:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleStartTrial = async () => {
     setPurchasing(true);
     try {
-      const success = await startTrial();
+      const response = await subscriptionAPI.startTrial();
       
-      if (success) {
+      if (response.data.success) {
         Alert.alert(
           'Essai Démarré ! 🎉',
           'Profitez de 7 jours gratuits de Sepalis Premium',
@@ -55,68 +39,28 @@ export default function Paywall() {
       } else {
         Alert.alert('Erreur', 'Impossible de démarrer l\'essai gratuit');
       }
-    } catch (error) {
-      Alert.alert('Erreur', 'Une erreur est survenue');
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.detail || 'Une erreur est survenue';
+      Alert.alert('Info', errorMsg);
     } finally {
       setPurchasing(false);
     }
   };
 
   const handlePurchase = async () => {
-    if (!offering) {
-      Alert.alert('Info', 'Mode démo - Configurez RevenueCat pour activer les achats réels');
-      return;
-    }
-
-    setPurchasing(true);
-    try {
-      const pkg = selectedPlan === 'monthly' 
-        ? offering.monthly 
-        : offering.annual;
-
-      if (!pkg) {
-        Alert.alert('Erreur', 'Package non disponible');
-        return;
-      }
-
-      const customerInfo = await subscriptionService.purchasePackage(pkg);
-      
-      if (customerInfo) {
-        await checkSubscription();
-        Alert.alert(
-          'Bienvenue Premium ! 🌟',
-          'Votre abonnement a été activé avec succès',
-          [
-            {
-              text: 'Continuer',
-              onPress: () => router.back(),
-            },
-          ]
-        );
-      }
-    } catch (error) {
-      console.error('Erreur achat:', error);
-    } finally {
-      setPurchasing(false);
-    }
+    Alert.alert(
+      'Mode Démo',
+      'L\'achat réel sera disponible une fois RevenueCat configuré. En attendant, utilisez le bouton "Démarrer l\'Essai Gratuit" pour tester.',
+      [{ text: 'OK' }]
+    );
   };
 
   const handleRestore = async () => {
-    setPurchasing(true);
-    try {
-      const customerInfo = await subscriptionService.restorePurchases();
-      
-      if (customerInfo) {
-        await checkSubscription();
-        Alert.alert('Succès', 'Vos achats ont été restaurés');
-      } else {
-        Alert.alert('Info', 'Aucun achat à restaurer');
-      }
-    } catch (error) {
-      Alert.alert('Erreur', 'Impossible de restaurer les achats');
-    } finally {
-      setPurchasing(false);
-    }
+    Alert.alert(
+      'Restauration',
+      'La restauration d\'achats sera disponible avec RevenueCat configuré.',
+      [{ text: 'OK' }]
+    );
   };
 
   const features = [
