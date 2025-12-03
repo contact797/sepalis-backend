@@ -173,6 +173,12 @@ export default function TabLayout() {
           tabBarButton: () => null,
         }}
       />
+      <Tabs.Screen
+        name="paywall"
+        options={{
+          tabBarButton: () => null,
+        }}
+      />
     </Tabs>
     </>
   );
