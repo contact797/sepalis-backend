@@ -19,6 +19,9 @@ import * as Location from 'expo-location';
 import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import WeatherWidget from '../../components/WeatherWidget';
+import TasksChart from '../../components/TasksChart';
+import TemperatureChart from '../../components/TemperatureChart';
+import StatCard from '../../components/StatCard';
 import { notificationService } from '../../services/notificationService';
 
 export default function Home() {
