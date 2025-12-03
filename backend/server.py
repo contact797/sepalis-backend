@@ -1452,6 +1452,54 @@ async def get_user_bookings(credentials: HTTPAuthorizationCredentials = Depends(
     }
 
 
+# ============ PUSH NOTIFICATIONS ROUTES ============
+@api_router.post("/user/push-token")
+async def register_push_token(token_data: PushTokenRequest, credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Register or update user's push notification token"""
+    user = await get_current_user(credentials)
+    
+    try:
+        # Update user with push token
+        await db.users.update_one(
+            {"_id": user["_id"]},
+            {
+                "$set": {
+                    "pushToken": token_data.token,
+                    "deviceType": token_data.deviceType,
+                    "pushTokenUpdatedAt": datetime.utcnow()
+                }
+            }
+        )
+        
+        return {"message": "Push token registered successfully", "token": token_data.token}
+    except Exception as e:
+        print(f"Erreur enregistrement token push: {str(e)}")
+        raise HTTPException(status_code=500, detail="Erreur lors de l'enregistrement du token")
+
+
+@api_router.delete("/user/push-token")
+async def delete_push_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Delete user's push notification token"""
+    user = await get_current_user(credentials)
+    
+    try:
+        await db.users.update_one(
+            {"_id": user["_id"]},
+            {
+                "$unset": {
+                    "pushToken": "",
+                    "deviceType": "",
+                    "pushTokenUpdatedAt": ""
+                }
+            }
+        )
+        
+        return {"message": "Push token deleted successfully"}
+    except Exception as e:
+        print(f"Erreur suppression token push: {str(e)}")
+        raise HTTPException(status_code=500, detail="Erreur lors de la suppression du token")
+
+
 # ============ WEATHER MODELS ============
 class WeatherCurrent(BaseModel):
     temperature: float
