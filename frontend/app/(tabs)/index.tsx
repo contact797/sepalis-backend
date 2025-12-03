@@ -112,6 +112,9 @@ export default function Home() {
   const onRefresh = () => {
     setRefreshing(true);
     loadData();
+    if (location) {
+      loadWeather(location.lat, location.lon);
+    }
   };
 
   const getTodayTasks = () => {
