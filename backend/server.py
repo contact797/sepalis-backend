@@ -60,6 +60,12 @@ class TokenResponse(BaseModel):
     user: UserResponse
 
 
+# ============ NOTIFICATION MODELS ============
+class PushTokenRequest(BaseModel):
+    token: str
+    deviceType: str  # "ios" or "android" or "web"
+
+
 # ============ PLANT MODELS ============
 class PlantBase(BaseModel):
     name: str
