@@ -426,6 +426,97 @@ async def delete_task(task_id: str, credentials: HTTPAuthorizationCredentials = 
     return {"message": "Task deleted successfully"}
 
 
+# ============ TASK SUGGESTIONS ROUTE ============
+@api_router.get("/user/tasks/suggestions")
+async def get_task_suggestions(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Generate intelligent task suggestions based on user's plants and current season"""
+    user = await get_current_user(credentials)
+    
+    # Récupérer les plantes de l'utilisateur
+    plants = await db.plants.find({"userId": user["_id"]}).to_list(100)
+    
+    # Déterminer le mois et la saison
+    current_month = datetime.utcnow().month
+    current_season = get_season(current_month)
+    
+    suggestions = []
+    
+    # Règles de tâches par saison
+    seasonal_tasks = {
+        "spring": [
+            {"title": "Préparer les semis", "description": "C'est le moment idéal pour préparer vos semis en godets. Choisissez des variétés adaptées à votre région.", "type": "general", "daysFromNow": 7},
+            {"title": "Nettoyer les massifs", "description": "Enlevez les feuilles mortes et préparez le sol pour les nouvelles plantations.", "type": "general", "daysFromNow": 3},
+            {"title": "Tailler les arbustes", "description": "Taillez les arbustes à floraison estivale pour favoriser une belle croissance.", "type": "pruning", "daysFromNow": 5},
+        ],
+        "summer": [
+            {"title": "Arroser régulièrement", "description": "Les fortes chaleurs nécessitent un arrosage régulier, de préférence tôt le matin ou tard le soir.", "type": "watering", "daysFromNow": 1},
+            {"title": "Récolter les légumes", "description": "C'est la saison des récoltes ! Cueillez régulièrement pour encourager la production.", "type": "general", "daysFromNow": 2},
+            {"title": "Pailler le sol", "description": "Appliquez un paillage pour conserver l'humidité et limiter les mauvaises herbes.", "type": "general", "daysFromNow": 7},
+        ],
+        "autumn": [
+            {"title": "Planter les bulbes", "description": "Plantez les bulbes de printemps (tulipes, narcisses, crocus) pour une floraison printanière.", "type": "general", "daysFromNow": 14},
+            {"title": "Ramasser les feuilles", "description": "Récupérez les feuilles mortes pour en faire du compost ou du paillage.", "type": "general", "daysFromNow": 5},
+            {"title": "Protéger les plantes sensibles", "description": "Commencez à protéger les plantes fragiles avant les premières gelées.", "type": "general", "daysFromNow": 10},
+        ],
+        "winter": [
+            {"title": "Planifier la saison prochaine", "description": "Profitez de l'hiver pour planifier vos cultures et commander vos graines.", "type": "general", "daysFromNow": 7},
+            {"title": "Entretenir les outils", "description": "Nettoyez, affûtez et huilez vos outils de jardinage.", "type": "general", "daysFromNow": 14},
+            {"title": "Protéger du gel", "description": "Vérifiez les protections hivernales et ajoutez un voile si nécessaire.", "type": "general", "daysFromNow": 3},
+        ]
+    }
+    
+    # Ajouter les tâches saisonnières
+    for task in seasonal_tasks.get(current_season, []):
+        due_date = datetime.utcnow() + timedelta(days=task["daysFromNow"])
+        suggestions.append({
+            "title": task["title"],
+            "description": task["description"],
+            "type": task["type"],
+            "dueDate": due_date.isoformat(),
+            "plantId": None
+        })
+    
+    # Tâches spécifiques par plante
+    for plant in plants:
+        plant_name = plant.get("name", "Plante")
+        watering_freq = plant.get("wateringFrequency", 7)
+        
+        # Tâche d'arrosage basée sur la fréquence
+        if watering_freq <= 3:
+            suggestions.append({
+                "title": f"Arroser {plant_name}",
+                "description": f"Cette plante nécessite un arrosage régulier (tous les {watering_freq} jours).",
+                "type": "watering",
+                "dueDate": (datetime.utcnow() + timedelta(days=watering_freq)).isoformat(),
+                "plantId": plant["_id"]
+            })
+        
+        # Tâche de fertilisation (tous les 2 mois en saison active)
+        if current_season in ["spring", "summer"]:
+            suggestions.append({
+                "title": f"Fertiliser {plant_name}",
+                "description": f"Apportez de l'engrais pour favoriser la croissance et la floraison.",
+                "type": "fertilizing",
+                "dueDate": (datetime.utcnow() + timedelta(days=30)).isoformat(),
+                "plantId": plant["_id"]
+            })
+    
+    # Limiter à 10 suggestions maximum
+    return {"suggestions": suggestions[:10]}
+
+
+def get_season(month: int) -> str:
+    """Retourne la saison en fonction du mois"""
+    if month in [3, 4, 5]:
+        return "spring"
+    elif month in [6, 7, 8]:
+        return "summer"
+    elif month in [9, 10, 11]:
+        return "autumn"
+    else:
+        return "winter"
+
+
 # ============ COURSES ROUTES ============
 @api_router.get("/courses", response_model=List[CourseResponse])
 async def get_courses():
