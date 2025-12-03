@@ -36,6 +36,7 @@ export default function Home() {
   const [weatherForecast, setWeatherForecast] = useState<any[]>([]);
   const [location, setLocation] = useState<{lat: number; lon: number} | null>(null);
   const [weatherLoading, setWeatherLoading] = useState(false);
+  const [allTasks, setAllTasks] = useState<any[]>([]);
 
   const notificationListener = useRef<any>();
   const responseListener = useRef<any>();
