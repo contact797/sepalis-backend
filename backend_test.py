@@ -841,6 +841,305 @@ class SepalisAPITester:
             self.log_test("Course Preregister (No Auth)", False, f"Request error: {str(e)}")
             return False
     
+    def test_user_bookings_without_auth(self):
+        """Test GET /user/bookings without authentication (should fail with 403)"""
+        try:
+            response = requests.get(f"{self.base_url}/user/bookings", timeout=10)
+            
+            if response.status_code == 403:
+                self.log_test("User Bookings (No Auth)", True, "Authentication correctly required (403)")
+                return True
+            elif response.status_code == 401:
+                self.log_test("User Bookings (No Auth)", True, "Authentication correctly required (401)")
+                return True
+            else:
+                self.log_test("User Bookings (No Auth)", False, f"Authentication not required - Status: {response.status_code}")
+                return False
+                
+        except Exception as e:
+            self.log_test("User Bookings (No Auth)", False, f"Request error: {str(e)}")
+            return False
+    
+    def test_user_bookings_empty(self):
+        """Test GET /user/bookings with no bookings (should return empty structure)"""
+        if not self.token:
+            self.log_test("User Bookings (Empty)", False, "No authentication token available")
+            return False
+            
+        try:
+            headers = {"Authorization": f"Bearer {self.token}"}
+            response = requests.get(
+                f"{self.base_url}/user/bookings",
+                headers=headers,
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Check required structure
+                required_keys = ["bookings", "total", "workshops", "courses"]
+                if all(key in data for key in required_keys):
+                    if (isinstance(data["bookings"], list) and 
+                        isinstance(data["total"], int) and 
+                        isinstance(data["workshops"], int) and 
+                        isinstance(data["courses"], int)):
+                        
+                        # For empty user, should be all zeros
+                        if (data["total"] == 0 and 
+                            data["workshops"] == 0 and 
+                            data["courses"] == 0 and 
+                            len(data["bookings"]) == 0):
+                            self.log_test("User Bookings (Empty)", True, "Empty bookings structure correct")
+                            return True
+                        else:
+                            self.log_test("User Bookings (Empty)", True, f"Bookings found: {data['total']} total, {data['workshops']} workshops, {data['courses']} courses")
+                            return True
+                    else:
+                        self.log_test("User Bookings (Empty)", False, f"Invalid data types in response: {data}")
+                        return False
+                else:
+                    missing = [k for k in required_keys if k not in data]
+                    self.log_test("User Bookings (Empty)", False, f"Missing required keys: {missing}")
+                    return False
+            else:
+                self.log_test("User Bookings (Empty)", False, f"HTTP {response.status_code}: {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("User Bookings (Empty)", False, f"Request error: {str(e)}")
+            return False
+    
+    def create_test_bookings_in_db(self):
+        """Create test bookings directly in MongoDB for testing"""
+        try:
+            import pymongo
+            from datetime import datetime, timedelta
+            import uuid
+            
+            # Connect to MongoDB
+            client = pymongo.MongoClient("mongodb://localhost:27017")
+            db = client["sepalis"]
+            
+            # Create a workshop booking
+            workshop_booking = {
+                "_id": str(uuid.uuid4()),
+                "workshopSlug": "taille-arbres-fruitiers",
+                "workshopTitle": "Apprendre la Taille des Arbres Fruitiers",
+                "selectedDate": "2024-03-15",
+                "timeSlot": "morning",
+                "timeSlotDisplay": "09:00-12:00",
+                "participants": 2,
+                "firstName": "Marie",
+                "lastName": "Dupont",
+                "email": TEST_USER_EMAIL,
+                "phone": "0123456789",
+                "userId": self.user_id,
+                "totalAmount": 70.0,
+                "paymentStatus": "paid",
+                "stripeSessionId": f"cs_test_{uuid.uuid4().hex}",
+                "createdAt": datetime.now() - timedelta(days=2),
+                "paidAt": datetime.now() - timedelta(days=2)
+            }
+            
+            # Create a course booking
+            course_booking = {
+                "_id": str(uuid.uuid4()),
+                "courseSlug": "massif-fleuri",
+                "courseTitle": "Massif Fleuri Toute l'Année",
+                "firstName": "Marie",
+                "lastName": "Dupont",
+                "email": TEST_USER_EMAIL,
+                "phone": "0123456789",
+                "userId": self.user_id,
+                "totalAmount": 39.0,
+                "duration": "4 semaines",
+                "level": "Tous niveaux",
+                "paymentStatus": "paid",
+                "stripeSessionId": f"cs_test_{uuid.uuid4().hex}",
+                "createdAt": datetime.now() - timedelta(days=1),
+                "paidAt": datetime.now() - timedelta(days=1)
+            }
+            
+            # Insert bookings
+            db.workshop_bookings.insert_one(workshop_booking)
+            db.course_bookings.insert_one(course_booking)
+            
+            # Store IDs for cleanup
+            self.test_workshop_booking_id = workshop_booking["_id"]
+            self.test_course_booking_id = course_booking["_id"]
+            
+            client.close()
+            return True
+            
+        except Exception as e:
+            print(f"Error creating test bookings: {str(e)}")
+            return False
+    
+    def cleanup_test_bookings(self):
+        """Clean up test bookings from MongoDB"""
+        try:
+            import pymongo
+            
+            client = pymongo.MongoClient("mongodb://localhost:27017")
+            db = client["sepalis"]
+            
+            if hasattr(self, 'test_workshop_booking_id'):
+                db.workshop_bookings.delete_one({"_id": self.test_workshop_booking_id})
+            
+            if hasattr(self, 'test_course_booking_id'):
+                db.course_bookings.delete_one({"_id": self.test_course_booking_id})
+            
+            client.close()
+            
+        except Exception as e:
+            print(f"Error cleaning up test bookings: {str(e)}")
+    
+    def test_user_bookings_with_data(self):
+        """Test GET /user/bookings with actual booking data"""
+        if not self.token:
+            self.log_test("User Bookings (With Data)", False, "No authentication token available")
+            return False
+        
+        # Create test bookings
+        if not self.create_test_bookings_in_db():
+            self.log_test("User Bookings (With Data)", False, "Failed to create test bookings")
+            return False
+            
+        try:
+            headers = {"Authorization": f"Bearer {self.token}"}
+            response = requests.get(
+                f"{self.base_url}/user/bookings",
+                headers=headers,
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Check structure
+                if not all(key in data for key in ["bookings", "total", "workshops", "courses"]):
+                    self.log_test("User Bookings (With Data)", False, "Missing required keys in response")
+                    return False
+                
+                # Should have 2 bookings total (1 workshop + 1 course)
+                if data["total"] >= 2 and data["workshops"] >= 1 and data["courses"] >= 1:
+                    self.log_test("User Bookings (With Data)", True, f"Found bookings: {data['total']} total, {data['workshops']} workshops, {data['courses']} courses")
+                    
+                    # Check bookings array structure
+                    bookings = data["bookings"]
+                    if len(bookings) >= 2:
+                        # Check workshop booking structure
+                        workshop_booking = None
+                        course_booking = None
+                        
+                        for booking in bookings:
+                            if booking.get("type") == "workshop":
+                                workshop_booking = booking
+                            elif booking.get("type") == "course":
+                                course_booking = booking
+                        
+                        # Validate workshop booking structure
+                        if workshop_booking:
+                            workshop_fields = ["id", "type", "title", "slug", "date", "timeSlot", "timeSlotDisplay", "participants", "totalAmount", "paymentStatus", "createdAt", "paidAt"]
+                            missing_workshop_fields = [f for f in workshop_fields if f not in workshop_booking]
+                            if missing_workshop_fields:
+                                self.log_test("User Bookings (With Data)", False, f"Workshop booking missing fields: {missing_workshop_fields}")
+                                return False
+                        
+                        # Validate course booking structure
+                        if course_booking:
+                            course_fields = ["id", "type", "title", "slug", "duration", "level", "totalAmount", "paymentStatus", "createdAt", "paidAt"]
+                            missing_course_fields = [f for f in course_fields if f not in course_booking]
+                            if missing_course_fields:
+                                self.log_test("User Bookings (With Data)", False, f"Course booking missing fields: {missing_course_fields}")
+                                return False
+                        
+                        # Check sorting (most recent first)
+                        if len(bookings) >= 2:
+                            first_date = bookings[0].get("createdAt", "")
+                            second_date = bookings[1].get("createdAt", "")
+                            if first_date >= second_date:
+                                self.log_test("User Bookings (With Data)", True, "Bookings correctly sorted by creation date (most recent first)")
+                            else:
+                                self.log_test("User Bookings (With Data)", False, f"Incorrect sorting: {first_date} should be >= {second_date}")
+                                return False
+                        
+                        return True
+                    else:
+                        self.log_test("User Bookings (With Data)", False, f"Expected at least 2 bookings, got {len(bookings)}")
+                        return False
+                else:
+                    self.log_test("User Bookings (With Data)", False, f"Insufficient bookings: total={data['total']}, workshops={data['workshops']}, courses={data['courses']}")
+                    return False
+            else:
+                self.log_test("User Bookings (With Data)", False, f"HTTP {response.status_code}: {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("User Bookings (With Data)", False, f"Request error: {str(e)}")
+            return False
+        finally:
+            # Clean up test data
+            self.cleanup_test_bookings()
+    
+    def test_user_bookings_data_format(self):
+        """Test that booking data is properly formatted"""
+        if not self.token:
+            self.log_test("User Bookings (Data Format)", False, "No authentication token available")
+            return False
+        
+        # Create test bookings
+        if not self.create_test_bookings_in_db():
+            self.log_test("User Bookings (Data Format)", False, "Failed to create test bookings")
+            return False
+            
+        try:
+            headers = {"Authorization": f"Bearer {self.token}"}
+            response = requests.get(
+                f"{self.base_url}/user/bookings",
+                headers=headers,
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                for booking in data["bookings"]:
+                    # Check data types
+                    if not isinstance(booking.get("totalAmount"), (int, float)):
+                        self.log_test("User Bookings (Data Format)", False, f"totalAmount should be numeric: {booking.get('totalAmount')}")
+                        return False
+                    
+                    if booking.get("type") == "workshop":
+                        if not isinstance(booking.get("participants"), int):
+                            self.log_test("User Bookings (Data Format)", False, f"participants should be integer: {booking.get('participants')}")
+                            return False
+                    
+                    # Check date formats (should be ISO strings)
+                    for date_field in ["createdAt", "paidAt"]:
+                        if booking.get(date_field):
+                            try:
+                                # Try to parse ISO date
+                                from datetime import datetime
+                                datetime.fromisoformat(booking[date_field].replace('Z', '+00:00'))
+                            except ValueError:
+                                self.log_test("User Bookings (Data Format)", False, f"Invalid date format for {date_field}: {booking[date_field]}")
+                                return False
+                
+                self.log_test("User Bookings (Data Format)", True, "All booking data properly formatted")
+                return True
+            else:
+                self.log_test("User Bookings (Data Format)", False, f"HTTP {response.status_code}: {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("User Bookings (Data Format)", False, f"Request error: {str(e)}")
+            return False
+        finally:
+            # Clean up test data
+            self.cleanup_test_bookings()
+    
     def run_all_tests(self):
         """Run all backend tests in sequence"""
         print(f"🚀 Starting Sepalis Backend API Tests")
