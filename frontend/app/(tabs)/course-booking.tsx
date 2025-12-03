@@ -65,6 +65,9 @@ export default function CourseBooking() {
                        process.env.EXPO_PUBLIC_BACKEND_URL || 
                        'https://sepalis-app.preview.emergentagent.com';
 
+      console.log('🔵 Formation booking - Course:', course.slug);
+      console.log('🔵 Origin URL:', originUrl);
+
       const bookingData = {
         workshopSlug: course.slug, // Re-using the workshop field name for API compatibility
         selectedDate: new Date().toISOString().split('T')[0], // Dummy date for online course
@@ -77,18 +80,31 @@ export default function CourseBooking() {
         originUrl,
       };
 
+      console.log('🔵 Appel API bookCourse...');
       const response = await coursesAPI.bookCourse(bookingData);
+      console.log('✅ Réponse API:', response.data);
 
       if (response.data.checkout_url) {
-        // Open Stripe Checkout in browser
-        const result = await WebBrowser.openBrowserAsync(response.data.checkout_url);
+        console.log('🔵 Ouverture Stripe URL:', response.data.checkout_url);
         
-        if (result.type === 'cancel') {
-          Alert.alert('Paiement annulé', 'Votre inscription n\'a pas été finalisée.');
+        // Try Linking first (works better on web and mobile)
+        const canOpen = await Linking.canOpenURL(response.data.checkout_url);
+        console.log('🔵 Can open URL:', canOpen);
+        
+        if (canOpen) {
+          await Linking.openURL(response.data.checkout_url);
+        } else {
+          // Fallback to WebBrowser
+          console.log('🔵 Using WebBrowser fallback');
+          await WebBrowser.openBrowserAsync(response.data.checkout_url);
         }
+      } else {
+        console.error('❌ Pas de checkout_url dans la réponse');
+        Alert.alert('Erreur', 'URL de paiement manquante');
       }
     } catch (error: any) {
-      console.error('Erreur inscription:', error);
+      console.error('❌ Erreur inscription:', error);
+      console.error('❌ Error details:', error.response?.data);
       Alert.alert(
         'Erreur',
         error.response?.data?.detail || 'Impossible de créer l\'inscription. Veuillez réessayer.'
