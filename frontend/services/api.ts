@@ -181,3 +181,12 @@ export const userAPI = {
   getUserBookings: () =>
     api.get('/user/bookings'),
 };
+
+// Weather API
+export const weatherAPI = {
+  getCurrentWeather: (lat: number, lon: number) =>
+    api.get('/weather/current', { params: { lat, lon } }),
+  
+  getForecast: (lat: number, lon: number, days: number = 7) =>
+    api.get('/weather/forecast', { params: { lat, lon, days } }),
+};
