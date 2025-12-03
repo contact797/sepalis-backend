@@ -1355,6 +1355,107 @@ async def get_user_bookings(credentials: HTTPAuthorizationCredentials = Depends(
     }
 
 
+# ============ WEATHER MODELS ============
+class WeatherCurrent(BaseModel):
+    temperature: float
+    apparent_temperature: float
+    humidity: int
+    precipitation: float
+    weather_code: int
+    wind_speed: float
+    wind_direction: int
+
+class WeatherForecastDay(BaseModel):
+    date: str
+    temperature_max: float
+    temperature_min: float
+    precipitation_sum: float
+    weather_code: int
+    sunrise: str
+    sunset: str
+
+class WeatherForecastResponse(BaseModel):
+    daily: List[WeatherForecastDay]
+
+
+# ============ WEATHER ROUTES ============
+@api_router.get("/weather/current")
+async def get_current_weather(lat: float, lon: float):
+    """Get current weather for given coordinates using Open-Meteo API"""
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                "https://api.open-meteo.com/v1/forecast",
+                params={
+                    "latitude": lat,
+                    "longitude": lon,
+                    "current": "temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,wind_direction_10m",
+                    "timezone": "auto"
+                }
+            )
+            response.raise_for_status()
+            data = response.json()
+            
+            current = data.get("current", {})
+            
+            return {
+                "temperature": current.get("temperature_2m"),
+                "apparent_temperature": current.get("apparent_temperature"),
+                "humidity": current.get("relative_humidity_2m"),
+                "precipitation": current.get("precipitation", 0),
+                "weather_code": current.get("weather_code"),
+                "wind_speed": current.get("wind_speed_10m"),
+                "wind_direction": current.get("wind_direction_10m"),
+                "latitude": lat,
+                "longitude": lon
+            }
+    except Exception as e:
+        print(f"Erreur météo actuelle: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la récupération de la météo: {str(e)}")
+
+
+@api_router.get("/weather/forecast")
+async def get_weather_forecast(lat: float, lon: float, days: int = 7):
+    """Get weather forecast for given coordinates (7 days by default) using Open-Meteo API"""
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                "https://api.open-meteo.com/v1/forecast",
+                params={
+                    "latitude": lat,
+                    "longitude": lon,
+                    "daily": "temperature_2m_max,temperature_2m_min,precipitation_sum,weather_code,sunrise,sunset",
+                    "timezone": "auto",
+                    "forecast_days": min(days, 16)  # Open-Meteo supports up to 16 days
+                }
+            )
+            response.raise_for_status()
+            data = response.json()
+            
+            daily = data.get("daily", {})
+            forecast_days = []
+            
+            for i in range(len(daily.get("time", []))):
+                forecast_days.append({
+                    "date": daily["time"][i],
+                    "temperature_max": daily["temperature_2m_max"][i],
+                    "temperature_min": daily["temperature_2m_min"][i],
+                    "precipitation_sum": daily["precipitation_sum"][i],
+                    "weather_code": daily["weather_code"][i],
+                    "sunrise": daily["sunrise"][i],
+                    "sunset": daily["sunset"][i]
+                })
+            
+            return {
+                "daily": forecast_days,
+                "latitude": lat,
+                "longitude": lon
+            }
+    except Exception as e:
+        print(f"Erreur prévisions météo: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la récupération des prévisions: {str(e)}")
+
+
 # ============ ROOT ROUTE ============
 @api_router.get("/")
 async def root():
