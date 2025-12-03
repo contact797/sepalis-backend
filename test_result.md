@@ -153,9 +153,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Système de pré-inscription aux formations"
-    - "Endpoints API pour formations avec images"
-    - "Affichage d'images pour les formations dans l'académie"
+    - "Backend endpoint pour l'historique des réservations"
+    - "Page Mes réservations - Historique des réservations"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
