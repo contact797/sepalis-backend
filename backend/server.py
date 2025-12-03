@@ -1757,6 +1757,143 @@ async def get_user_gamification(credentials: HTTPAuthorizationCredentials = Depe
     }
 
 
+# ============ SUBSCRIPTION ROUTES ============
+@api_router.get("/user/subscription")
+async def get_subscription_status(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Get current user's subscription status"""
+    user = await get_current_user(credentials)
+    
+    subscription = user.get("subscription", {})
+    is_active = subscription.get("isActive", False)
+    expires_at = subscription.get("expiresAt")
+    
+    # Vérifier si l'abonnement a expiré
+    if is_active and expires_at:
+        if isinstance(expires_at, str):
+            expires_at = datetime.fromisoformat(expires_at.replace('Z', '+00:00'))
+        
+        if datetime.utcnow() > expires_at:
+            is_active = False
+            await db.users.update_one(
+                {"_id": user["_id"]},
+                {"$set": {"subscription.isActive": False}}
+            )
+    
+    return {
+        "isActive": is_active,
+        "isTrial": subscription.get("isTrial", True),
+        "type": subscription.get("type"),
+        "expiresAt": subscription.get("expiresAt"),
+        "provider": subscription.get("provider", "revenuecat")
+    }
+
+
+@api_router.post("/webhooks/revenuecat")
+async def revenuecat_webhook(request: Request):
+    """Webhook pour recevoir les événements RevenueCat"""
+    try:
+        body = await request.json()
+        event_type = body.get("event", {}).get("type")
+        app_user_id = body.get("event", {}).get("app_user_id")
+        
+        if not app_user_id:
+            return {"status": "error", "message": "Missing app_user_id"}
+        
+        # Trouver l'utilisateur
+        user = await db.users.find_one({"_id": app_user_id})
+        if not user:
+            return {"status": "error", "message": "User not found"}
+        
+        # Gérer les différents types d'événements
+        if event_type == "INITIAL_PURCHASE":
+            # Nouvel abonnement
+            product_id = body.get("event", {}).get("product_id", "")
+            subscription_type = "yearly" if "yearly" in product_id or "annual" in product_id else "monthly"
+            expires_at = body.get("event", {}).get("expiration_at_ms")
+            
+            if expires_at:
+                expires_at = datetime.fromtimestamp(expires_at / 1000)
+            
+            await db.users.update_one(
+                {"_id": app_user_id},
+                {
+                    "$set": {
+                        "subscription.isActive": True,
+                        "subscription.isTrial": False,
+                        "subscription.type": subscription_type,
+                        "subscription.expiresAt": expires_at,
+                        "subscription.provider": "revenuecat",
+                        "subscription.customerId": body.get("event", {}).get("subscriber_id")
+                    }
+                }
+            )
+            
+        elif event_type == "RENEWAL":
+            # Renouvellement
+            expires_at = body.get("event", {}).get("expiration_at_ms")
+            if expires_at:
+                expires_at = datetime.fromtimestamp(expires_at / 1000)
+            
+            await db.users.update_one(
+                {"_id": app_user_id},
+                {
+                    "$set": {
+                        "subscription.isActive": True,
+                        "subscription.expiresAt": expires_at
+                    }
+                }
+            )
+            
+        elif event_type in ["CANCELLATION", "EXPIRATION"]:
+            # Annulation ou expiration
+            await db.users.update_one(
+                {"_id": app_user_id},
+                {
+                    "$set": {
+                        "subscription.isActive": False
+                    }
+                }
+            )
+        
+        return {"status": "success"}
+        
+    except Exception as e:
+        print(f"Erreur webhook RevenueCat: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
+
+@api_router.post("/user/start-trial")
+async def start_trial(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Démarrer la période d'essai de 7 jours"""
+    user = await get_current_user(credentials)
+    
+    # Vérifier si l'utilisateur n'a pas déjà eu un essai
+    subscription = user.get("subscription", {})
+    if subscription.get("hasHadTrial", False):
+        raise HTTPException(status_code=400, detail="Trial already used")
+    
+    # Démarrer l'essai
+    trial_expires = datetime.utcnow() + timedelta(days=7)
+    
+    await db.users.update_one(
+        {"_id": user["_id"]},
+        {
+            "$set": {
+                "subscription.isActive": True,
+                "subscription.isTrial": True,
+                "subscription.hasHadTrial": True,
+                "subscription.expiresAt": trial_expires,
+                "subscription.provider": "trial"
+            }
+        }
+    )
+    
+    return {
+        "success": True,
+        "expiresAt": trial_expires.isoformat()
+    }
+
+
 # ============ WEATHER MODELS ============
 class WeatherCurrent(BaseModel):
     temperature: float
