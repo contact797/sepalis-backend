@@ -128,18 +128,6 @@ export const workshopsAPI = {
     api.get(`/workshops/booking/${sessionId}/status`),
 };
 
-// Subscription API
-export const subscriptionAPI = {
-  createCheckoutSession: (planData: any) =>
-    api.post('/create-checkout-session', planData),
-  
-  getSubscriptionStatus: () =>
-    api.get('/subscription/status'),
-  
-  cancelSubscription: () =>
-    api.post('/cancel-subscription'),
-};
-
 // AI Recognition API
 export const aiAPI = {
   identifyPlant: (imageBase64: string) =>
