@@ -152,16 +152,17 @@ export default function Home() {
 
   const loadData = async () => {
     try {
-      const [tasksResponse, plantsResponse, zonesResponse] = await Promise.all([
-        tasksAPI.getTasks(),
-        plantsAPI.getUserPlants(),
-        zonesAPI.getZones(),
+      // Utiliser le service de synchronisation (cache ou serveur)
+      const [fetchedTasks, fetchedPlants, fetchedZones] = await Promise.all([
+        syncService.getTasks(),
+        syncService.getPlants(),
+        syncService.getZones(),
       ]);
-      const fetchedTasks = tasksResponse.data;
+      
       setAllTasks(fetchedTasks);
       setTasks(fetchedTasks.filter((task: any) => !task.completed));
-      setPlants(plantsResponse.data);
-      setZones(zonesResponse.data);
+      setPlants(fetchedPlants);
+      setZones(fetchedZones);
 
       // Programmer les notifications pour les tâches du jour
       await notificationService.scheduleDailyTaskReminder(fetchedTasks);
