@@ -16,12 +16,12 @@ BASE_URL = "https://garden-booking-2.preview.emergentagent.com/api"
 PARIS_LAT = 48.8566
 PARIS_LON = 2.3522
 
-class SepalisAPITester:
+class WeatherAPITester:
     def __init__(self):
-        self.base_url = BASE_URL
-        self.token = None
-        self.user_id = None
+        self.client = httpx.AsyncClient(timeout=30.0)
         self.test_results = []
+        self.passed_tests = 0
+        self.total_tests = 0
         
     def log_test(self, test_name, success, message, response_data=None):
         """Log test results"""
