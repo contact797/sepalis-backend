@@ -144,6 +144,18 @@ export default function TabLayout() {
           tabBarButton: () => null,
         }}
       />
+      <Tabs.Screen
+        name="course-booking"
+        options={{
+          tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="course-booking-success"
+        options={{
+          tabBarButton: () => null,
+        }}
+      />
     </Tabs>
   );
 }
