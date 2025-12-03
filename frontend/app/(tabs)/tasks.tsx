@@ -112,43 +112,52 @@ export default function Tasks() {
 
   return (
     <View style={styles.container}>
-      {/* Filtres */}
-      <View style={styles.filterContainer}>
-        <TouchableOpacity
-          style={[styles.filterButton, filter === 'pending' && styles.filterButtonActive]}
-          onPress={() => setFilter('pending')}
-        >
-          <Text
-            style={[
-              styles.filterText,
-              filter === 'pending' && styles.filterTextActive,
-            ]}
+      {/* Header with Suggestions button */}
+      <View style={styles.headerContainer}>
+        <View style={styles.filterContainer}>
+          <TouchableOpacity
+            style={[styles.filterButton, filter === 'pending' && styles.filterButtonActive]}
+            onPress={() => setFilter('pending')}
           >
-            À faire
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.filterButton, filter === 'completed' && styles.filterButtonActive]}
-          onPress={() => setFilter('completed')}
-        >
-          <Text
-            style={[
-              styles.filterText,
-              filter === 'completed' && styles.filterTextActive,
-            ]}
+            <Text
+              style={[
+                styles.filterText,
+                filter === 'pending' && styles.filterTextActive,
+              ]}
+            >
+              À faire
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.filterButton, filter === 'completed' && styles.filterButtonActive]}
+            onPress={() => setFilter('completed')}
           >
-            Terminées
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.filterButton, filter === 'all' && styles.filterButtonActive]}
-          onPress={() => setFilter('all')}
-        >
-          <Text
-            style={[styles.filterText, filter === 'all' && styles.filterTextActive]}
+            <Text
+              style={[
+                styles.filterText,
+                filter === 'completed' && styles.filterTextActive,
+              ]}
+            >
+              Terminées
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.filterButton, filter === 'all' && styles.filterButtonActive]}
+            onPress={() => setFilter('all')}
           >
-            Toutes
-          </Text>
+            <Text
+              style={[styles.filterText, filter === 'all' && styles.filterTextActive]}
+            >
+              Toutes
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <TouchableOpacity
+          style={styles.suggestionsButton}
+          onPress={() => setShowSuggestionsModal(true)}
+        >
+          <Ionicons name="bulb" size={20} color={Colors.accent} />
+          <Text style={styles.suggestionsButtonText}>Suggestions</Text>
         </TouchableOpacity>
       </View>
 
