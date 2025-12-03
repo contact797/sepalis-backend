@@ -296,6 +296,35 @@ export default function Home() {
         <WeatherWidget current={weatherCurrent} forecast={weatherForecast} />
       )}
 
+      {/* Stat Cards */}
+      <View style={styles.statCardsContainer}>
+        <StatCard
+          title="Taux de complétion"
+          value={`${getCompletionRate()}%`}
+          icon="checkmark-circle"
+          color={Colors.success}
+          subtitle={`${allTasks.filter((t: any) => t.completed).length}/${allTasks.length} tâches`}
+        />
+        <StatCard
+          title="Tâches en cours"
+          value={tasks.length}
+          icon="list"
+          color={Colors.accent}
+          subtitle="À compléter"
+          onPress={() => router.push('/(tabs)/tasks')}
+        />
+      </View>
+
+      {/* Graphique des tâches */}
+      {allTasks.length > 0 && (
+        <TasksChart data={getTasksChartData()} />
+      )}
+
+      {/* Graphique des températures */}
+      {weatherForecast.length > 0 && (
+        <TemperatureChart forecast={weatherForecast} />
+      )}
+
       {/* Statistiques */}
       <View style={styles.statsContainer}>
         <View style={styles.statCard}>
