@@ -19,7 +19,7 @@ export default function CourseDetail() {
 
   const handlePreregister = () => {
     router.push({
-      pathname: '/(tabs)/course-preregister',
+      pathname: '/(tabs)/course-booking',
       params: { course: JSON.stringify(course) },
     });
   };
