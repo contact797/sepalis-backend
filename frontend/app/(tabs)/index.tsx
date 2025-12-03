@@ -34,10 +34,62 @@ export default function Home() {
   const [location, setLocation] = useState<{lat: number; lon: number} | null>(null);
   const [weatherLoading, setWeatherLoading] = useState(false);
 
+  const notificationListener = useRef<any>();
+  const responseListener = useRef<any>();
+
   useEffect(() => {
     loadData();
     loadLocation();
+    setupNotifications();
+
+    // Écouter les notifications reçues
+    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+      console.log('Notification reçue:', notification);
+    });
+
+    // Écouter les interactions avec les notifications
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+      console.log('Interaction notification:', response);
+      const data = response.notification.request.content.data;
+      
+      // Naviguer selon le type de notification
+      if (data.type === 'task-reminder' && data.taskId) {
+        router.push('/(tabs)/tasks');
+      }
+    });
+
+    return () => {
+      if (notificationListener.current) {
+        Notifications.removeNotificationSubscription(notificationListener.current);
+      }
+      if (responseListener.current) {
+        Notifications.removeNotificationSubscription(responseListener.current);
+      }
+    };
   }, []);
+
+  const setupNotifications = async () => {
+    try {
+      // Demander les permissions
+      const hasPermission = await notificationService.requestPermissions();
+      
+      if (hasPermission) {
+        // Obtenir le token push
+        const pushToken = await notificationService.getExpoPushToken();
+        
+        if (pushToken) {
+          // Enregistrer le token sur le serveur
+          await notificationsAPI.registerPushToken(
+            pushToken,
+            Platform.OS === 'ios' ? 'ios' : Platform.OS === 'android' ? 'android' : 'web'
+          );
+          console.log('Token push enregistré avec succès');
+        }
+      }
+    } catch (error) {
+      console.error('Erreur configuration notifications:', error);
+    }
+  };
 
   const loadLocation = async () => {
     try {
