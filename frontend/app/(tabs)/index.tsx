@@ -7,12 +7,17 @@ import {
   RefreshControl,
   TouchableOpacity,
   ActivityIndicator,
+  Alert,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
-import { tasksAPI, plantsAPI, zonesAPI } from '../../services/api';
+import { tasksAPI, plantsAPI, zonesAPI, weatherAPI } from '../../services/api';
 import { Colors } from '../../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
+import * as Location from 'expo-location';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import WeatherWidget from '../../components/WeatherWidget';
 
 export default function Home() {
   const { user } = useAuth();
