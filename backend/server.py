@@ -1500,6 +1500,253 @@ async def delete_push_token(credentials: HTTPAuthorizationCredentials = Depends(
         raise HTTPException(status_code=500, detail="Erreur lors de la suppression du token")
 
 
+# ============ GAMIFICATION SYSTEM ============
+def calculate_user_level(xp: int) -> dict:
+    """Calculate user level based on XP"""
+    levels = [
+        {"level": 1, "name": "Jardinier Débutant", "min_xp": 0, "max_xp": 100},
+        {"level": 2, "name": "Jardinier Apprenti", "min_xp": 100, "max_xp": 300},
+        {"level": 3, "name": "Jardinier Confirmé", "min_xp": 300, "max_xp": 600},
+        {"level": 4, "name": "Jardinier Expérimenté", "min_xp": 600, "max_xp": 1000},
+        {"level": 5, "name": "Jardinier Expert", "min_xp": 1000, "max_xp": 1500},
+        {"level": 6, "name": "Maître Jardinier", "min_xp": 1500, "max_xp": 2500},
+        {"level": 7, "name": "Légende du Jardin", "min_xp": 2500, "max_xp": float('inf')},
+    ]
+    
+    for level_info in levels:
+        if level_info["min_xp"] <= xp < level_info["max_xp"]:
+            progress = 0
+            if level_info["max_xp"] != float('inf'):
+                progress = ((xp - level_info["min_xp"]) / (level_info["max_xp"] - level_info["min_xp"])) * 100
+            else:
+                progress = 100
+                
+            return {
+                **level_info,
+                "current_xp": xp,
+                "progress": round(progress, 1)
+            }
+    
+    return levels[0]
+
+
+def check_user_badges(user_data: dict, tasks: list, plants: list, zones: list) -> list:
+    """Check which badges the user has earned"""
+    badges = []
+    
+    # Badge: Premier Jardin
+    if len(zones) >= 1:
+        badges.append({
+            "id": "first_garden",
+            "name": "Premier Jardin",
+            "description": "Créer votre première zone de jardin",
+            "icon": "grid",
+            "color": "#4CAF50",
+            "earned": True,
+            "earnedAt": datetime.utcnow().isoformat()
+        })
+    
+    # Badge: Collectionneur de Plantes
+    if len(plants) >= 5:
+        badges.append({
+            "id": "plant_collector",
+            "name": "Collectionneur de Plantes",
+            "description": "Avoir 5 plantes ou plus dans votre jardin",
+            "icon": "leaf",
+            "color": "#8BC34A",
+            "earned": True,
+            "earnedAt": datetime.utcnow().isoformat()
+        })
+    
+    # Badge: Expert en Tomates
+    tomato_plants = [p for p in plants if "tomate" in p.get("name", "").lower()]
+    if len(tomato_plants) >= 3:
+        badges.append({
+            "id": "tomato_expert",
+            "name": "Expert en Tomates",
+            "description": "Cultiver 3 plants de tomates ou plus",
+            "icon": "nutrition",
+            "color": "#FF5722",
+            "earned": True,
+            "earnedAt": datetime.utcnow().isoformat()
+        })
+    
+    # Badge: Jardinier Assidu
+    completed_tasks = [t for t in tasks if t.get("completed")]
+    if len(completed_tasks) >= 10:
+        badges.append({
+            "id": "task_master",
+            "name": "Jardinier Assidu",
+            "description": "Compléter 10 tâches",
+            "icon": "checkmark-done",
+            "color": "#2196F3",
+            "earned": True,
+            "earnedAt": datetime.utcnow().isoformat()
+        })
+    
+    # Badge: Marathonien du Jardin
+    if len(completed_tasks) >= 50:
+        badges.append({
+            "id": "task_marathon",
+            "name": "Marathonien du Jardin",
+            "description": "Compléter 50 tâches",
+            "icon": "trophy",
+            "color": "#FFD700",
+            "earned": True,
+            "earnedAt": datetime.utcnow().isoformat()
+        })
+    
+    # Badge: Jardin Diversifié
+    if len(zones) >= 3:
+        badges.append({
+            "id": "diverse_garden",
+            "name": "Jardin Diversifié",
+            "description": "Créer 3 zones différentes",
+            "icon": "apps",
+            "color": "#9C27B0",
+            "earned": True,
+            "earnedAt": datetime.utcnow().isoformat()
+        })
+    
+    # Badge: Météo Master
+    # Ce badge sera débloqué si l'utilisateur a consulté la météo (on suppose qu'il l'a fait)
+    badges.append({
+        "id": "weather_master",
+        "name": "Météo Master",
+        "description": "Consulter les prévisions météo",
+        "icon": "sunny",
+        "color": "#FFC107",
+        "earned": True,
+        "earnedAt": datetime.utcnow().isoformat()
+    })
+    
+    return badges
+
+
+def calculate_user_xp(tasks: list, plants: list, zones: list) -> int:
+    """Calculate total XP based on user activities"""
+    xp = 0
+    
+    # XP par zone créée
+    xp += len(zones) * 50
+    
+    # XP par plante ajoutée
+    xp += len(plants) * 20
+    
+    # XP par tâche complétée
+    completed_tasks = [t for t in tasks if t.get("completed")]
+    xp += len(completed_tasks) * 10
+    
+    # Bonus XP pour jalons
+    if len(plants) >= 10:
+        xp += 100
+    if len(completed_tasks) >= 20:
+        xp += 150
+    if len(zones) >= 5:
+        xp += 200
+    
+    return xp
+
+
+@api_router.get("/user/gamification")
+async def get_user_gamification(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Get user's gamification data: level, XP, and badges"""
+    user = await get_current_user(credentials)
+    
+    # Récupérer toutes les données utilisateur
+    tasks = await db.tasks.find({"userId": user["_id"]}).to_list(1000)
+    plants = await db.plants.find({"userId": user["_id"]}).to_list(1000)
+    zones = await db.zones.find({"userId": user["_id"]}).to_list(1000)
+    
+    # Calculer XP
+    total_xp = calculate_user_xp(tasks, plants, zones)
+    
+    # Calculer niveau
+    level_info = calculate_user_level(total_xp)
+    
+    # Vérifier badges
+    earned_badges = check_user_badges(user, tasks, plants, zones)
+    
+    # Tous les badges possibles (earned + not earned)
+    all_possible_badges = [
+        {
+            "id": "first_garden",
+            "name": "Premier Jardin",
+            "description": "Créer votre première zone de jardin",
+            "icon": "grid",
+            "color": "#4CAF50",
+            "earned": False
+        },
+        {
+            "id": "plant_collector",
+            "name": "Collectionneur de Plantes",
+            "description": "Avoir 5 plantes ou plus dans votre jardin",
+            "icon": "leaf",
+            "color": "#8BC34A",
+            "earned": False
+        },
+        {
+            "id": "tomato_expert",
+            "name": "Expert en Tomates",
+            "description": "Cultiver 3 plants de tomates ou plus",
+            "icon": "nutrition",
+            "color": "#FF5722",
+            "earned": False
+        },
+        {
+            "id": "task_master",
+            "name": "Jardinier Assidu",
+            "description": "Compléter 10 tâches",
+            "icon": "checkmark-done",
+            "color": "#2196F3",
+            "earned": False
+        },
+        {
+            "id": "task_marathon",
+            "name": "Marathonien du Jardin",
+            "description": "Compléter 50 tâches",
+            "icon": "trophy",
+            "color": "#FFD700",
+            "earned": False
+        },
+        {
+            "id": "diverse_garden",
+            "name": "Jardin Diversifié",
+            "description": "Créer 3 zones différentes",
+            "icon": "apps",
+            "color": "#9C27B0",
+            "earned": False
+        },
+        {
+            "id": "weather_master",
+            "name": "Météo Master",
+            "description": "Consulter les prévisions météo",
+            "icon": "sunny",
+            "color": "#FFC107",
+            "earned": False
+        },
+    ]
+    
+    # Marquer les badges gagnés
+    earned_ids = {b["id"] for b in earned_badges}
+    for badge in all_possible_badges:
+        if badge["id"] in earned_ids:
+            badge["earned"] = True
+            earned_badge = next(b for b in earned_badges if b["id"] == badge["id"])
+            badge["earnedAt"] = earned_badge.get("earnedAt")
+    
+    return {
+        "level": level_info,
+        "badges": all_possible_badges,
+        "stats": {
+            "totalTasks": len(tasks),
+            "completedTasks": len([t for t in tasks if t.get("completed")]),
+            "totalPlants": len(plants),
+            "totalZones": len(zones)
+        }
+    }
+
+
 # ============ WEATHER MODELS ============
 class WeatherCurrent(BaseModel):
     temperature: float
