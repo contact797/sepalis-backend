@@ -192,6 +192,11 @@ export default function Home() {
         </TouchableOpacity>
       </View>
 
+      {/* Weather Widget */}
+      {weatherCurrent && weatherForecast.length > 0 && (
+        <WeatherWidget current={weatherCurrent} forecast={weatherForecast} />
+      )}
+
       {/* Statistiques */}
       <View style={styles.statsContainer}>
         <View style={styles.statCard}>
