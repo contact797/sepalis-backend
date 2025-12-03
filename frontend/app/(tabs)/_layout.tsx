@@ -1,10 +1,15 @@
+import React from 'react';
+import { View } from 'react-native';
 import { Tabs } from 'expo-router';
 import { Colors } from '../../constants/Colors';
 import CustomTabBar from '../../components/CustomTabBar';
+import OfflineIndicator from '../../components/OfflineIndicator';
 
 export default function TabLayout() {
   return (
-    <Tabs
+    <>
+      <OfflineIndicator />
+      <Tabs
       tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{
         headerStyle: {
