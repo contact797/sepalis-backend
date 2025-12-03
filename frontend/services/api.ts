@@ -102,6 +102,12 @@ export const coursesAPI = {
   
   preregister: (courseData: any) =>
     api.post('/courses/preregister', courseData),
+  
+  bookCourse: (bookingData: any) =>
+    api.post('/courses/book', bookingData),
+  
+  checkCourseBookingStatus: (sessionId: string) =>
+    api.get(`/courses/booking/${sessionId}/status`),
 };
 
 // Workshops API
