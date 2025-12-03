@@ -27,10 +27,69 @@ export default function Home() {
   const [zones, setZones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [weatherCurrent, setWeatherCurrent] = useState<any>(null);
+  const [weatherForecast, setWeatherForecast] = useState<any[]>([]);
+  const [location, setLocation] = useState<{lat: number; lon: number} | null>(null);
+  const [weatherLoading, setWeatherLoading] = useState(false);
 
   useEffect(() => {
     loadData();
+    loadLocation();
   }, []);
+
+  const loadLocation = async () => {
+    try {
+      // Essayer de récupérer la localisation sauvegardée
+      const savedLocation = await AsyncStorage.getItem('userLocation');
+      if (savedLocation) {
+        const loc = JSON.parse(savedLocation);
+        setLocation(loc);
+        await loadWeather(loc.lat, loc.lon);
+        return;
+      }
+
+      // Sinon, demander la géolocalisation
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status === 'granted') {
+        const userLocation = await Location.getCurrentPositionAsync({});
+        const loc = {
+          lat: userLocation.coords.latitude,
+          lon: userLocation.coords.longitude
+        };
+        setLocation(loc);
+        await AsyncStorage.setItem('userLocation', JSON.stringify(loc));
+        await loadWeather(loc.lat, loc.lon);
+      } else {
+        // Utiliser une localisation par défaut (Paris)
+        const defaultLoc = { lat: 48.8566, lon: 2.3522 };
+        setLocation(defaultLoc);
+        await loadWeather(defaultLoc.lat, defaultLoc.lon);
+      }
+    } catch (error) {
+      console.error('Erreur géolocalisation:', error);
+      // Utiliser Paris par défaut en cas d'erreur
+      const defaultLoc = { lat: 48.8566, lon: 2.3522 };
+      setLocation(defaultLoc);
+      await loadWeather(defaultLoc.lat, defaultLoc.lon);
+    }
+  };
+
+  const loadWeather = async (lat: number, lon: number) => {
+    if (weatherLoading) return;
+    setWeatherLoading(true);
+    try {
+      const [currentResponse, forecastResponse] = await Promise.all([
+        weatherAPI.getCurrentWeather(lat, lon),
+        weatherAPI.getForecast(lat, lon, 7),
+      ]);
+      setWeatherCurrent(currentResponse.data);
+      setWeatherForecast(forecastResponse.data.daily || []);
+    } catch (error) {
+      console.error('Erreur chargement météo:', error);
+    } finally {
+      setWeatherLoading(false);
+    }
+  };
 
   const loadData = async () => {
     try {
