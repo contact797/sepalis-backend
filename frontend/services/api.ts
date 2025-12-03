@@ -208,3 +208,12 @@ export const gamificationAPI = {
   getGamification: () =>
     api.get('/user/gamification'),
 };
+
+// Subscription API
+export const subscriptionAPI = {
+  getStatus: () =>
+    api.get('/user/subscription'),
+  
+  startTrial: () =>
+    api.post('/user/start-trial'),
+};
