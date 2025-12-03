@@ -1,6 +1,6 @@
 {
-  "total_tests": 22,
-  "passed": 22,
+  "total_tests": 27,
+  "passed": 27,
   "failed": 0,
   "success_rate": "100.0%",
   "results": [
@@ -9,154 +9,189 @@
       "success": true,
       "message": "API is running - Sepalis API - Votre jardin connect\u00e9",
       "response_data": null,
-      "timestamp": "2025-12-02T15:59:41.252633"
+      "timestamp": "2025-12-03T14:00:30.817305"
     },
     {
       "test": "User Registration",
       "success": true,
       "message": "User already exists (expected), will use login",
       "response_data": null,
-      "timestamp": "2025-12-02T15:59:41.290396"
+      "timestamp": "2025-12-03T14:00:30.872694"
     },
     {
       "test": "User Login",
       "success": true,
       "message": "Login successful for: marie.dupont@example.com",
       "response_data": null,
-      "timestamp": "2025-12-02T15:59:41.551246"
+      "timestamp": "2025-12-03T14:00:31.132762"
     },
     {
       "test": "Get Profile",
       "success": true,
       "message": "Profile retrieved: marie.dupont@example.com",
       "response_data": null,
-      "timestamp": "2025-12-02T15:59:41.585674"
+      "timestamp": "2025-12-03T14:00:31.175559"
     },
     {
       "test": "Get Courses",
       "success": true,
       "message": "Courses list retrieved: 4 courses",
       "response_data": null,
-      "timestamp": "2025-12-02T15:59:41.622505"
+      "timestamp": "2025-12-03T14:00:31.211588"
     },
     {
       "test": "Courses Image Structure",
       "success": true,
       "message": "All 4 courses have valid image URLs",
       "response_data": null,
-      "timestamp": "2025-12-02T15:59:41.886922"
+      "timestamp": "2025-12-03T14:00:33.203380"
     },
     {
       "test": "Courses Content Validation",
       "success": true,
       "message": "All 4 courses have correct content and Unsplash images",
       "response_data": null,
-      "timestamp": "2025-12-02T15:59:41.887666"
+      "timestamp": "2025-12-03T14:00:33.203940"
+    },
+    {
+      "test": "User Bookings (No Auth)",
+      "success": true,
+      "message": "Authentication correctly required (403)",
+      "response_data": null,
+      "timestamp": "2025-12-03T14:00:33.235394"
+    },
+    {
+      "test": "User Bookings (Empty)",
+      "success": true,
+      "message": "Empty bookings structure correct",
+      "response_data": null,
+      "timestamp": "2025-12-03T14:00:33.272907"
+    },
+    {
+      "test": "User Bookings (With Data)",
+      "success": true,
+      "message": "Found bookings: 2 total, 1 workshops, 1 courses",
+      "response_data": null,
+      "timestamp": "2025-12-03T14:00:33.408038"
+    },
+    {
+      "test": "User Bookings (With Data)",
+      "success": true,
+      "message": "Bookings correctly sorted by creation date (most recent first)",
+      "response_data": null,
+      "timestamp": "2025-12-03T14:00:33.408055"
+    },
+    {
+      "test": "User Bookings (Data Format)",
+      "success": true,
+      "message": "All booking data properly formatted",
+      "response_data": null,
+      "timestamp": "2025-12-03T14:00:33.451731"
     },
     {
       "test": "Course Preregister (Success)",
       "success": true,
-      "message": "Pre-registration created successfully with ID: f438a4ab-3830-45e2-8ff8-ec51cd7f48ee",
+      "message": "Pre-registration created successfully with ID: 5c0e216c-f156-42c1-bc10-b47518a04652",
       "response_data": null,
-      "timestamp": "2025-12-02T15:59:41.923001"
+      "timestamp": "2025-12-03T14:00:33.491428"
     },
     {
       "test": "Course Preregister (Empty Message)",
       "success": true,
       "message": "Empty message accepted correctly",
       "response_data": null,
-      "timestamp": "2025-12-02T15:59:41.960909"
+      "timestamp": "2025-12-03T14:00:33.530983"
     },
     {
       "test": "Course Preregister (Invalid Email)",
       "success": true,
       "message": "Invalid email correctly rejected with 422",
       "response_data": null,
-      "timestamp": "2025-12-02T15:59:42.038661"
+      "timestamp": "2025-12-03T14:00:33.569474"
     },
     {
       "test": "Course Preregister (Missing Fields)",
       "success": true,
       "message": "Missing fields correctly rejected with 422",
       "response_data": null,
-      "timestamp": "2025-12-02T15:59:42.076059"
+      "timestamp": "2025-12-03T14:00:33.607284"
     },
     {
       "test": "Course Preregister (No Auth)",
       "success": true,
       "message": "Authentication correctly required (403)",
       "response_data": null,
-      "timestamp": "2025-12-02T15:59:42.150712"
+      "timestamp": "2025-12-03T14:00:33.642227"
     },
     {
       "test": "Get Plants",
       "success": true,
       "message": "Plants list retrieved: 1 plants",
       "response_data": null,
-      "timestamp": "2025-12-02T15:59:42.191319"
+      "timestamp": "2025-12-03T14:00:33.680389"
     },
     {
       "test": "Get Tasks",
       "success": true,
       "message": "Tasks list retrieved: 1 tasks",
       "response_data": null,
-      "timestamp": "2025-12-02T15:59:42.229363"
+      "timestamp": "2025-12-03T14:00:33.713782"
     },
     {
       "test": "JWT Protection (Zones)",
       "success": true,
       "message": "Zones endpoint properly protected - unauthorized access blocked",
       "response_data": null,
-      "timestamp": "2025-12-02T15:59:42.269951"
+      "timestamp": "2025-12-03T14:00:33.745638"
     },
     {
       "test": "Get Zones (Empty)",
       "success": true,
       "message": "Zones list retrieved: 1 zones (expected empty)",
       "response_data": null,
-      "timestamp": "2025-12-02T15:59:42.308294"
+      "timestamp": "2025-12-03T14:00:33.779174"
     },
     {
       "test": "Create Zone",
       "success": true,
-      "message": "Zone created successfully: Terrasse Sud Test (ID: 63906376-3019-4945-b593-0686beac9f91)",
+      "message": "Zone created successfully: Terrasse Sud Test (ID: 3a6521f6-812c-46c2-a543-c616c8e3b2a5)",
       "response_data": null,
-      "timestamp": "2025-12-02T15:59:42.346856"
+      "timestamp": "2025-12-03T14:00:33.816038"
     },
     {
       "test": "Get Zone by ID",
       "success": true,
       "message": "Zone retrieved successfully: Terrasse Sud Test",
       "response_data": null,
-      "timestamp": "2025-12-02T15:59:42.384148"
+      "timestamp": "2025-12-03T14:00:33.852044"
     },
     {
       "test": "Update Zone",
       "success": true,
       "message": "Zone updated successfully: Terrasse Sud Test - Modifi\u00e9e",
       "response_data": null,
-      "timestamp": "2025-12-02T15:59:42.421025"
+      "timestamp": "2025-12-03T14:00:33.885861"
     },
     {
       "test": "Get Zones (With Data)",
       "success": true,
       "message": "Zones list retrieved: 2 zones",
       "response_data": null,
-      "timestamp": "2025-12-02T15:59:42.456052"
+      "timestamp": "2025-12-03T14:00:33.924770"
     },
     {
       "test": "Delete Zone",
       "success": true,
       "message": "Zone deleted successfully: Zone supprim\u00e9e avec succ\u00e8s",
       "response_data": null,
-      "timestamp": "2025-12-02T15:59:42.496025"
+      "timestamp": "2025-12-03T14:00:33.958885"
     },
     {
       "test": "Get Zones (After Delete)",
       "success": true,
       "message": "Zones list after delete: 1 zones",
       "response_data": null,
-      "timestamp": "2025-12-02T15:59:42.531580"
+      "timestamp": "2025-12-03T14:00:33.992613"
     }
   ]
 }
