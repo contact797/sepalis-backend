@@ -151,10 +151,23 @@ metadata:
   test_sequence: 2
   run_ui: false
 
+backend:
+  - task: "API Météo - Endpoints backend"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Endpoints météo créés : GET /api/weather/current?lat={lat}&lon={lon} et GET /api/weather/forecast?lat={lat}&lon={lon}&days={days}. Utilisation de l'API Open-Meteo (gratuite, sans clé). Endpoint current retourne température, humidité, précipitations, vitesse du vent, code météo. Endpoint forecast retourne prévisions sur 7 jours avec températures min/max, précipitations, code météo, lever/coucher du soleil. Import httpx ajouté."
+
 test_plan:
   current_focus:
-    - "Backend endpoint pour l'historique des réservations"
-    - "Page Mes réservations - Historique des réservations"
+    - "API Météo - Endpoints backend"
+    - "API Météo - Widget frontend"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
