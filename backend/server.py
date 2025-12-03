@@ -15,6 +15,7 @@ import bcrypt
 from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
+import httpx
 
 
 ROOT_DIR = Path(__file__).parent
