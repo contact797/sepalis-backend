@@ -90,6 +90,9 @@ export const tasksAPI = {
   
   completeTask: (taskId: string) =>
     api.post(`/user/tasks/${taskId}/complete`),
+  
+  getSuggestions: () =>
+    api.get('/user/tasks/suggestions'),
 };
 
 // Courses API
