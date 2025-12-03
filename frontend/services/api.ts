@@ -166,3 +166,18 @@ export const zonesAPI = {
   deleteZone: (zoneId: string) =>
     api.delete(`/user/zones/${zoneId}`),
 };
+
+// User API
+export const userAPI = {
+  getProfile: () =>
+    api.get('/user/profile'),
+  
+  updateProfile: (data: any) =>
+    api.put('/user/profile', data),
+  
+  cancelSubscription: () =>
+    api.post('/user/cancel-subscription'),
+  
+  getUserBookings: () =>
+    api.get('/user/bookings'),
+};
