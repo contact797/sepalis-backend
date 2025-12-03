@@ -518,6 +518,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.border,
   },
+  statCardsContainer: {
+    paddingHorizontal: 20,
+    marginBottom: 8,
+  },
   statsContainer: {
     flexDirection: 'row',
     padding: 16,
