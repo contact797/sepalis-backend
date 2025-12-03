@@ -36,6 +36,11 @@ export default function Profile() {
 
   const menuItems = [
     {
+      title: 'Mes réservations',
+      icon: 'calendar-outline',
+      onPress: () => router.push('/(tabs)/my-bookings' as any),
+    },
+    {
       title: 'Informations personnelles',
       icon: 'person-outline',
       onPress: () => Alert.alert('Info', 'Fonctionnalité bientôt disponible'),
