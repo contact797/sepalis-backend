@@ -222,15 +222,18 @@ test_plan:
 
   - task: "Système d'abonnement - Endpoints backend"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Endpoints créés : POST /api/user/start-trial (démarrer essai 7 jours), GET /api/user/subscription (vérifier statut abonnement avec daysRemaining et isExpired), POST /api/revenuecat-webhook (webhook RevenueCat). Le système calcule automatiquement les jours restants et gère l'expiration. Backend prêt pour les tests."
+      - working: true
+        agent: "testing"
+        comment: "Tests complets du système d'abonnement RÉUSSIS ✅ (20/20 tests passés, 100% de réussite). ENDPOINT POST /api/user/start-trial ✅: Fonctionne parfaitement, démarre un essai de 7 jours avec expiration correcte. ENDPOINT GET /api/user/subscription ✅: Retourne tous les champs requis (isActive, isTrial, daysRemaining, isExpired) avec calcul correct des jours restants. PROTECTION JWT ✅: Accès correctement bloqué sans token (403). AUTHENTIFICATION ✅: Inscription, connexion et validation JWT fonctionnent parfaitement. CRUD ENDPOINTS ✅: Zones, plantes et tâches - création, lecture, suppression testées avec succès. API MÉTÉO ✅: Endpoints current et forecast fonctionnent (température, prévisions 7 jours). RÉSERVATIONS ✅: Endpoint bookings retourne structure correcte. CONTENU ✅: Workshops (5) et courses (4) avec images accessibles. BACKEND ENTIÈREMENT OPÉRATIONNEL pour le lancement."
 
 test_plan:
   current_focus:
