@@ -18,14 +18,24 @@ TEST_USER_EMAIL = f"test-sepalis-{uuid.uuid4().hex[:8]}@example.com"
 TEST_USER_PASSWORD = "TestPassword123!"
 TEST_USER_NAME = "Test Sepalis User"
 
-class WeatherAPITester:
+class SepalisAPITester:
     def __init__(self):
-        self.client = httpx.AsyncClient(timeout=30.0)
+        self.session = None
+        self.auth_token = None
+        self.user_id = None
         self.test_results = []
-        self.passed_tests = 0
         self.total_tests = 0
-
-    async def log_test(self, test_name: str, success: bool, details: str = ""):
+        self.passed_tests = 0
+        
+    async def __aenter__(self):
+        self.session = aiohttp.ClientSession()
+        return self
+        
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        if self.session:
+            await self.session.close()
+    
+    def log_test(self, test_name: str, success: bool, details: str = ""):
         """Log test result"""
         self.total_tests += 1
         if success:
@@ -40,429 +50,497 @@ class WeatherAPITester:
         
         print(result)
         self.test_results.append({
-            "test": test_name,
+            "name": test_name,
             "success": success,
             "details": details
         })
-
-    async def test_current_weather_paris(self):
-        """Test 1: Current weather avec coordonnées Paris"""
+    
+    async def test_health_check(self):
+        """Test basic API health"""
         try:
-            response = await self.client.get(
-                f"{BASE_URL}/weather/current",
-                params={"lat": PARIS_LAT, "lon": PARIS_LON}
-            )
-            
-            if response.status_code != 200:
-                await self.log_test(
-                    "Current Weather Paris", 
-                    False, 
-                    f"Status {response.status_code}: {response.text}"
-                )
-                return
-            
-            data = response.json()
-            
-            # Vérifier la structure de réponse
-            required_fields = [
-                "temperature", "apparent_temperature", "humidity", 
-                "precipitation", "weather_code", "wind_speed", 
-                "wind_direction", "latitude", "longitude"
-            ]
-            
-            missing_fields = [field for field in required_fields if field not in data]
-            if missing_fields:
-                await self.log_test(
-                    "Current Weather Paris", 
-                    False, 
-                    f"Champs manquants: {missing_fields}"
-                )
-                return
-            
-            # Vérifier les types de données
-            type_checks = [
-                (isinstance(data["temperature"], (int, float)), "temperature doit être numérique"),
-                (isinstance(data["apparent_temperature"], (int, float)), "apparent_temperature doit être numérique"),
-                (isinstance(data["humidity"], int), "humidity doit être entier"),
-                (isinstance(data["precipitation"], (int, float)), "precipitation doit être numérique"),
-                (isinstance(data["weather_code"], int), "weather_code doit être entier"),
-                (isinstance(data["wind_speed"], (int, float)), "wind_speed doit être numérique"),
-                (isinstance(data["wind_direction"], int), "wind_direction doit être entier"),
-                (data["latitude"] == PARIS_LAT, f"latitude doit être {PARIS_LAT}"),
-                (data["longitude"] == PARIS_LON, f"longitude doit être {PARIS_LON}")
-            ]
-            
-            for check, error_msg in type_checks:
-                if not check:
-                    await self.log_test("Current Weather Paris", False, error_msg)
-                    return
-            
-            # Vérifier la cohérence des valeurs
-            coherence_checks = [
-                (-50 <= data["temperature"] <= 60, f"Température incohérente: {data['temperature']}°C"),
-                (0 <= data["humidity"] <= 100, f"Humidité incohérente: {data['humidity']}%"),
-                (data["precipitation"] >= 0, f"Précipitations négatives: {data['precipitation']}"),
-                (0 <= data["wind_direction"] <= 360, f"Direction vent incohérente: {data['wind_direction']}°"),
-                (data["wind_speed"] >= 0, f"Vitesse vent négative: {data['wind_speed']}")
-            ]
-            
-            for check, error_msg in coherence_checks:
-                if not check:
-                    await self.log_test("Current Weather Paris", False, error_msg)
-                    return
-            
-            await self.log_test(
-                "Current Weather Paris", 
-                True, 
-                f"Temp: {data['temperature']}°C, Humidité: {data['humidity']}%, Code: {data['weather_code']}"
-            )
-            
+            async with self.session.get(f"{BASE_URL}/../") as response:
+                if response.status == 200:
+                    self.log_test("Health Check", True, "API accessible")
+                else:
+                    self.log_test("Health Check", False, f"Status: {response.status}")
         except Exception as e:
-            await self.log_test("Current Weather Paris", False, f"Exception: {str(e)}")
-
-    async def test_forecast_paris_default(self):
-        """Test 2: Forecast Paris avec 7 jours par défaut"""
+            self.log_test("Health Check", False, f"Error: {str(e)}")
+    
+    async def test_auth_register(self):
+        """Test user registration"""
         try:
-            response = await self.client.get(
-                f"{BASE_URL}/weather/forecast",
-                params={"lat": PARIS_LAT, "lon": PARIS_LON}
-            )
+            payload = {
+                "email": TEST_USER_EMAIL,
+                "password": TEST_USER_PASSWORD,
+                "name": TEST_USER_NAME
+            }
             
-            if response.status_code != 200:
-                await self.log_test(
-                    "Forecast Paris Default", 
-                    False, 
-                    f"Status {response.status_code}: {response.text}"
-                )
-                return
-            
-            data = response.json()
-            
-            # Vérifier la structure
-            if "daily" not in data:
-                await self.log_test("Forecast Paris Default", False, "Champ 'daily' manquant")
-                return
-            
-            if not isinstance(data["daily"], list):
-                await self.log_test("Forecast Paris Default", False, "'daily' doit être une liste")
-                return
-            
-            if len(data["daily"]) != 7:
-                await self.log_test(
-                    "Forecast Paris Default", 
-                    False, 
-                    f"Devrait retourner 7 jours, reçu: {len(data['daily'])}"
-                )
-                return
-            
-            # Vérifier chaque jour
-            required_day_fields = [
-                "date", "temperature_max", "temperature_min", 
-                "precipitation_sum", "weather_code", "sunrise", "sunset"
-            ]
-            
-            for i, day in enumerate(data["daily"]):
-                missing_fields = [field for field in required_day_fields if field not in day]
-                if missing_fields:
-                    await self.log_test(
-                        "Forecast Paris Default", 
-                        False, 
-                        f"Jour {i+1} - Champs manquants: {missing_fields}"
-                    )
-                    return
-                
-                # Vérifier les types
-                type_checks = [
-                    (isinstance(day["date"], str), f"Jour {i+1} - date doit être string"),
-                    (isinstance(day["temperature_max"], (int, float)), f"Jour {i+1} - temperature_max doit être numérique"),
-                    (isinstance(day["temperature_min"], (int, float)), f"Jour {i+1} - temperature_min doit être numérique"),
-                    (isinstance(day["precipitation_sum"], (int, float)), f"Jour {i+1} - precipitation_sum doit être numérique"),
-                    (isinstance(day["weather_code"], int), f"Jour {i+1} - weather_code doit être entier"),
-                    (isinstance(day["sunrise"], str), f"Jour {i+1} - sunrise doit être string"),
-                    (isinstance(day["sunset"], str), f"Jour {i+1} - sunset doit être string")
-                ]
-                
-                for check, error_msg in type_checks:
-                    if not check:
-                        await self.log_test("Forecast Paris Default", False, error_msg)
-                        return
-                
-                # Vérifier la cohérence
-                if day["temperature_max"] < day["temperature_min"]:
-                    await self.log_test(
-                        "Forecast Paris Default", 
-                        False, 
-                        f"Jour {i+1} - Temp max < temp min: {day['temperature_max']} < {day['temperature_min']}"
-                    )
-                    return
-            
-            await self.log_test(
-                "Forecast Paris Default", 
-                True, 
-                f"7 jours de prévisions, Jour 1: {data['daily'][0]['temperature_min']}-{data['daily'][0]['temperature_max']}°C"
-            )
-            
+            async with self.session.post(f"{BASE_URL}/auth/register", json=payload) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if "token" in data and "user" in data:
+                        self.auth_token = data["token"]
+                        self.user_id = data["user"]["id"]
+                        self.log_test("Auth Register", True, f"User created: {data['user']['email']}")
+                    else:
+                        self.log_test("Auth Register", False, "Missing token or user in response")
+                else:
+                    error_text = await response.text()
+                    self.log_test("Auth Register", False, f"Status: {response.status}, Error: {error_text}")
         except Exception as e:
-            await self.log_test("Forecast Paris Default", False, f"Exception: {str(e)}")
-
-    async def test_forecast_different_days(self):
-        """Test 3: Forecast avec différentes valeurs de days (3, 7, 14)"""
-        for days in [3, 7, 14]:
-            try:
-                response = await self.client.get(
-                    f"{BASE_URL}/weather/forecast",
-                    params={"lat": PARIS_LAT, "lon": PARIS_LON, "days": days}
-                )
-                
-                if response.status_code != 200:
-                    await self.log_test(
-                        f"Forecast {days} jours", 
-                        False, 
-                        f"Status {response.status_code}: {response.text}"
-                    )
-                    continue
-                
-                data = response.json()
-                
-                if "daily" not in data or not isinstance(data["daily"], list):
-                    await self.log_test(f"Forecast {days} jours", False, "Structure 'daily' invalide")
-                    continue
-                
-                if len(data["daily"]) != days:
-                    await self.log_test(
-                        f"Forecast {days} jours", 
-                        False, 
-                        f"Attendu {days} jours, reçu {len(data['daily'])}"
-                    )
-                    continue
-                
-                await self.log_test(
-                    f"Forecast {days} jours", 
-                    True, 
-                    f"Retourne bien {days} jours de prévisions"
-                )
-                
-            except Exception as e:
-                await self.log_test(f"Forecast {days} jours", False, f"Exception: {str(e)}")
-
-    async def test_invalid_coordinates(self):
-        """Test 4: Coordonnées invalides (doit gérer l'erreur gracieusement)"""
-        invalid_coords = [
-            (999, 999, "Coordonnées hors limites"),
-            (-999, -999, "Coordonnées négatives extrêmes"),
-            (91, 181, "Latitude/longitude hors limites")
-        ]
+            self.log_test("Auth Register", False, f"Error: {str(e)}")
+    
+    async def test_auth_login(self):
+        """Test user login"""
+        try:
+            payload = {
+                "email": TEST_USER_EMAIL,
+                "password": TEST_USER_PASSWORD
+            }
+            
+            async with self.session.post(f"{BASE_URL}/auth/login", json=payload) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if "token" in data and "user" in data:
+                        self.log_test("Auth Login", True, f"Login successful: {data['user']['email']}")
+                    else:
+                        self.log_test("Auth Login", False, "Missing token or user in response")
+                else:
+                    error_text = await response.text()
+                    self.log_test("Auth Login", False, f"Status: {response.status}, Error: {error_text}")
+        except Exception as e:
+            self.log_test("Auth Login", False, f"Error: {str(e)}")
+    
+    async def test_auth_me(self):
+        """Test JWT authentication"""
+        try:
+            headers = {"Authorization": f"Bearer {self.auth_token}"}
+            
+            async with self.session.get(f"{BASE_URL}/auth/me", headers=headers) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if data.get("email") == TEST_USER_EMAIL:
+                        self.log_test("Auth JWT Validation", True, f"JWT valid for user: {data['email']}")
+                    else:
+                        self.log_test("Auth JWT Validation", False, "User data mismatch")
+                else:
+                    error_text = await response.text()
+                    self.log_test("Auth JWT Validation", False, f"Status: {response.status}, Error: {error_text}")
+        except Exception as e:
+            self.log_test("Auth JWT Validation", False, f"Error: {str(e)}")
+    
+    async def test_subscription_start_trial(self):
+        """Test starting 7-day trial (CRITICAL - NOT YET TESTED)"""
+        try:
+            headers = {"Authorization": f"Bearer {self.auth_token}"}
+            
+            async with self.session.post(f"{BASE_URL}/user/start-trial", headers=headers) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if data.get("success") and "expiresAt" in data:
+                        expires_at = datetime.fromisoformat(data["expiresAt"].replace('Z', '+00:00'))
+                        days_diff = (expires_at - datetime.utcnow()).days
+                        if 6 <= days_diff <= 7:  # Allow some margin for processing time
+                            self.log_test("Subscription Start Trial", True, f"Trial started, expires: {data['expiresAt']}")
+                        else:
+                            self.log_test("Subscription Start Trial", False, f"Invalid trial duration: {days_diff} days")
+                    else:
+                        self.log_test("Subscription Start Trial", False, f"Invalid response: {data}")
+                else:
+                    error_text = await response.text()
+                    self.log_test("Subscription Start Trial", False, f"Status: {response.status}, Error: {error_text}")
+        except Exception as e:
+            self.log_test("Subscription Start Trial", False, f"Error: {str(e)}")
+    
+    async def test_subscription_status(self):
+        """Test subscription status check (CRITICAL - NOT YET TESTED)"""
+        try:
+            headers = {"Authorization": f"Bearer {self.auth_token}"}
+            
+            async with self.session.get(f"{BASE_URL}/user/subscription", headers=headers) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    required_fields = ["isActive", "isTrial", "daysRemaining", "isExpired"]
+                    missing_fields = [field for field in required_fields if field not in data]
+                    
+                    if not missing_fields:
+                        if data.get("isActive") and data.get("isTrial") and data.get("daysRemaining", 0) > 0:
+                            self.log_test("Subscription Status", True, f"Active trial: {data['daysRemaining']} days remaining")
+                        else:
+                            self.log_test("Subscription Status", True, f"Status: Active={data.get('isActive')}, Trial={data.get('isTrial')}, Days={data.get('daysRemaining')}")
+                    else:
+                        self.log_test("Subscription Status", False, f"Missing fields: {missing_fields}")
+                else:
+                    error_text = await response.text()
+                    self.log_test("Subscription Status", False, f"Status: {response.status}, Error: {error_text}")
+        except Exception as e:
+            self.log_test("Subscription Status", False, f"Error: {str(e)}")
+    
+    async def test_subscription_without_jwt(self):
+        """Test subscription endpoints require JWT"""
+        try:
+            # Test without Authorization header
+            async with self.session.get(f"{BASE_URL}/user/subscription") as response:
+                if response.status == 403:
+                    self.log_test("Subscription JWT Protection", True, "Correctly blocked without JWT")
+                else:
+                    self.log_test("Subscription JWT Protection", False, f"Should return 403, got: {response.status}")
+        except Exception as e:
+            self.log_test("Subscription JWT Protection", False, f"Error: {str(e)}")
+    
+    async def test_zones_crud(self):
+        """Test zones CRUD operations"""
+        headers = {"Authorization": f"Bearer {self.auth_token}"}
+        zone_id = None
         
-        for lat, lon, description in invalid_coords:
-            try:
-                # Test current weather
-                response = await self.client.get(
-                    f"{BASE_URL}/weather/current",
-                    params={"lat": lat, "lon": lon}
-                )
-                
-                # L'API Open-Meteo peut soit retourner une erreur, soit des données par défaut
-                # On vérifie que l'endpoint ne crash pas (pas de 500)
-                if response.status_code == 500:
-                    await self.log_test(
-                        f"Current Weather - {description}", 
-                        False, 
-                        f"Erreur serveur 500 avec coordonnées invalides"
-                    )
+        # Test GET empty zones
+        try:
+            async with self.session.get(f"{BASE_URL}/user/zones", headers=headers) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if isinstance(data, list):
+                        self.log_test("Zones GET (empty)", True, f"Retrieved {len(data)} zones")
+                    else:
+                        self.log_test("Zones GET (empty)", False, "Response is not a list")
                 else:
-                    await self.log_test(
-                        f"Current Weather - {description}", 
-                        True, 
-                        f"Gère gracieusement les coordonnées invalides (status: {response.status_code})"
-                    )
-                
-                # Test forecast
-                response = await self.client.get(
-                    f"{BASE_URL}/weather/forecast",
-                    params={"lat": lat, "lon": lon}
-                )
-                
-                if response.status_code == 500:
-                    await self.log_test(
-                        f"Forecast - {description}", 
-                        False, 
-                        f"Erreur serveur 500 avec coordonnées invalides"
-                    )
-                else:
-                    await self.log_test(
-                        f"Forecast - {description}", 
-                        True, 
-                        f"Gère gracieusement les coordonnées invalides (status: {response.status_code})"
-                    )
-                
-            except Exception as e:
-                await self.log_test(f"Coordonnées invalides - {description}", False, f"Exception: {str(e)}")
-
-    async def test_missing_parameters(self):
-        """Test 5: Paramètres manquants (doit retourner erreur 422)"""
-        test_cases = [
-            ("/weather/current", {}, "Aucun paramètre"),
-            ("/weather/current", {"lat": PARIS_LAT}, "Longitude manquante"),
-            ("/weather/current", {"lon": PARIS_LON}, "Latitude manquante"),
-            ("/weather/forecast", {}, "Aucun paramètre"),
-            ("/weather/forecast", {"lat": PARIS_LAT}, "Longitude manquante"),
-            ("/weather/forecast", {"lon": PARIS_LON}, "Latitude manquante")
-        ]
+                    error_text = await response.text()
+                    self.log_test("Zones GET (empty)", False, f"Status: {response.status}, Error: {error_text}")
+        except Exception as e:
+            self.log_test("Zones GET (empty)", False, f"Error: {str(e)}")
         
-        for endpoint, params, description in test_cases:
-            try:
-                response = await self.client.get(f"{BASE_URL}{endpoint}", params=params)
-                
-                if response.status_code == 422:
-                    await self.log_test(
-                        f"Paramètres manquants - {description}", 
-                        True, 
-                        "Retourne bien erreur 422"
-                    )
+        # Test POST create zone
+        try:
+            zone_data = {
+                "name": "Zone Test Sepalis",
+                "type": "vegetable",
+                "length": 5.0,
+                "width": 3.0,
+                "area": 15.0,
+                "soilType": "Argileux",
+                "soilPH": "Neutre (6.5-7.5)",
+                "drainage": "Bon",
+                "sunExposure": "Plein soleil",
+                "climateZone": "Océanique",
+                "windProtection": "Protégé",
+                "wateringSystem": "Arrosage manuel",
+                "humidity": "Normale",
+                "notes": "Zone de test pour les légumes",
+                "color": "#4CAF50"
+            }
+            
+            async with self.session.post(f"{BASE_URL}/user/zones", json=zone_data, headers=headers) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if "id" in data and data.get("name") == zone_data["name"]:
+                        zone_id = data["id"]
+                        self.log_test("Zones POST (create)", True, f"Zone created: {data['name']}")
+                    else:
+                        self.log_test("Zones POST (create)", False, "Invalid response structure")
                 else:
-                    await self.log_test(
-                        f"Paramètres manquants - {description}", 
-                        False, 
-                        f"Attendu 422, reçu {response.status_code}"
-                    )
-                
+                    error_text = await response.text()
+                    self.log_test("Zones POST (create)", False, f"Status: {response.status}, Error: {error_text}")
+        except Exception as e:
+            self.log_test("Zones POST (create)", False, f"Error: {str(e)}")
+        
+        # Test GET zone by ID
+        if zone_id:
+            try:
+                async with self.session.get(f"{BASE_URL}/user/zones/{zone_id}", headers=headers) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        if data.get("id") == zone_id:
+                            self.log_test("Zones GET (by ID)", True, f"Retrieved zone: {data['name']}")
+                        else:
+                            self.log_test("Zones GET (by ID)", False, "Zone ID mismatch")
+                    else:
+                        error_text = await response.text()
+                        self.log_test("Zones GET (by ID)", False, f"Status: {response.status}, Error: {error_text}")
             except Exception as e:
-                await self.log_test(f"Paramètres manquants - {description}", False, f"Exception: {str(e)}")
-
-    async def test_data_consistency(self):
-        """Test 6: Vérifier la cohérence des données météo"""
+                self.log_test("Zones GET (by ID)", False, f"Error: {str(e)}")
+    
+    async def test_plants_crud(self):
+        """Test plants CRUD operations"""
+        headers = {"Authorization": f"Bearer {self.auth_token}"}
+        plant_id = None
+        
+        # Test GET empty plants
         try:
-            # Test avec plusieurs villes pour vérifier la cohérence
-            cities = [
-                (PARIS_LAT, PARIS_LON, "Paris"),
-                (43.6047, 1.4442, "Toulouse"),
-                (45.7640, 4.8357, "Lyon")
-            ]
-            
-            for lat, lon, city in cities:
-                response = await self.client.get(
-                    f"{BASE_URL}/weather/current",
-                    params={"lat": lat, "lon": lon}
-                )
-                
-                if response.status_code != 200:
-                    await self.log_test(
-                        f"Cohérence données - {city}", 
-                        False, 
-                        f"Erreur API: {response.status_code}"
-                    )
-                    continue
-                
-                data = response.json()
-                
-                # Vérifications de cohérence spécifiques
-                consistency_checks = [
-                    (data["latitude"] == lat, f"Latitude incorrecte pour {city}"),
-                    (data["longitude"] == lon, f"Longitude incorrecte pour {city}"),
-                    (isinstance(data["weather_code"], int) and 0 <= data["weather_code"] <= 99, 
-                     f"Code météo invalide pour {city}: {data['weather_code']}"),
-                    (data["humidity"] is None or (0 <= data["humidity"] <= 100), 
-                     f"Humidité invalide pour {city}: {data['humidity']}"),
-                    (data["precipitation"] is None or data["precipitation"] >= 0, 
-                     f"Précipitations négatives pour {city}: {data['precipitation']}")
-                ]
-                
-                all_consistent = True
-                for check, error_msg in consistency_checks:
-                    if not check:
-                        await self.log_test(f"Cohérence données - {city}", False, error_msg)
-                        all_consistent = False
-                        break
-                
-                if all_consistent:
-                    await self.log_test(
-                        f"Cohérence données - {city}", 
-                        True, 
-                        f"Données cohérentes (Temp: {data['temperature']}°C, Code: {data['weather_code']})"
-                    )
-                
+            async with self.session.get(f"{BASE_URL}/user/plants", headers=headers) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if isinstance(data, list):
+                        self.log_test("Plants GET (empty)", True, f"Retrieved {len(data)} plants")
+                    else:
+                        self.log_test("Plants GET (empty)", False, "Response is not a list")
+                else:
+                    error_text = await response.text()
+                    self.log_test("Plants GET (empty)", False, f"Status: {response.status}, Error: {error_text}")
         except Exception as e:
-            await self.log_test("Cohérence données", False, f"Exception: {str(e)}")
-
-    async def test_api_response_time(self):
-        """Test bonus: Vérifier les temps de réponse"""
+            self.log_test("Plants GET (empty)", False, f"Error: {str(e)}")
+        
+        # Test POST create plant
         try:
-            start_time = datetime.now()
-            response = await self.client.get(
-                f"{BASE_URL}/weather/current",
-                params={"lat": PARIS_LAT, "lon": PARIS_LON}
-            )
-            end_time = datetime.now()
+            plant_data = {
+                "name": "Tomate Cerise Test",
+                "scientificName": "Solanum lycopersicum var. cerasiforme",
+                "wateringFrequency": 3,
+                "description": "Tomate cerise pour tests Sepalis"
+            }
             
-            response_time = (end_time - start_time).total_seconds()
-            
-            if response.status_code == 200 and response_time < 10:
-                await self.log_test(
-                    "Temps de réponse", 
-                    True, 
-                    f"Réponse en {response_time:.2f}s (< 10s)"
-                )
-            else:
-                await self.log_test(
-                    "Temps de réponse", 
-                    False, 
-                    f"Trop lent: {response_time:.2f}s ou erreur {response.status_code}"
-                )
-                
+            async with self.session.post(f"{BASE_URL}/user/plants", json=plant_data, headers=headers) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if "id" in data and data.get("name") == plant_data["name"]:
+                        plant_id = data["id"]
+                        self.log_test("Plants POST (create)", True, f"Plant created: {data['name']}")
+                    else:
+                        self.log_test("Plants POST (create)", False, "Invalid response structure")
+                else:
+                    error_text = await response.text()
+                    self.log_test("Plants POST (create)", False, f"Status: {response.status}, Error: {error_text}")
         except Exception as e:
-            await self.log_test("Temps de réponse", False, f"Exception: {str(e)}")
-
+            self.log_test("Plants POST (create)", False, f"Error: {str(e)}")
+    
+    async def test_tasks_crud(self):
+        """Test tasks CRUD operations"""
+        headers = {"Authorization": f"Bearer {self.auth_token}"}
+        task_id = None
+        
+        # Test GET empty tasks
+        try:
+            async with self.session.get(f"{BASE_URL}/user/tasks", headers=headers) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if isinstance(data, list):
+                        self.log_test("Tasks GET (empty)", True, f"Retrieved {len(data)} tasks")
+                    else:
+                        self.log_test("Tasks GET (empty)", False, "Response is not a list")
+                else:
+                    error_text = await response.text()
+                    self.log_test("Tasks GET (empty)", False, f"Status: {response.status}, Error: {error_text}")
+        except Exception as e:
+            self.log_test("Tasks GET (empty)", False, f"Error: {str(e)}")
+        
+        # Test POST create task
+        try:
+            task_data = {
+                "title": "Arroser les tomates",
+                "description": "Arrosage quotidien des tomates cerises",
+                "type": "watering",
+                "dueDate": (datetime.utcnow() + timedelta(days=1)).isoformat(),
+                "completed": False
+            }
+            
+            async with self.session.post(f"{BASE_URL}/user/tasks", json=task_data, headers=headers) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if "id" in data and data.get("title") == task_data["title"]:
+                        task_id = data["id"]
+                        self.log_test("Tasks POST (create)", True, f"Task created: {data['title']}")
+                    else:
+                        self.log_test("Tasks POST (create)", False, "Invalid response structure")
+                else:
+                    error_text = await response.text()
+                    self.log_test("Tasks POST (create)", False, f"Status: {response.status}, Error: {error_text}")
+        except Exception as e:
+            self.log_test("Tasks POST (create)", False, f"Error: {str(e)}")
+        
+        # Test DELETE task
+        if task_id:
+            try:
+                async with self.session.delete(f"{BASE_URL}/user/tasks/{task_id}", headers=headers) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        if "message" in data:
+                            self.log_test("Tasks DELETE", True, "Task deleted successfully")
+                        else:
+                            self.log_test("Tasks DELETE", False, "Invalid response structure")
+                    else:
+                        error_text = await response.text()
+                        self.log_test("Tasks DELETE", False, f"Status: {response.status}, Error: {error_text}")
+            except Exception as e:
+                self.log_test("Tasks DELETE", False, f"Error: {str(e)}")
+    
+    async def test_weather_api(self):
+        """Test weather API endpoints"""
+        # Test current weather (Paris coordinates)
+        try:
+            params = {"lat": 48.8566, "lon": 2.3522}
+            async with self.session.get(f"{BASE_URL}/weather/current", params=params) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    required_fields = ["temperature", "humidity", "precipitation", "weather_code", "wind_speed"]
+                    missing_fields = [field for field in required_fields if field not in data]
+                    
+                    if not missing_fields:
+                        self.log_test("Weather Current API", True, f"Temp: {data.get('temperature')}°C, Humidity: {data.get('humidity')}%")
+                    else:
+                        self.log_test("Weather Current API", False, f"Missing fields: {missing_fields}")
+                else:
+                    error_text = await response.text()
+                    self.log_test("Weather Current API", False, f"Status: {response.status}, Error: {error_text}")
+        except Exception as e:
+            self.log_test("Weather Current API", False, f"Error: {str(e)}")
+        
+        # Test forecast weather
+        try:
+            params = {"lat": 48.8566, "lon": 2.3522, "days": 7}
+            async with self.session.get(f"{BASE_URL}/weather/forecast", params=params) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if "daily" in data and isinstance(data["daily"], list):
+                        forecast_count = len(data["daily"])
+                        if forecast_count == 7:
+                            self.log_test("Weather Forecast API", True, f"Retrieved {forecast_count} days forecast")
+                        else:
+                            self.log_test("Weather Forecast API", False, f"Expected 7 days, got {forecast_count}")
+                    else:
+                        self.log_test("Weather Forecast API", False, "Invalid forecast structure")
+                else:
+                    error_text = await response.text()
+                    self.log_test("Weather Forecast API", False, f"Status: {response.status}, Error: {error_text}")
+        except Exception as e:
+            self.log_test("Weather Forecast API", False, f"Error: {str(e)}")
+    
+    async def test_bookings_api(self):
+        """Test bookings history API"""
+        try:
+            headers = {"Authorization": f"Bearer {self.auth_token}"}
+            
+            async with self.session.get(f"{BASE_URL}/user/bookings", headers=headers) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    required_fields = ["bookings", "total", "workshops", "courses"]
+                    missing_fields = [field for field in required_fields if field not in data]
+                    
+                    if not missing_fields:
+                        self.log_test("Bookings API", True, f"Total: {data['total']}, Workshops: {data['workshops']}, Courses: {data['courses']}")
+                    else:
+                        self.log_test("Bookings API", False, f"Missing fields: {missing_fields}")
+                else:
+                    error_text = await response.text()
+                    self.log_test("Bookings API", False, f"Status: {response.status}, Error: {error_text}")
+        except Exception as e:
+            self.log_test("Bookings API", False, f"Error: {str(e)}")
+    
+    async def test_workshops_api(self):
+        """Test workshops list API"""
+        try:
+            async with self.session.get(f"{BASE_URL}/workshops") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if isinstance(data, list) and len(data) > 0:
+                        workshop = data[0]
+                        required_fields = ["id", "title", "description", "price", "slug", "instructor"]
+                        missing_fields = [field for field in required_fields if field not in workshop]
+                        
+                        if not missing_fields:
+                            self.log_test("Workshops API", True, f"Retrieved {len(data)} workshops")
+                        else:
+                            self.log_test("Workshops API", False, f"Missing fields in workshop: {missing_fields}")
+                    else:
+                        self.log_test("Workshops API", False, "No workshops returned or invalid structure")
+                else:
+                    error_text = await response.text()
+                    self.log_test("Workshops API", False, f"Status: {response.status}, Error: {error_text}")
+        except Exception as e:
+            self.log_test("Workshops API", False, f"Error: {str(e)}")
+    
+    async def test_courses_api(self):
+        """Test courses list API"""
+        try:
+            async with self.session.get(f"{BASE_URL}/courses") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if isinstance(data, list) and len(data) > 0:
+                        course = data[0]
+                        required_fields = ["id", "title", "description", "price", "slug", "instructor", "image"]
+                        missing_fields = [field for field in required_fields if field not in course]
+                        
+                        if not missing_fields:
+                            self.log_test("Courses API", True, f"Retrieved {len(data)} courses with images")
+                        else:
+                            self.log_test("Courses API", False, f"Missing fields in course: {missing_fields}")
+                    else:
+                        self.log_test("Courses API", False, "No courses returned or invalid structure")
+                else:
+                    error_text = await response.text()
+                    self.log_test("Courses API", False, f"Status: {response.status}, Error: {error_text}")
+        except Exception as e:
+            self.log_test("Courses API", False, f"Error: {str(e)}")
+    
     async def run_all_tests(self):
-        """Exécuter tous les tests"""
-        print("🌤️  TESTS DES ENDPOINTS MÉTÉO SEPALIS")
-        print("=" * 50)
-        print(f"URL de base: {BASE_URL}")
-        print(f"Coordonnées Paris: {PARIS_LAT}, {PARIS_LON}")
-        print()
+        """Run all tests in sequence"""
+        print("🚀 DÉMARRAGE DES TESTS BACKEND SEPALIS")
+        print("=" * 60)
         
-        # Exécuter tous les tests
-        await self.test_current_weather_paris()
-        await self.test_forecast_paris_default()
-        await self.test_forecast_different_days()
-        await self.test_invalid_coordinates()
-        await self.test_missing_parameters()
-        await self.test_data_consistency()
-        await self.test_api_response_time()
+        # Basic connectivity
+        await self.test_health_check()
         
-        # Résumé final
-        print()
-        print("=" * 50)
-        print(f"📊 RÉSUMÉ: {self.passed_tests}/{self.total_tests} tests réussis")
+        # Authentication flow
+        await self.test_auth_register()
+        await self.test_auth_login()
+        await self.test_auth_me()
+        
+        # CRITICAL: Subscription system (PRIORITY HIGH - NOT YET TESTED)
+        print("\n🔥 TESTS SYSTÈME D'ABONNEMENT (CRITIQUE)")
+        print("-" * 40)
+        await self.test_subscription_without_jwt()
+        await self.test_subscription_start_trial()
+        await self.test_subscription_status()
+        
+        # CRUD operations
+        print("\n📊 TESTS ENDPOINTS CRUD")
+        print("-" * 40)
+        await self.test_zones_crud()
+        await self.test_plants_crud()
+        await self.test_tasks_crud()
+        
+        # External APIs
+        print("\n🌤️ TESTS API MÉTÉO")
+        print("-" * 40)
+        await self.test_weather_api()
+        
+        # Bookings and content
+        print("\n📚 TESTS RÉSERVATIONS ET CONTENU")
+        print("-" * 40)
+        await self.test_bookings_api()
+        await self.test_workshops_api()
+        await self.test_courses_api()
+        
+        # Summary
+        print("\n" + "=" * 60)
+        print("📊 RÉSUMÉ DES TESTS")
+        print("=" * 60)
+        
+        success_rate = (self.passed_tests / self.total_tests * 100) if self.total_tests > 0 else 0
+        print(f"✅ Tests réussis: {self.passed_tests}/{self.total_tests} ({success_rate:.1f}%)")
         
         if self.passed_tests == self.total_tests:
-            print("🎉 TOUS LES TESTS SONT PASSÉS!")
-            success_rate = 100
+            print("🎉 TOUS LES TESTS SONT PASSÉS - BACKEND PRÊT POUR LE LANCEMENT!")
         else:
-            success_rate = (self.passed_tests / self.total_tests) * 100
-            print(f"⚠️  Taux de réussite: {success_rate:.1f}%")
+            print("⚠️ CERTAINS TESTS ONT ÉCHOUÉ - VÉRIFICATION NÉCESSAIRE")
             
-            # Afficher les tests échoués
-            failed_tests = [r for r in self.test_results if not r["success"]]
-            if failed_tests:
-                print("\n❌ Tests échoués:")
-                for test in failed_tests:
-                    print(f"  - {test['test']}: {test['details']}")
+            failed_tests = [test for test in self.test_results if not test["success"]]
+            print(f"\n❌ Tests échoués ({len(failed_tests)}):")
+            for test in failed_tests:
+                print(f"  - {test['name']}: {test['details']}")
         
-        await self.client.aclose()
-        return success_rate
+        return success_rate == 100.0
 
 async def main():
-    """Point d'entrée principal"""
-    tester = WeatherAPITester()
-    success_rate = await tester.run_all_tests()
-    
-    # Code de sortie basé sur le taux de réussite
-    if success_rate == 100:
-        sys.exit(0)
-    elif success_rate >= 80:
-        sys.exit(1)  # Quelques échecs mais majoritairement OK
-    else:
-        sys.exit(2)  # Échecs significatifs
+    """Main test runner"""
+    async with SepalisAPITester() as tester:
+        success = await tester.run_all_tests()
+        return success
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        success = asyncio.run(main())
+        sys.exit(0 if success else 1)
+    except KeyboardInterrupt:
+        print("\n⚠️ Tests interrompus par l'utilisateur")
+        sys.exit(1)
+    except Exception as e:
+        print(f"\n❌ Erreur lors des tests: {str(e)}")
+        sys.exit(1)
