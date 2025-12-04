@@ -234,6 +234,35 @@ export default function Home() {
 
   const seasonTip = getSeasonTip();
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    const name = user?.name || 'Jardinier';
+    
+    if (hour < 6) {
+      return {
+        main: `Bonne nuit ${name} 🌙`,
+        sub: 'Votre jardin dort paisiblement'
+      };
+    } else if (hour < 12) {
+      return {
+        main: `Bon matin ${name} ! ☀️`,
+        sub: 'Parfait pour commencer la journée au jardin'
+      };
+    } else if (hour < 18) {
+      return {
+        main: `Bon après-midi ${name} ! 🌻`,
+        sub: 'Profitez de cette belle journée'
+      };
+    } else {
+      return {
+        main: `Bonsoir ${name} ! 🌙`,
+        sub: 'Une soirée parfaite pour admirer votre jardin'
+      };
+    }
+  };
+
+  const greeting = getGreeting();
+
   // Préparer les données du graphique des tâches (7 derniers jours)
   const getTasksChartData = () => {
     const last7Days = [];
