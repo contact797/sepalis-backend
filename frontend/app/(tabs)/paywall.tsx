@@ -232,7 +232,7 @@ export default function Paywall() {
             </View>
             <View style={styles.planInfo}>
               <Text style={styles.planTitle}>Mensuel</Text>
-              <Text style={styles.planPrice}>5.99€/mois</Text>
+              <Text style={styles.planPrice}>9.99€/mois</Text>
             </View>
           </View>
         </TouchableOpacity>
