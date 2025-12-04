@@ -94,6 +94,8 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         isTrial,
         isLoading,
         expiresAt,
+        daysRemaining,
+        isExpired,
         checkSubscription,
         startTrial,
       }}
