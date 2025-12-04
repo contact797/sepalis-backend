@@ -11,6 +11,7 @@ from typing import List, Optional, Dict
 import uuid
 from datetime import datetime, timedelta, date
 import jwt
+from jwt.exceptions import ExpiredSignatureError, DecodeError
 import bcrypt
 from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
 from sendgrid import SendGridAPIClient
