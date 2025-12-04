@@ -19,39 +19,35 @@ export default function Paywall() {
   const [loading, setLoading] = useState(false);
   const [purchasing, setPurchasing] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('yearly');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleStartTrial = async () => {
     setPurchasing(true);
+    setSuccessMessage('');
+    setErrorMessage('');
+    
     try {
+      console.log('Démarrage essai gratuit...');
       const response = await subscriptionAPI.startTrial();
+      console.log('Réponse:', response.data);
       
       if (response.data.success) {
-        Alert.alert(
-          'Essai Démarré ! 🎉',
-          'Profitez de 7 jours gratuits de Sepalis Premium',
-          [
-            {
-              text: 'Commencer',
-              onPress: () => router.back(),
-            },
-          ]
-        );
+        setSuccessMessage('✅ Essai Démarré ! Profitez de 7 jours gratuits de Sepalis Premium');
+        setTimeout(() => router.back(), 2000);
       } else {
-        Alert.alert('Erreur', 'Impossible de démarrer l\'essai gratuit');
+        setErrorMessage('❌ Impossible de démarrer l\'essai gratuit');
       }
     } catch (error: any) {
       console.error('Erreur essai gratuit:', error);
       const errorMsg = error.response?.data?.detail || 'Une erreur est survenue';
       
       // Message plus user-friendly
-      if (errorMsg.includes('already') || errorMsg.includes('déjà')) {
-        Alert.alert(
-          'Essai Déjà Actif',
-          'Vous avez déjà un essai Premium en cours ! Profitez-en jusqu\'à la fin.',
-          [{ text: 'OK', onPress: () => router.back() }]
-        );
+      if (errorMsg.includes('already') || errorMsg.includes('déjà') || errorMsg.includes('actif')) {
+        setSuccessMessage('✅ Vous avez déjà un essai Premium actif ! Profitez-en.');
+        setTimeout(() => router.back(), 2000);
       } else {
-        Alert.alert('Erreur', errorMsg);
+        setErrorMessage(`❌ ${errorMsg}`);
       }
     } finally {
       setPurchasing(false);
