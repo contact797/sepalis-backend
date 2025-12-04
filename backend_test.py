@@ -1,20 +1,22 @@
 #!/usr/bin/env python3
 """
-Tests complets pour les endpoints météo de l'API Sepalis
-Teste les nouveaux endpoints utilisant l'API Open-Meteo
+Tests complets pour l'API backend Sepalis
+Teste tous les endpoints critiques avant lancement
 """
 
 import asyncio
-import httpx
+import aiohttp
 import json
-from datetime import datetime
+import uuid
+from datetime import datetime, timedelta
 import sys
 import os
 
 # Configuration
 BASE_URL = "https://garden-buddy-23.preview.emergentagent.com/api"
-PARIS_LAT = 48.8566
-PARIS_LON = 2.3522
+TEST_USER_EMAIL = f"test-sepalis-{uuid.uuid4().hex[:8]}@example.com"
+TEST_USER_PASSWORD = "TestPassword123!"
+TEST_USER_NAME = "Test Sepalis User"
 
 class WeatherAPITester:
     def __init__(self):
