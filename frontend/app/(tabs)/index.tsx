@@ -31,6 +31,7 @@ import { useSubscription } from '../../contexts/SubscriptionContext';
 export default function Home() {
   const { user } = useAuth();
   const router = useRouter();
+  const { isExpired } = useSubscription();
   const [tasks, setTasks] = useState([]);
   const [plants, setPlants] = useState([]);
   const [zones, setZones] = useState([]);
