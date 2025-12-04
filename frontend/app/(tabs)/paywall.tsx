@@ -336,6 +336,21 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     textAlign: 'center',
   },
+  mofBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.accent + '20',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginTop: 12,
+    gap: 6,
+  },
+  mofBadgeText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: Colors.accent,
+  },
   trialBanner: {
     flexDirection: 'row',
     alignItems: 'center',
