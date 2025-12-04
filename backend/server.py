@@ -269,9 +269,12 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = security)
         user_id: str = payload.get("sub")
         if user_id is None:
             raise HTTPException(status_code=401, detail="Invalid token")
-    except jwt.ExpiredSignatureError:
+    except ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token expired")
-    except jwt.JWTError:
+    except DecodeError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    except Exception as e:
+        print(f"JWT decode error: {str(e)}")
         raise HTTPException(status_code=401, detail="Invalid token")
     
     user = await db.users.find_one({"_id": user_id})
