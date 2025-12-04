@@ -9,11 +9,13 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSubscription } from '../../contexts/SubscriptionContext';
 import { Colors } from '../../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function Profile() {
   const { user, signOut } = useAuth();
+  const { isPremium, isTrial, expiresAt } = useSubscription();
   const router = useRouter();
 
   const handleLogout = () => {
