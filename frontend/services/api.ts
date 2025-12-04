@@ -1,9 +1,11 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
+import { Platform } from 'react-native';
 
-// Utiliser l'API locale via le proxy Kubernetes
-const API_URL = '/api';
+// Utiliser l'URL backend depuis les variables d'environnement
+const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+const API_URL = Platform.OS === 'web' ? `${BACKEND_URL}/api` : '/api';
 
 const api = axios.create({
   baseURL: API_URL,
