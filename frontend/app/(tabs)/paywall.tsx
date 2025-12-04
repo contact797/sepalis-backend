@@ -220,6 +220,20 @@ export default function Paywall() {
 
       {/* CTA Buttons */}
       <View style={styles.ctaSection}>
+        {/* Success Message */}
+        {successMessage && (
+          <View style={styles.successMessage}>
+            <Text style={styles.successMessageText}>{successMessage}</Text>
+          </View>
+        )}
+
+        {/* Error Message */}
+        {errorMessage && (
+          <View style={styles.errorMessage}>
+            <Text style={styles.errorMessageText}>{errorMessage}</Text>
+          </View>
+        )}
+
         <TouchableOpacity
           style={[styles.primaryButton, purchasing && styles.buttonDisabled]}
           onPress={handleStartTrial}
