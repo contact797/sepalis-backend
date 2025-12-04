@@ -22,8 +22,11 @@ import WeatherWidget from '../../components/WeatherWidget';
 import TasksChart from '../../components/TasksChart';
 import TemperatureChart from '../../components/TemperatureChart';
 import StatCard from '../../components/StatCard';
+import { TrialBanner } from '../../components/TrialBanner';
+import { ExpiredTrialModal } from '../../components/ExpiredTrialModal';
 import { notificationService } from '../../services/notificationService';
 import { syncService } from '../../services/syncService';
+import { useSubscription } from '../../contexts/SubscriptionContext';
 
 export default function Home() {
   const { user } = useAuth();
