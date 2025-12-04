@@ -153,8 +153,12 @@ export default function Paywall() {
         </View>
         <Text style={styles.heroTitle}>Sepalis Premium</Text>
         <Text style={styles.heroSubtitle}>
-          Libérez tout le potentiel de votre jardin
+          Conseils d'expert par un Meilleur Ouvrier de France
         </Text>
+        <View style={styles.mofBadge}>
+          <Ionicons name="trophy" size={16} color={Colors.accent} />
+          <Text style={styles.mofBadgeText}>MOF Paysagiste</Text>
+        </View>
       </View>
 
       {/* Trial Banner */}
