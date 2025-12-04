@@ -97,9 +97,27 @@ export default function Profile() {
               {user?.name?.charAt(0).toUpperCase()}
             </Text>
           </View>
+          {isPremium && (
+            <View style={styles.premiumBadge}>
+              <Ionicons name="diamond" size={16} color={Colors.dark} />
+            </View>
+          )}
         </View>
         <Text style={styles.name}>{user?.name}</Text>
         <Text style={styles.email}>{user?.email}</Text>
+        {isPremium && (
+          <View style={styles.premiumStatus}>
+            <Ionicons name="diamond" size={14} color={Colors.accent} />
+            <Text style={styles.premiumText}>
+              {isTrial ? 'Essai Premium' : 'Premium Actif'}
+            </Text>
+            {expiresAt && (
+              <Text style={styles.expiresText}>
+                · Jusqu'au {new Date(expiresAt).toLocaleDateString('fr-FR')}
+              </Text>
+            )}
+          </View>
+        )}
       </View>
 
       {/* Stats */}
