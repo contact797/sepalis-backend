@@ -36,10 +36,12 @@ export default function Paywall() {
       console.log('✅ Réponse succès:', response.data);
       
       if (response.data.success) {
+        haptics.success(); // Vibration de succès
         setSuccessMessage('✅ Essai Démarré ! Profitez de 7 jours gratuits de Sepalis Premium');
         setShowConfetti(true);
         setTimeout(() => router.back(), 3000);
       } else {
+        haptics.error(); // Vibration d'erreur
         setErrorMessage('❌ Impossible de démarrer l\'essai gratuit');
       }
     } catch (error: any) {
