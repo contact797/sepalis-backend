@@ -36,7 +36,8 @@ export default function Paywall() {
       
       if (response.data.success) {
         setSuccessMessage('✅ Essai Démarré ! Profitez de 7 jours gratuits de Sepalis Premium');
-        setTimeout(() => router.back(), 2000);
+        setShowConfetti(true);
+        setTimeout(() => router.back(), 3000);
       } else {
         setErrorMessage('❌ Impossible de démarrer l\'essai gratuit');
       }
