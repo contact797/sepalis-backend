@@ -1869,8 +1869,18 @@ async def start_trial(credentials: HTTPAuthorizationCredentials = Depends(securi
     
     # Vérifier si l'utilisateur n'a pas déjà eu un essai
     subscription = user.get("subscription", {})
-    if subscription.get("hasHadTrial", False):
-        raise HTTPException(status_code=400, detail="Trial already used")
+    
+    # MODE DÉMO: Permettre de redémarrer l'essai (à désactiver en production)
+    # TODO: En production, décommenter cette ligne:
+    # if subscription.get("hasHadTrial", False):
+    #     raise HTTPException(status_code=400, detail="Trial already used")
+    
+    # Vérifier si l'essai est déjà actif
+    if subscription.get("isActive", False) and subscription.get("isTrial", False):
+        expires_at = subscription.get("expiresAt")
+        if expires_at and isinstance(expires_at, datetime):
+            if datetime.utcnow() < expires_at:
+                raise HTTPException(status_code=400, detail="Essai déjà actif")
     
     # Démarrer l'essai
     trial_expires = datetime.utcnow() + timedelta(days=7)
