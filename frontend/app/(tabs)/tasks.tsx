@@ -57,25 +57,15 @@ export default function Tasks() {
   };
 
   const handleDeleteTask = async (taskId: string) => {
-    Alert.alert(
-      'Supprimer la tâche',
-      'Êtes-vous sûr de vouloir supprimer cette tâche ?',
-      [
-        { text: 'Annuler', style: 'cancel' },
-        {
-          text: 'Supprimer',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await tasksAPI.deleteTask(taskId);
-              loadTasks();
-            } catch (error) {
-              Alert.alert('Erreur', 'Impossible de supprimer la tâche');
-            }
-          },
-        },
-      ]
-    );
+    try {
+      haptics.heavy(); // Vibration lors de la suppression
+      await tasksAPI.deleteTask(taskId);
+      haptics.success(); // Vibration de succès
+      loadTasks();
+    } catch (error) {
+      haptics.error(); // Vibration d'erreur
+      Alert.alert('Erreur', 'Impossible de supprimer la tâche');
+    }
   };
 
   const handleAddTask = () => {
