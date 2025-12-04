@@ -14,6 +14,7 @@ import { Colors } from '../../constants/Colors';
 import { subscriptionService } from '../../services/subscriptionService';
 import { subscriptionAPI } from '../../services/api';
 import { Confetti } from '../../components/Confetti';
+import { haptics } from '../../utils/haptics';
 
 export default function Paywall() {
   const router = useRouter();
