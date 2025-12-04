@@ -1770,25 +1770,40 @@ async def get_subscription_status(credentials: HTTPAuthorizationCredentials = De
     subscription = user.get("subscription", {})
     is_active = subscription.get("isActive", False)
     expires_at = subscription.get("expiresAt")
+    days_remaining = None
+    is_expired = False
     
-    # Vérifier si l'abonnement a expiré
-    if is_active and expires_at:
+    # Vérifier si l'abonnement a expiré et calculer les jours restants
+    if expires_at:
         if isinstance(expires_at, str):
-            expires_at = datetime.fromisoformat(expires_at.replace('Z', '+00:00'))
+            expires_at_dt = datetime.fromisoformat(expires_at.replace('Z', '+00:00'))
+        else:
+            expires_at_dt = expires_at
         
-        if datetime.utcnow() > expires_at:
+        now = datetime.utcnow()
+        
+        if now > expires_at_dt:
+            # Expiré
             is_active = False
+            is_expired = True
+            days_remaining = 0
             await db.users.update_one(
                 {"_id": user["_id"]},
                 {"$set": {"subscription.isActive": False}}
             )
+        else:
+            # Calculer les jours restants
+            time_remaining = expires_at_dt - now
+            days_remaining = time_remaining.days
     
     return {
         "isActive": is_active,
         "isTrial": subscription.get("isTrial", True),
         "type": subscription.get("type"),
         "expiresAt": subscription.get("expiresAt"),
-        "provider": subscription.get("provider", "revenuecat")
+        "provider": subscription.get("provider", "revenuecat"),
+        "daysRemaining": days_remaining,
+        "isExpired": is_expired
     }
 
 
