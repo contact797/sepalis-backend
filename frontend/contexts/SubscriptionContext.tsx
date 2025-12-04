@@ -29,11 +29,6 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
 
   const initializeSubscription = async () => {
     try {
-      // Initialiser RevenueCat avec l'ID utilisateur
-      if (user?._id) {
-        await subscriptionService.initialize(user._id);
-      }
-
       // Vérifier le statut de l'abonnement
       await checkSubscription();
     } catch (error) {
@@ -55,19 +50,11 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       setIsTrial(status.isTrial);
       setExpiresAt(status.expiresAt ? new Date(status.expiresAt) : null);
 
-      // Vérifier aussi depuis RevenueCat (plus à jour)
-      const revenueCatStatus = await subscriptionService.checkSubscription();
-      
-      // Prendre le plus permissif (si l'un dit premium, c'est premium)
-      if (revenueCatStatus.isActive && !status.isActive) {
-        setIsPremium(true);
-        setIsTrial(revenueCatStatus.isTrial);
-        setExpiresAt(revenueCatStatus.expiresAt);
-      }
+      console.log('✅ Statut abonnement:', status);
 
     } catch (error) {
       console.error('Erreur vérification abonnement:', error);
-      // En cas d'erreur, on donne accès (meilleure UX)
+      // En cas d'erreur, on donne accès (meilleure UX en mode démo)
       setIsPremium(true);
     } finally {
       setIsLoading(false);
