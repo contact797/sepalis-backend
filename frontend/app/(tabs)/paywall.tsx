@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
 import { subscriptionService } from '../../services/subscriptionService';
 import { subscriptionAPI } from '../../services/api';
+import { Confetti } from '../../components/Confetti';
 
 export default function Paywall() {
   const router = useRouter();
@@ -21,6 +22,7 @@ export default function Paywall() {
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('yearly');
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const handleStartTrial = async () => {
     setPurchasing(true);
