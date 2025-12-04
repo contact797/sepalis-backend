@@ -95,9 +95,10 @@ export function Onboarding({ onComplete }: OnboardingProps) {
 
   const handleSkip = () => {
     const lastIndex = onboardingData.length - 1;
-    setCurrentIndex(lastIndex);
-    flatListRef.current?.scrollToIndex({
-      index: lastIndex,
+    
+    // Scroll vers le dernier écran en utilisant scrollToOffset
+    flatListRef.current?.scrollToOffset({
+      offset: lastIndex * width,
       animated: true,
     });
   };
