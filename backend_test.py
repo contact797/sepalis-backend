@@ -231,8 +231,9 @@ class SepalisAPITester:
             async with self.session.post(f"{BASE_URL}/user/zones", json=zone_data, headers=headers) as response:
                 if response.status == 200:
                     data = await response.json()
-                    if "id" in data and data.get("name") == zone_data["name"]:
-                        zone_id = data["id"]
+                    zone_id_field = data.get("id") or data.get("_id")
+                    if zone_id_field and data.get("name") == zone_data["name"]:
+                        zone_id = zone_id_field
                         self.log_test("Zones POST (create)", True, f"Zone created: {data['name']}")
                     else:
                         self.log_test("Zones POST (create)", False, "Invalid response structure")
