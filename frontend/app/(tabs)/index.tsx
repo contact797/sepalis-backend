@@ -25,6 +25,7 @@ import StatCard from '../../components/StatCard';
 import { TrialBanner } from '../../components/TrialBanner';
 import { ExpiredTrialModal } from '../../components/ExpiredTrialModal';
 import { SkeletonList, SkeletonLoader } from '../../components/SkeletonLoader';
+import { AnimatedListItem } from '../../components/AnimatedListItem';
 import { notificationService } from '../../services/notificationService';
 import { syncService } from '../../services/syncService';
 import { useSubscription } from '../../contexts/SubscriptionContext';
