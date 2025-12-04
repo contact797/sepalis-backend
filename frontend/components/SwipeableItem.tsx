@@ -11,11 +11,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../constants/Colors';
 
 const { width } = Dimensions.get('window');
-const SWIPE_THRESHOLD = -width * 0.3;
+const SWIPE_THRESHOLD = width * 0.3;
 
 interface SwipeableItemProps {
   children: React.ReactNode;
-  onDelete: () => void;
+  onDelete?: () => void;
+  onSwipeRight?: () => void;
+  rightActionColor?: string;
+  rightActionIcon?: any;
+  rightActionText?: string;
 }
 
 export function SwipeableItem({ children, onDelete }: SwipeableItemProps) {
