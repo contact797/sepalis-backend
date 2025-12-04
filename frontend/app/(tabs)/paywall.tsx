@@ -264,7 +264,7 @@ export default function Paywall() {
           ) : (
             <>
               <Text style={styles.primaryButtonText}>Démarrer l'Essai Gratuit</Text>
-              <Text style={styles.primaryButtonSubtext}>7 jours gratuits, puis {selectedPlan === 'yearly' ? '59€/an' : '5.99€/mois'}</Text>
+              <Text style={styles.primaryButtonSubtext}>7 jours gratuits, puis {selectedPlan === 'yearly' ? '99€/an' : '9.99€/mois'}</Text>
             </>
           )}
         </TouchableOpacity>
