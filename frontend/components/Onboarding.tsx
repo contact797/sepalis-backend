@@ -97,8 +97,10 @@ export function Onboarding({ onComplete }: OnboardingProps) {
   };
 
   const handleSkip = () => {
+    const lastIndex = onboardingData.length - 1;
+    setCurrentIndex(lastIndex);
     flatListRef.current?.scrollToIndex({
-      index: onboardingData.length - 1,
+      index: lastIndex,
       animated: true,
     });
   };
