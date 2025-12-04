@@ -22,7 +22,14 @@ interface SwipeableItemProps {
   rightActionText?: string;
 }
 
-export function SwipeableItem({ children, onDelete }: SwipeableItemProps) {
+export function SwipeableItem({ 
+  children, 
+  onDelete, 
+  onSwipeRight,
+  rightActionColor = Colors.success,
+  rightActionIcon = 'checkmark-circle',
+  rightActionText = 'Terminer',
+}: SwipeableItemProps) {
   const translateX = useRef(new Animated.Value(0)).current;
   const itemOpacity = useRef(new Animated.Value(1)).current;
 
@@ -33,13 +40,12 @@ export function SwipeableItem({ children, onDelete }: SwipeableItemProps) {
         return Math.abs(gestureState.dx) > 5;
       },
       onPanResponderMove: (_, gestureState) => {
-        if (gestureState.dx < 0) {
-          translateX.setValue(gestureState.dx);
-        }
+        // Permettre le swipe dans les deux directions
+        translateX.setValue(gestureState.dx);
       },
       onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dx < SWIPE_THRESHOLD) {
-          // Swipe suffisant → Suppression
+        // Swipe gauche (négatif) → Suppression
+        if (gestureState.dx < -SWIPE_THRESHOLD && onDelete) {
           Animated.parallel([
             Animated.timing(translateX, {
               toValue: -width,
@@ -54,8 +60,26 @@ export function SwipeableItem({ children, onDelete }: SwipeableItemProps) {
           ]).start(() => {
             onDelete();
           });
-        } else {
-          // Swipe insuffisant → Retour
+        }
+        // Swipe droite (positif) → Action personnalisée
+        else if (gestureState.dx > SWIPE_THRESHOLD && onSwipeRight) {
+          Animated.parallel([
+            Animated.timing(translateX, {
+              toValue: width,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+            Animated.timing(itemOpacity, {
+              toValue: 0,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+          ]).start(() => {
+            onSwipeRight();
+          });
+        }
+        // Swipe insuffisant → Retour
+        else {
           Animated.spring(translateX, {
             toValue: 0,
             useNativeDriver: true,
