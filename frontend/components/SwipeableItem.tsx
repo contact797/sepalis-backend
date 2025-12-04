@@ -130,12 +130,29 @@ const styles = StyleSheet.create({
     position: 'relative',
     marginBottom: 12,
   },
-  deleteBackground: {
+  leftBackground: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: width * 0.35,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 12,
+    flexDirection: 'row',
+    gap: 8,
+  },
+  leftText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  rightBackground: {
     position: 'absolute',
     right: 0,
     top: 0,
     bottom: 0,
-    width: width * 0.3,
+    width: width * 0.35,
     backgroundColor: '#ff6b6b',
     justifyContent: 'center',
     alignItems: 'center',
@@ -143,7 +160,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
   },
-  deleteText: {
+  rightText: {
     color: '#fff',
     fontWeight: '600',
     fontSize: 14,
