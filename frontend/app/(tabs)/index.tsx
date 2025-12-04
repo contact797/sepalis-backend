@@ -297,6 +297,12 @@ export default function Home() {
         </TouchableOpacity>
       </View>
 
+      {/* Trial Banner */}
+      <TrialBanner />
+
+      {/* Expired Trial Modal */}
+      <ExpiredTrialModal visible={isExpired} />
+
       {/* Weather Widget */}
       {weatherCurrent && weatherForecast.length > 0 && (
         <WeatherWidget current={weatherCurrent} forecast={weatherForecast} />
