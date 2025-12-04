@@ -22,6 +22,8 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const [isTrial, setIsTrial] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [expiresAt, setExpiresAt] = useState<Date | null>(null);
+  const [daysRemaining, setDaysRemaining] = useState<number | null>(null);
+  const [isExpired, setIsExpired] = useState(false);
 
   useEffect(() => {
     if (user) {
