@@ -92,11 +92,21 @@ export function SwipeableItem({
 
   return (
     <View style={styles.container}>
-      {/* Background de suppression */}
-      <View style={styles.deleteBackground}>
-        <Ionicons name="trash" size={24} color="#fff" />
-        <Text style={styles.deleteText}>Supprimer</Text>
-      </View>
+      {/* Background gauche (swipe droite → action) */}
+      {onSwipeRight && (
+        <View style={[styles.leftBackground, { backgroundColor: rightActionColor }]}>
+          <Ionicons name={rightActionIcon} size={24} color="#fff" />
+          <Text style={styles.leftText}>{rightActionText}</Text>
+        </View>
+      )}
+
+      {/* Background droite (swipe gauche → suppression) */}
+      {onDelete && (
+        <View style={styles.rightBackground}>
+          <Ionicons name="trash" size={24} color="#fff" />
+          <Text style={styles.rightText}>Supprimer</Text>
+        </View>
+      )}
 
       {/* Contenu swipeable */}
       <Animated.View
