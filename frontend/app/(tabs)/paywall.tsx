@@ -209,10 +209,10 @@ export default function Paywall() {
             </View>
             <View style={styles.planInfo}>
               <Text style={styles.planTitle}>Annuel</Text>
-              <Text style={styles.planPrice}>59€/an</Text>
-              <Text style={styles.planSaving}>Économisez 16% 🎉</Text>
+              <Text style={styles.planPrice}>99€/an</Text>
+              <Text style={styles.planSaving}>Économisez 17% 🎉</Text>
             </View>
-            <Text style={styles.planPerMonth}>4.92€/mois</Text>
+            <Text style={styles.planPerMonth}>8.25€/mois</Text>
           </View>
         </TouchableOpacity>
 
