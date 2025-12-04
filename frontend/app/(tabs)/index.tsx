@@ -298,9 +298,28 @@ export default function Home() {
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={Colors.accent} />
-      </View>
+      <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+        {/* Header Skeleton */}
+        <View style={styles.header}>
+          <View>
+            <SkeletonLoader width={200} height={28} />
+            <SkeletonLoader width={180} height={18} style={{ marginTop: 8 }} />
+          </View>
+          <SkeletonLoader width={48} height={48} borderRadius={24} />
+        </View>
+
+        {/* Stats Skeleton */}
+        <View style={styles.statCardsContainer}>
+          <SkeletonLoader width="30%" height={100} borderRadius={12} />
+          <SkeletonLoader width="30%" height={100} borderRadius={12} />
+          <SkeletonLoader width="30%" height={100} borderRadius={12} />
+        </View>
+
+        {/* Content Skeleton */}
+        <SkeletonLoader width="100%" height={200} borderRadius={12} style={{ marginTop: 16 }} />
+        <SkeletonLoader width="100%" height={150} borderRadius={12} style={{ marginTop: 16 }} />
+        <SkeletonList count={2} />
+      </ScrollView>
     );
   }
 
