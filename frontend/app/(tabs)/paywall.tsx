@@ -457,6 +457,34 @@ const styles = StyleSheet.create({
   ctaSection: {
     paddingHorizontal: 20,
   },
+  successMessage: {
+    backgroundColor: Colors.success + '20',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: Colors.success,
+  },
+  successMessageText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.success,
+    textAlign: 'center',
+  },
+  errorMessage: {
+    backgroundColor: Colors.warning + '20',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: Colors.warning,
+  },
+  errorMessageText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.warning,
+    textAlign: 'center',
+  },
   primaryButton: {
     backgroundColor: Colors.accent,
     borderRadius: 12,
