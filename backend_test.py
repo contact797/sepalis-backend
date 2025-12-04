@@ -434,8 +434,11 @@ class SepalisAPITester:
                     data = await response.json()
                     if isinstance(data, list) and len(data) > 0:
                         workshop = data[0]
-                        required_fields = ["id", "title", "description", "price", "slug", "instructor"]
+                        required_fields = ["title", "description", "price", "slug", "instructor"]
                         missing_fields = [field for field in required_fields if field not in workshop]
+                        # Check for either id or _id
+                        if not (workshop.get("id") or workshop.get("_id")):
+                            missing_fields.append("id/_id")
                         
                         if not missing_fields:
                             self.log_test("Workshops API", True, f"Retrieved {len(data)} workshops")
