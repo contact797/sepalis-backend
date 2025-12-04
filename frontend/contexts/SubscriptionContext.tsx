@@ -8,6 +8,8 @@ interface SubscriptionContextType {
   isTrial: boolean;
   isLoading: boolean;
   expiresAt: Date | null;
+  daysRemaining: number | null;
+  isExpired: boolean;
   checkSubscription: () => Promise<void>;
   startTrial: () => Promise<boolean>;
 }
