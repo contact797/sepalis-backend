@@ -81,8 +81,8 @@ export function ExpiredTrialModal({ visible }: ExpiredTrialModalProps) {
           <View style={styles.pricingSection}>
             <View style={styles.priceCard}>
               <Text style={styles.priceLabel}>À partir de</Text>
-              <Text style={styles.priceValue}>4.92€/mois</Text>
-              <Text style={styles.priceDetail}>Facturé 59€/an • Économisez 16%</Text>
+              <Text style={styles.priceValue}>8.25€/mois</Text>
+              <Text style={styles.priceDetail}>Facturé 99€/an • Économisez 17%</Text>
             </View>
           </View>
 
