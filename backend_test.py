@@ -249,7 +249,8 @@ class SepalisAPITester:
                 async with self.session.get(f"{BASE_URL}/user/zones/{zone_id}", headers=headers) as response:
                     if response.status == 200:
                         data = await response.json()
-                        if data.get("id") == zone_id:
+                        retrieved_id = data.get("id") or data.get("_id")
+                        if retrieved_id == zone_id:
                             self.log_test("Zones GET (by ID)", True, f"Retrieved zone: {data['name']}")
                         else:
                             self.log_test("Zones GET (by ID)", False, "Zone ID mismatch")
