@@ -191,6 +191,7 @@ const styles = StyleSheet.create({
   },
   avatarContainer: {
     marginBottom: 16,
+    position: 'relative',
   },
   avatar: {
     width: 100,
@@ -205,6 +206,19 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: Colors.white,
   },
+  premiumBadge: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: Colors.accent,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: Colors.white,
+  },
   name: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -213,6 +227,22 @@ const styles = StyleSheet.create({
   },
   email: {
     fontSize: 16,
+    color: Colors.mediumGray,
+    marginBottom: 8,
+  },
+  premiumStatus: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 4,
+  },
+  premiumText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.accent,
+  },
+  expiresText: {
+    fontSize: 12,
     color: Colors.mediumGray,
   },
   statsContainer: {
