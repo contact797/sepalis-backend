@@ -389,29 +389,35 @@ export default function Home() {
 
       {/* Statistiques */}
       <View style={styles.statsContainer}>
-        <View style={styles.statCard}>
-          <View style={[styles.statIcon, { backgroundColor: Colors.primary + '30' }]}>
-            <Ionicons name="grid" size={24} color={Colors.primary} />
+        <AnimatedListItem index={0} delay={80}>
+          <View style={styles.statCard}>
+            <View style={[styles.statIcon, { backgroundColor: Colors.primary + '30' }]}>
+              <Ionicons name="grid" size={24} color={Colors.primary} />
+            </View>
+            <Text style={styles.statNumber}>{zones.length}</Text>
+            <Text style={styles.statLabel}>Zones</Text>
           </View>
-          <Text style={styles.statNumber}>{zones.length}</Text>
-          <Text style={styles.statLabel}>Zones</Text>
-        </View>
+        </AnimatedListItem>
 
-        <View style={styles.statCard}>
-          <View style={[styles.statIcon, { backgroundColor: Colors.primary + '30' }]}>
-            <Ionicons name="leaf" size={24} color={Colors.primary} />
+        <AnimatedListItem index={1} delay={80}>
+          <View style={styles.statCard}>
+            <View style={[styles.statIcon, { backgroundColor: Colors.primary + '30' }]}>
+              <Ionicons name="leaf" size={24} color={Colors.primary} />
+            </View>
+            <Text style={styles.statNumber}>{plants.length}</Text>
+            <Text style={styles.statLabel}>Plantes</Text>
           </View>
-          <Text style={styles.statNumber}>{plants.length}</Text>
-          <Text style={styles.statLabel}>Plantes</Text>
-        </View>
+        </AnimatedListItem>
 
-        <View style={styles.statCard}>
-          <View style={[styles.statIcon, { backgroundColor: Colors.accent + '30' }]}>
-            <Ionicons name="checkbox" size={24} color={Colors.accent} />
+        <AnimatedListItem index={2} delay={80}>
+          <View style={styles.statCard}>
+            <View style={[styles.statIcon, { backgroundColor: Colors.accent + '30' }]}>
+              <Ionicons name="checkbox" size={24} color={Colors.accent} />
+            </View>
+            <Text style={styles.statNumber}>{getPendingTasks().length}</Text>
+            <Text style={styles.statLabel}>Tâches</Text>
           </View>
-          <Text style={styles.statNumber}>{getPendingTasks().length}</Text>
-          <Text style={styles.statLabel}>Tâches</Text>
-        </View>
+        </AnimatedListItem>
       </View>
 
       {/* Mes Zones */}
