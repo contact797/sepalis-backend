@@ -49,9 +49,11 @@ export default function Tasks() {
 
   const handleCompleteTask = async (taskId: string) => {
     try {
+      haptics.success(); // Vibration de succès
       await tasksAPI.completeTask(taskId);
       loadTasks();
     } catch (error) {
+      haptics.error(); // Vibration d'erreur
       Alert.alert('Erreur', 'Impossible de compléter la tâche');
     }
   };
