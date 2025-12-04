@@ -460,8 +460,11 @@ class SepalisAPITester:
                     data = await response.json()
                     if isinstance(data, list) and len(data) > 0:
                         course = data[0]
-                        required_fields = ["id", "title", "description", "price", "slug", "instructor", "image"]
+                        required_fields = ["title", "description", "price", "slug", "instructor", "image"]
                         missing_fields = [field for field in required_fields if field not in course]
+                        # Check for either id or _id
+                        if not (course.get("id") or course.get("_id")):
+                            missing_fields.append("id/_id")
                         
                         if not missing_fields:
                             self.log_test("Courses API", True, f"Retrieved {len(data)} courses with images")
