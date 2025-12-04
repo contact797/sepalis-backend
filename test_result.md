@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Ajouter des photos pour chaque formation dans l'académie. Les formations doivent afficher des images réelles au lieu de simples icônes."
+user_problem_statement: "Tests complets de l'application Sepalis avant lancement. L'app inclut maintenant : système d'abonnement (essai 7 jours), paywall avec confettis, animations UX complètes (onboarding, skeleton screens, swipe bidirectionnel, haptic feedback), intégration du titre MOF (page À Propos, mentions dans onboarding et paywall), météo, suggestions de tâches, gamification, notifications push. Objectif : tester tous les endpoints backend critiques et identifier les bugs avant le lancement public."
 
 backend:
   - task: "Endpoints API pour formations avec images"
