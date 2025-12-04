@@ -33,9 +33,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       const storedUser = await AsyncStorage.getItem('user');
       const storedToken = await AsyncStorage.getItem('token');
+      const onboardingCompleted = await AsyncStorage.getItem('onboardingCompleted');
 
       if (storedUser && storedToken) {
         setUser(JSON.parse(storedUser));
+        
+        // Afficher l'onboarding si pas encore complété
+        if (!onboardingCompleted) {
+          setShowOnboarding(true);
+        }
       }
     } catch (error) {
       console.error('Erreur chargement données:', error);
@@ -43,6 +49,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setLoading(false);
     }
   }
+  
+  const completeOnboarding = () => {
+    setShowOnboarding(false);
+  };
 
   async function signIn(email: string, password: string) {
     try {
