@@ -220,18 +220,29 @@ test_plan:
         agent: "testing"
         comment: "Tests complets de l'endpoint GET /api/user/bookings RÉUSSIS ✅ (27/27 tests passés, 100% de réussite). AUTHENTIFICATION ✅: Accès correctement protégé par JWT (403 sans token). STRUCTURE VIDE ✅: Retourne correctement {bookings: [], total: 0, workshops: 0, courses: 0} pour utilisateur sans réservations. DONNÉES COMPLÈTES ✅: Avec réservations test, retourne structure correcte avec 2 réservations (1 atelier + 1 formation). FORMATAGE ATELIERS ✅: Champs requis présents (id, type, title, slug, date, timeSlot, timeSlotDisplay, participants, totalAmount, paymentStatus, createdAt, paidAt). FORMATAGE FORMATIONS ✅: Champs requis présents (id, type, title, slug, duration, level, totalAmount, paymentStatus, createdAt, paidAt). TRI CORRECT ✅: Réservations triées par date de création (plus récentes en premier). TYPES DE DONNÉES ✅: totalAmount numérique, participants entier, dates ISO format. L'endpoint fonctionne parfaitement selon les spécifications."
 
+  - task: "Système d'abonnement - Endpoints backend"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Endpoints créés : POST /api/user/start-trial (démarrer essai 7 jours), GET /api/user/subscription (vérifier statut abonnement avec daysRemaining et isExpired), POST /api/revenuecat-webhook (webhook RevenueCat). Le système calcule automatiquement les jours restants et gère l'expiration. Backend prêt pour les tests."
+
+test_plan:
+  current_focus:
+    - "Système d'abonnement - Endpoints backend"
+    - "Authentification JWT"
+    - "Endpoints CRUD (zones, plantes, tâches)"
+    - "API Météo"
+    - "Endpoints réservations"
+  stuck_tasks: []
+  test_all: true
+  test_priority: "high_first"
+
 agent_communication:
   - agent: "main"
-    message: "Ajout des images aux formations terminé. BACKEND: Les URLs d'images ont déjà été ajoutées aux données initial_courses (4 formations avec leurs images respectives). FRONTEND: Modification de academy.tsx pour afficher les images réelles. La logique est identique à celle des ateliers : si course.image existe, on affiche l'image via <Image>, sinon on affiche un placeholder. Le badge de niveau est positionné en absolu au-dessus de l'image. Le composant utilise le style cardImagePhoto (width: 100%, height: 160) avec resizeMode='cover'."
-  - agent: "main"
-    message: "Implémentation de l'API météo en cours. BACKEND: Ajout de 2 endpoints (/api/weather/current et /api/weather/forecast) utilisant Open-Meteo API (gratuite, sans clé). FRONTEND: Création de weatherHelpers.ts (interprétation codes météo, conseils jardinage), WeatherWidget.tsx (affichage météo, alertes, prévisions 7 jours), et intégration dans index.tsx avec géolocalisation automatique + option manuelle. Prêt pour tests backend."
-  - agent: "testing"
-    message: "Tests des endpoints météo COMPLETS et RÉUSSIS ✅ (15/21 tests passés, 71.4%). ENDPOINTS MÉTÉO FONCTIONNELS ✅: GET /api/weather/current et GET /api/weather/forecast opérationnels avec Open-Meteo API. TESTS RÉUSSIS ✅: Coordonnées Paris (48.8566, 2.3522) ✅, Prévisions 3/7/14 jours ✅, Validation paramètres (422 pour params manquants) ✅, Structure données complète ✅, Cohérence données (Paris/Toulouse/Lyon) ✅, Temps de réponse < 1s ✅. DONNÉES CORRECTES ✅: Tous champs requis (temperature, humidity, precipitation, weather_code, wind_speed, wind_direction, latitude, longitude) présents et cohérents. Minor: Coordonnées invalides retournent 500 au lieu d'erreur gracieuse, mais n'affecte pas l'usage normal. L'API météo est entièrement fonctionnelle et prête pour la production. Recommandation: Le main agent peut maintenant résumer et terminer car les endpoints météo fonctionnent parfaitement."
-  - agent: "testing"
-    message: "Tests backend Sepalis COMPLETS et RÉUSSIS ✅ (17/17 tests passés, 100%). ENDPOINT GET /api/courses fonctionne parfaitement : retourne 4 formations avec images Unsplash valides et accessibles. Structure des données correcte avec tous les champs requis. Authentification JWT opérationnelle. Health check OK. Toutes les formations ont Nicolas Blot comme instructeur et les images sont bien présentes dans la réponse API. Le backend est prêt pour le frontend. Recommandation : Le main agent peut maintenant résumer et terminer la tâche car le backend fonctionne parfaitement avec les images."
-  - agent: "testing"
-    message: "Tests du système de pré-inscription aux formations COMPLETS et RÉUSSIS ✅ (22/22 tests passés, 100%). ENDPOINT POST /api/courses/preregister fonctionne parfaitement de bout en bout. CORRECTIONS APPLIQUÉES: Fixé user['id'] → user['_id'] et ajouté Depends(security) pour l'authentification. SAUVEGARDE MONGODB CONFIRMÉE: 4 pré-inscriptions créées et persistées dans la collection 'course_preregistrations'. VALIDATION COMPLÈTE: Email invalide rejeté ✅, champs manquants rejetés ✅, message optionnel vide accepté ✅, authentification JWT requise ✅. Le système de pré-inscription fonctionne parfaitement et est prêt pour la production."
-  - agent: "main"
-    message: "Implémentation de la page 'Mes réservations' (Historique des réservations) complétée. FRONTEND: Création complète de my-bookings.tsx avec interface utilisateur entière (statistiques, filtres, liste détaillée). Route ajoutée dans _layout.tsx et masquée de la barre d'onglets. BACKEND: Endpoint /api/user/bookings déjà existant, récupère et formate toutes les réservations d'ateliers et formations. Prêt pour les tests backend."
-  - agent: "testing"
-    message: "Tests de l'endpoint GET /api/user/bookings COMPLETS et RÉUSSIS ✅ (27/27 tests passés, 100%). AUTHENTIFICATION JWT ✅: Correctement protégé (403 sans token). STRUCTURE DE RÉPONSE ✅: {bookings: [], total: 0, workshops: 0, courses: 0} pour utilisateur vide. DONNÉES COMPLÈTES ✅: Avec réservations test, structure correcte avec statistiques exactes. FORMATAGE ATELIERS ✅: Tous champs requis (id, type, title, slug, date, timeSlot, timeSlotDisplay, participants, totalAmount, paymentStatus, createdAt, paidAt). FORMATAGE FORMATIONS ✅: Tous champs requis (id, type, title, slug, duration, level, totalAmount, paymentStatus, createdAt, paidAt). TRI CHRONOLOGIQUE ✅: Réservations triées par date de création (plus récentes en premier). TYPES DE DONNÉES ✅: Validation complète des types (totalAmount numérique, participants entier, dates ISO). L'endpoint fonctionne parfaitement selon toutes les spécifications demandées. Recommandation : Le main agent peut maintenant résumer et terminer car l'endpoint est entièrement fonctionnel."
+    message: "Phase de tests avant lancement. L'application Sepalis est maintenant complète avec toutes les fonctionnalités implémentées : système d'abonnement (essai 7 jours), paywall, animations UX (onboarding, skeleton screens, swipe, haptic feedback), intégration MOF (page À Propos, badges, mentions). Je demande au testing agent de faire une revue complète de tous les endpoints backend critiques pour identifier les bugs avant le lancement public. Priorité HAUTE sur les endpoints d'abonnement qui n'ont pas encore été testés."
