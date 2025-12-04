@@ -83,7 +83,8 @@ export default function Profile() {
     {
       title: 'À propos',
       icon: 'information-circle-outline',
-      onPress: () => Alert.alert('Sepalis', 'Version 1.0.0\n© 2025 Sepalis'),
+      badge: 'MOF',
+      onPress: () => router.push('/(tabs)/about' as any),
     },
   ];
 
