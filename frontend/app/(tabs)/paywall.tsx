@@ -140,6 +140,9 @@ export default function Paywall() {
         </TouchableOpacity>
       </View>
 
+      {/* Confetti */}
+      {showConfetti && <Confetti onComplete={() => setShowConfetti(false)} />}
+
       {/* Hero */}
       <View style={styles.hero}>
         <View style={styles.crownBadge}>
