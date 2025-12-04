@@ -12,7 +12,7 @@ import sys
 import os
 
 # Configuration
-BASE_URL = "https://garden-booking-2.preview.emergentagent.com/api"
+BASE_URL = "https://garden-buddy-23.preview.emergentagent.com/api"
 PARIS_LAT = 48.8566
 PARIS_LON = 2.3522
 

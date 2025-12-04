@@ -9,7 +9,7 @@
 ### Étape 1 : Ouvrir l'application
 👉 **Cliquez sur ce lien :**
 ```
-https://garden-booking-2.preview.emergentagent.com
+https://garden-buddy-23.preview.emergentagent.com
 ```
 
 ### Étape 2 : Créer un compte
@@ -133,4 +133,4 @@ Je peux ensuite développer :
 
 ---
 
-**Testez maintenant : https://garden-booking-2.preview.emergentagent.com** 🌱
+**Testez maintenant : https://garden-buddy-23.preview.emergentagent.com** 🌱
