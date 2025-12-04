@@ -85,6 +85,9 @@ export function Onboarding({ onComplete }: OnboardingProps) {
         }),
       ]).start();
 
+      // Mettre à jour l'index AVANT le scroll
+      setCurrentIndex(nextIndex);
+
       // Scroll vers le prochain écran en utilisant scrollToOffset (plus fiable)
       flatListRef.current?.scrollToOffset({
         offset: nextIndex * width,
