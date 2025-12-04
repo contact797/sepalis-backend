@@ -69,6 +69,8 @@ export function Onboarding({ onComplete }: OnboardingProps) {
 
   const handleNext = () => {
     if (currentIndex < onboardingData.length - 1) {
+      const nextIndex = currentIndex + 1;
+      
       // Animation de bounce sur le bouton
       Animated.sequence([
         Animated.timing(scaleAnim, {
@@ -83,8 +85,12 @@ export function Onboarding({ onComplete }: OnboardingProps) {
         }),
       ]).start();
 
+      // Mettre à jour l'index immédiatement
+      setCurrentIndex(nextIndex);
+      
+      // Scroll vers le prochain écran
       flatListRef.current?.scrollToIndex({
-        index: currentIndex + 1,
+        index: nextIndex,
         animated: true,
       });
     }
