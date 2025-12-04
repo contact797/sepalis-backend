@@ -14,6 +14,8 @@ import { tasksAPI } from '../../services/api';
 import { Colors } from '../../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import TaskSuggestionsModal from '../../components/TaskSuggestionsModal';
+import { SwipeableItem } from '../../components/SwipeableItem';
+import { haptics } from '../../utils/haptics';
 
 export default function Tasks() {
   const router = useRouter();
