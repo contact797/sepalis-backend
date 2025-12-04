@@ -28,9 +28,9 @@ export default function Paywall() {
     setErrorMessage('');
     
     try {
-      console.log('Démarrage essai gratuit...');
+      console.log('🚀 Démarrage essai gratuit...');
       const response = await subscriptionAPI.startTrial();
-      console.log('Réponse:', response.data);
+      console.log('✅ Réponse succès:', response.data);
       
       if (response.data.success) {
         setSuccessMessage('✅ Essai Démarré ! Profitez de 7 jours gratuits de Sepalis Premium');
@@ -39,11 +39,18 @@ export default function Paywall() {
         setErrorMessage('❌ Impossible de démarrer l\'essai gratuit');
       }
     } catch (error: any) {
-      console.error('Erreur essai gratuit:', error);
-      const errorMsg = error.response?.data?.detail || 'Une erreur est survenue';
+      console.log('❌ Erreur complète:', error);
+      console.log('❌ Response:', error.response);
+      console.log('❌ Data:', error.response?.data);
+      console.log('❌ Detail:', error.response?.data?.detail);
+      
+      const errorMsg = error.response?.data?.detail || error.message || 'Une erreur est survenue';
+      console.log('❌ Message final:', errorMsg);
       
       // Message plus user-friendly
-      if (errorMsg.includes('already') || errorMsg.includes('déjà') || errorMsg.includes('actif')) {
+      if (errorMsg.toLowerCase().includes('already') || 
+          errorMsg.toLowerCase().includes('déjà') || 
+          errorMsg.toLowerCase().includes('actif')) {
         setSuccessMessage('✅ Vous avez déjà un essai Premium actif ! Profitez-en.');
         setTimeout(() => router.back(), 2000);
       } else {
