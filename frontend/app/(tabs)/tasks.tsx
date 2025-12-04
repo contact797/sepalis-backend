@@ -178,58 +178,56 @@ export default function Tasks() {
         ) : (
           <View style={styles.tasksList}>
             {getFilteredTasks().map((task: any) => (
-              <View key={task._id} style={styles.taskCard}>
-                <TouchableOpacity
-                  style={styles.taskCheckbox}
-                  onPress={() => !task.completed && handleCompleteTask(task._id)}
-                >
-                  <Ionicons
-                    name={task.completed ? 'checkmark-circle' : 'ellipse-outline'}
-                    size={28}
-                    color={task.completed ? Colors.success : Colors.mediumGray}
-                  />
-                </TouchableOpacity>
-
-                <View style={styles.taskContent}>
-                  <View style={styles.taskHeader}>
+              <SwipeableItem
+                key={task._id}
+                onDelete={() => handleDeleteTask(task._id)}
+              >
+                <View style={styles.taskCard}>
+                  <TouchableOpacity
+                    style={styles.taskCheckbox}
+                    onPress={() => !task.completed && handleCompleteTask(task._id)}
+                  >
                     <Ionicons
-                      name={getTaskIcon(task.type)}
-                      size={20}
-                      color={Colors.primary}
-                      style={styles.taskTypeIcon}
+                      name={task.completed ? 'checkmark-circle' : 'ellipse-outline'}
+                      size={28}
+                      color={task.completed ? Colors.success : Colors.mediumGray}
                     />
-                    <Text
-                      style={[
-                        styles.taskTitle,
-                        task.completed && styles.taskTitleCompleted,
-                      ]}
-                    >
-                      {task.title}
-                    </Text>
-                  </View>
-                  {task.description && (
-                    <Text style={styles.taskDescription}>{task.description}</Text>
-                  )}
-                  {task.plant && (
-                    <Text style={styles.taskPlant}>
-                      <Ionicons name="leaf" size={14} /> {task.plant.name}
-                    </Text>
-                  )}
-                  {task.dueDate && (
-                    <Text style={styles.taskDate}>
-                      <Ionicons name="calendar-outline" size={14} />{' '}
-                      {new Date(task.dueDate).toLocaleDateString('fr-FR')}
-                    </Text>
-                  )}
-                </View>
+                  </TouchableOpacity>
 
-                <TouchableOpacity
-                  style={styles.taskDelete}
-                  onPress={() => handleDeleteTask(task._id)}
-                >
-                  <Ionicons name="trash-outline" size={20} color={Colors.error} />
-                </TouchableOpacity>
-              </View>
+                  <View style={styles.taskContent}>
+                    <View style={styles.taskHeader}>
+                      <Ionicons
+                        name={getTaskIcon(task.type)}
+                        size={20}
+                        color={Colors.primary}
+                        style={styles.taskTypeIcon}
+                      />
+                      <Text
+                        style={[
+                          styles.taskTitle,
+                          task.completed && styles.taskTitleCompleted,
+                        ]}
+                      >
+                        {task.title}
+                      </Text>
+                    </View>
+                    {task.description && (
+                      <Text style={styles.taskDescription}>{task.description}</Text>
+                    )}
+                    {task.plant && (
+                      <Text style={styles.taskPlant}>
+                        <Ionicons name="leaf" size={14} /> {task.plant.name}
+                      </Text>
+                    )}
+                    {task.dueDate && (
+                      <Text style={styles.taskDate}>
+                        <Ionicons name="calendar-outline" size={14} />{' '}
+                        {new Date(task.dueDate).toLocaleDateString('fr-FR')}
+                      </Text>
+                    )}
+                  </View>
+                </View>
+              </SwipeableItem>
             ))}
           </View>
         )}
