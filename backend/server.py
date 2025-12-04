@@ -1874,20 +1874,29 @@ async def start_trial(credentials: HTTPAuthorizationCredentials = Depends(securi
     # Vérifier si l'utilisateur n'a pas déjà eu un essai
     subscription = user.get("subscription", {})
     
-    # MODE DÉMO: Permettre de redémarrer l'essai (à désactiver en production)
-    # TODO: En production, décommenter cette ligne:
-    # if subscription.get("hasHadTrial", False):
-    #     raise HTTPException(status_code=400, detail="Trial already used")
+    print(f"📋 Start trial pour user {user['_id']}, subscription actuelle: {subscription}")
     
     # Vérifier si l'essai est déjà actif
     if subscription.get("isActive", False) and subscription.get("isTrial", False):
         expires_at = subscription.get("expiresAt")
-        if expires_at and isinstance(expires_at, datetime):
+        print(f"⚠️ Essai déjà actif, expire le: {expires_at}")
+        
+        if expires_at:
+            if isinstance(expires_at, str):
+                expires_at = datetime.fromisoformat(expires_at.replace('Z', '+00:00'))
+            
             if datetime.utcnow() < expires_at:
-                raise HTTPException(status_code=400, detail="Essai déjà actif")
+                print(f"❌ Essai encore valide jusqu'au {expires_at}")
+                # En mode démo, on retourne succès avec l'expiration existante
+                return {
+                    "success": True,
+                    "message": "Essai déjà actif",
+                    "expiresAt": expires_at.isoformat() if isinstance(expires_at, datetime) else expires_at
+                }
     
-    # Démarrer l'essai
+    # Démarrer un nouvel essai
     trial_expires = datetime.utcnow() + timedelta(days=7)
+    print(f"✅ Démarrage nouvel essai, expire le: {trial_expires}")
     
     await db.users.update_one(
         {"_id": user["_id"]},
@@ -1904,6 +1913,7 @@ async def start_trial(credentials: HTTPAuthorizationCredentials = Depends(securi
     
     return {
         "success": True,
+        "message": "Essai démarré",
         "expiresAt": trial_expires.isoformat()
     }
 
