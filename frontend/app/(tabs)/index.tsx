@@ -318,8 +318,8 @@ export default function Home() {
       {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.greeting}>Bonjour {user?.name} ! 👋</Text>
-          <Text style={styles.subGreeting}>Votre jardin vous attend</Text>
+          <Text style={styles.greeting}>{greeting.main}</Text>
+          <Text style={styles.subGreeting}>{greeting.sub}</Text>
         </View>
         <TouchableOpacity style={styles.scanButton} onPress={() => router.push('/(tabs)/scan-plant')}>
           <Ionicons name="scan" size={24} color={Colors.accent} />
