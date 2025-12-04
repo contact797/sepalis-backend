@@ -183,6 +183,10 @@ export default function Tasks() {
               <SwipeableItem
                 key={task._id}
                 onDelete={() => handleDeleteTask(task._id)}
+                onSwipeRight={!task.completed ? () => handleCompleteTask(task._id) : undefined}
+                rightActionColor={Colors.success}
+                rightActionIcon="checkmark-circle"
+                rightActionText="Terminer"
               >
                 <View style={styles.taskCard}>
                   <TouchableOpacity
