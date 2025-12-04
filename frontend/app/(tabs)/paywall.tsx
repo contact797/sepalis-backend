@@ -40,8 +40,19 @@ export default function Paywall() {
         Alert.alert('Erreur', 'Impossible de démarrer l\'essai gratuit');
       }
     } catch (error: any) {
+      console.error('Erreur essai gratuit:', error);
       const errorMsg = error.response?.data?.detail || 'Une erreur est survenue';
-      Alert.alert('Info', errorMsg);
+      
+      // Message plus user-friendly
+      if (errorMsg.includes('already') || errorMsg.includes('déjà')) {
+        Alert.alert(
+          'Essai Déjà Actif',
+          'Vous avez déjà un essai Premium en cours ! Profitez-en jusqu\'à la fin.',
+          [{ text: 'OK', onPress: () => router.back() }]
+        );
+      } else {
+        Alert.alert('Erreur', errorMsg);
+      }
     } finally {
       setPurchasing(false);
     }
