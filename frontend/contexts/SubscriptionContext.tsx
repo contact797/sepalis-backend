@@ -53,13 +53,17 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       setIsPremium(status.isActive);
       setIsTrial(status.isTrial);
       setExpiresAt(status.expiresAt ? new Date(status.expiresAt) : null);
+      setDaysRemaining(status.daysRemaining ?? null);
+      setIsExpired(status.isExpired || false);
 
       console.log('✅ Statut abonnement:', status);
+      console.log(`📅 Jours restants: ${status.daysRemaining}`);
 
     } catch (error) {
       console.error('Erreur vérification abonnement:', error);
       // En cas d'erreur, on donne accès (meilleure UX en mode démo)
       setIsPremium(true);
+      setIsExpired(false);
     } finally {
       setIsLoading(false);
     }
