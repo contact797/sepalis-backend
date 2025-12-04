@@ -30,7 +30,7 @@ const onboardingData: OnboardingScreenData[] = [
   {
     id: '1',
     title: 'Bienvenue sur Sepalis ! 🌱',
-    description: 'Votre assistant de jardinage intelligent qui transforme votre passion en succès. Gérez vos plantes, suivez vos tâches et profitez de conseils personnalisés.',
+    description: 'Votre assistant de jardinage intelligent créé par un Meilleur Ouvrier de France en paysagisme. L\'excellence au service de votre jardin.',
     icon: 'leaf',
     color: Colors.accent,
   },
