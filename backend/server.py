@@ -2487,6 +2487,107 @@ async def delete_season_tip(season: str, credentials: HTTPAuthorizationCredentia
         print(f"Erreur suppression conseil: {str(e)}")
 
 
+# ============ CALENDAR TASKS ROUTES (ADMIN) ============
+@api_router.get("/admin/calendar-tasks", response_model=List[CalendarTaskResponse])
+async def get_calendar_tasks(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Obtenir toutes les tâches du calendrier (admin uniquement)"""
+    try:
+        user = await get_current_user(credentials)
+        
+        tasks = await db.calendar_tasks.find({}).sort("weekNumber", 1).to_list(length=100)
+        return [CalendarTaskResponse(**task) for task in tasks]
+    except Exception as e:
+        print(f"Erreur chargement tâches calendrier: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/admin/calendar-tasks", response_model=CalendarTaskResponse)
+async def create_calendar_task(task_data: CalendarTaskCreate, credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Créer une tâche dans le calendrier (admin uniquement)"""
+    try:
+        user = await get_current_user(credentials)
+        
+        # Valider le numéro de semaine
+        if task_data.weekNumber < 1 or task_data.weekNumber > 52:
+            raise HTTPException(status_code=400, detail="Le numéro de semaine doit être entre 1 et 52")
+        
+        task_id = str(uuid.uuid4())
+        now = datetime.utcnow()
+        
+        new_task = {
+            "_id": task_id,
+            **task_data.model_dump(),
+            "createdAt": now,
+            "updatedAt": now
+        }
+        
+        await db.calendar_tasks.insert_one(new_task)
+        
+        return CalendarTaskResponse(**new_task)
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Erreur création tâche calendrier: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.put("/admin/calendar-tasks/{task_id}", response_model=CalendarTaskResponse)
+async def update_calendar_task(
+    task_id: str, 
+    task_data: CalendarTaskUpdate, 
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Mettre à jour une tâche du calendrier (admin uniquement)"""
+    try:
+        user = await get_current_user(credentials)
+        
+        # Vérifier que la tâche existe
+        existing_task = await db.calendar_tasks.find_one({"_id": task_id})
+        if not existing_task:
+            raise HTTPException(status_code=404, detail="Tâche non trouvée")
+        
+        # Préparer les données à mettre à jour
+        update_data = {k: v for k, v in task_data.model_dump(exclude_unset=True).items() if v is not None}
+        
+        if "weekNumber" in update_data:
+            if update_data["weekNumber"] < 1 or update_data["weekNumber"] > 52:
+                raise HTTPException(status_code=400, detail="Le numéro de semaine doit être entre 1 et 52")
+        
+        update_data["updatedAt"] = datetime.utcnow()
+        
+        await db.calendar_tasks.update_one(
+            {"_id": task_id},
+            {"$set": update_data}
+        )
+        
+        updated_task = await db.calendar_tasks.find_one({"_id": task_id})
+        return CalendarTaskResponse(**updated_task)
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Erreur mise à jour tâche calendrier: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.delete("/admin/calendar-tasks/{task_id}")
+async def delete_calendar_task(task_id: str, credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Supprimer une tâche du calendrier (admin uniquement)"""
+    try:
+        user = await get_current_user(credentials)
+        
+        result = await db.calendar_tasks.delete_one({"_id": task_id})
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Tâche non trouvée")
+        
+        return {"message": "Tâche supprimée avec succès"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Erreur suppression tâche calendrier: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ============ ANALYTICS ROUTES ============
 @api_router.post("/analytics/track")
 async def track_event(event: AnalyticsEventCreate, credentials: HTTPAuthorizationCredentials = Depends(security)):
