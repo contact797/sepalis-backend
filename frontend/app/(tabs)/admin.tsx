@@ -85,19 +85,9 @@ export default function AdminPanel() {
         const data = await response.json();
         console.log('✅ Données reçues:', data.count, 'emails');
         
-        // Créer une liste formatée d'emails
-        const emailsList = data.emails.map((e: any) => e.email).join('\n');
-        
-        Alert.alert(
-          '✅ Export réussi',
-          `${data.count} emails exportés :\n\n${emailsList}`,
-          [
-            { 
-              text: 'OK',
-              onPress: () => console.log('Modal fermée')
-            }
-          ]
-        );
+        // Stocker les emails et ouvrir le modal
+        setExportedEmails(data.emails);
+        setShowEmailsModal(true);
       } else {
         const errorText = await response.text();
         console.error('❌ Erreur réponse:', errorText);
