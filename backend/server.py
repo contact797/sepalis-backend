@@ -484,8 +484,15 @@ async def delete_plant(plant_id: str, credentials: HTTPAuthorizationCredentials 
 @api_router.get("/user/tasks", response_model=List[TaskResponse])
 async def get_user_tasks(credentials: HTTPAuthorizationCredentials = Depends(security)):
     user = await get_current_user(credentials)
-    tasks = await db.tasks.find({"userId": user["_id"]}).to_list(100)
-    return [TaskResponse(**{**task, "_id": task["_id"]}) for task in tasks]
+    
+    # Récupérer les tâches de l'ancienne collection (tasks) et de la nouvelle (user_tasks)
+    old_tasks = await db.tasks.find({"userId": user["_id"]}).to_list(100)
+    new_tasks = await db.user_tasks.find({"userId": user["_id"]}).to_list(100)
+    
+    # Fusionner les deux listes
+    all_tasks = old_tasks + new_tasks
+    
+    return [TaskResponse(**{**task, "_id": task["_id"]}) for task in all_tasks]
 
 @api_router.post("/user/tasks", response_model=TaskResponse)
 async def create_task(task_data: TaskCreate, credentials: HTTPAuthorizationCredentials = Depends(security)):
