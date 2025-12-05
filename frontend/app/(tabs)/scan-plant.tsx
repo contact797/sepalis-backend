@@ -29,8 +29,19 @@ export default function ScanPlant() {
     (async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
       setHasPermission(status === 'granted');
+      await loadZones();
     })();
   }, []);
+
+  const loadZones = async () => {
+    try {
+      const { zonesAPI } = await import('../../services/api');
+      const response = await zonesAPI.getZones();
+      setZones(response.data || []);
+    } catch (error) {
+      console.error('Erreur chargement zones:', error);
+    }
+  };
 
   const handleTakePhoto = async () => {
     const result = await ImagePicker.launchCameraAsync({
