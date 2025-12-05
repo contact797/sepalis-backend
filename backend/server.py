@@ -1475,9 +1475,19 @@ STATUS: excellent (90-100%), good (70-89%), fair (50-69%), poor (<50%)"""
             system_message="Tu es un expert botaniste MOF spécialisé en compatibilité des plantes avec leur environnement."
         ).with_model("openai", "gpt-4o")
         
+        print("🔄 Appel à GPT-4 Vision pour compatibilité...")
+        
+        # Créer le message avec l'image
         image_content = ImageContent(image_base64=image_base64)
-        response = chat.chat([UserMessage([prompt, image_content])])
-        result_text = response.choices[0].message.content.strip()
+        user_message = UserMessage(
+            text=prompt,
+            file_contents=[image_content]
+        )
+        
+        # Envoyer le message et obtenir la réponse
+        result_text = await chat.send_message(user_message)
+        
+        print(f"📡 Réponse compatibilité reçue: {result_text[:200]}...")
         
         # Nettoyer le JSON
         if result_text.startswith('```json'):
