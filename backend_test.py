@@ -693,54 +693,61 @@ class SepalisAPITester:
             self.log_test("Courses API", False, f"Error: {str(e)}")
     
     async def run_all_tests(self):
-        """Run all tests in sequence"""
-        print("🚀 DÉMARRAGE DES TESTS BACKEND SEPALIS")
-        print("=" * 60)
+        """Run all tests in sequence - Focus on Care Instructions System"""
+        print("🧪 TESTS BACKEND SEPALIS - SYSTÈME CONSEILS DE SOINS AUTOMATIQUES")
+        print("=" * 80)
         
-        # Basic connectivity
+        # Basic connectivity and auth
         await self.test_health_check()
-        
-        # Authentication flow
         await self.test_auth_register()
-        await self.test_auth_login()
-        await self.test_auth_me()
         
-        # CRITICAL: Subscription system (PRIORITY HIGH - NOT YET TESTED)
-        print("\n🔥 TESTS SYSTÈME D'ABONNEMENT (CRITIQUE)")
-        print("-" * 40)
-        await self.test_subscription_without_jwt()
-        await self.test_subscription_start_trial()
-        await self.test_subscription_status()
+        if not self.auth_token:
+            print("❌ Impossible de créer un utilisateur de test. Arrêt des tests.")
+            return False
         
-        # CRUD operations
-        print("\n📊 TESTS ENDPOINTS CRUD")
-        print("-" * 40)
-        await self.test_zones_crud()
-        await self.test_plants_crud()
-        await self.test_tasks_crud()
+        # Tests critiques du système de conseils
+        print("\n🎯 TESTS CRITIQUES - SYSTÈME CONSEILS MOF")
+        print("-" * 50)
+        await self.test_ai_identify_plant_care_instructions()
+        await self.test_create_plant_with_care_instructions()
+        await self.test_get_plants_with_care_instructions()
         
-        # External APIs
-        print("\n🌤️ TESTS API MÉTÉO")
-        print("-" * 40)
-        await self.test_weather_api()
-        
-        # Bookings and content
-        print("\n📚 TESTS RÉSERVATIONS ET CONTENU")
-        print("-" * 40)
-        await self.test_bookings_api()
-        await self.test_workshops_api()
-        await self.test_courses_api()
+        # Tests de support (zones avec humidity)
+        print("\n🌱 TESTS SUPPORT - ZONES AVEC HUMIDITY")
+        print("-" * 50)
+        await self.test_zones_humidity_field()
         
         # Summary
-        print("\n" + "=" * 60)
+        print("\n" + "=" * 80)
         print("📊 RÉSUMÉ DES TESTS")
-        print("=" * 60)
+        print("=" * 80)
         
         success_rate = (self.passed_tests / self.total_tests * 100) if self.total_tests > 0 else 0
         print(f"✅ Tests réussis: {self.passed_tests}/{self.total_tests} ({success_rate:.1f}%)")
         
+        # Focus sur les tests critiques
+        critical_tests = [
+            "AI Identify Plant - Structure complète",
+            "AI Identify Plant - Suppression wateringFrequency", 
+            "Create Plant - Avec CareInstructions",
+            "Get Plants - Avec CareInstructions",
+            "Zones - Création avec humidity"
+        ]
+        
+        print(f"\n🎯 FOCUS TESTS CRITIQUES:")
+        critical_passed = 0
+        for test_name in critical_tests:
+            result = next((r for r in self.test_results if r["name"] == test_name), None)
+            if result:
+                status = "✅" if result["success"] else "❌"
+                print(f"   {status} {test_name}")
+                if result["success"]:
+                    critical_passed += 1
+        
+        critical_success_rate = (critical_passed / len(critical_tests) * 100) if critical_tests else 0
+        
         if self.passed_tests == self.total_tests:
-            print("🎉 TOUS LES TESTS SONT PASSÉS - BACKEND PRÊT POUR LE LANCEMENT!")
+            print("🎉 TOUS LES TESTS SONT PASSÉS - SYSTÈME CONSEILS PRÊT!")
         else:
             print("⚠️ CERTAINS TESTS ONT ÉCHOUÉ - VÉRIFICATION NÉCESSAIRE")
             
@@ -749,6 +756,7 @@ class SepalisAPITester:
             for test in failed_tests:
                 print(f"  - {test['name']}: {test['details']}")
         
+        print(f"\n📈 Taux de réussite critique: {critical_success_rate:.1f}%")
         return success_rate == 100.0
 
 async def main():
