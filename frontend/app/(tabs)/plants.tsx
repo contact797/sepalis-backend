@@ -53,26 +53,25 @@ export default function Plants() {
     router.push('/(tabs)/add-plant');
   };
 
-  const handleDeletePlant = async (plantId: string) => {
-    Alert.alert(
-      'Supprimer la plante',
-      'Êtes-vous sûr de vouloir supprimer cette plante ?',
-      [
-        { text: 'Annuler', style: 'cancel' },
-        {
-          text: 'Supprimer',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await plantsAPI.deletePlant(plantId);
-              loadPlants();
-            } catch (error) {
-              Alert.alert('Erreur', 'Impossible de supprimer la plante');
-            }
-          },
-        },
-      ]
-    );
+  const handleDeletePlant = async (plantId: string, event?: any) => {
+    // Empêcher la navigation vers les détails
+    if (event) {
+      event.stopPropagation();
+    }
+    
+    const confirmed = window.confirm('Êtes-vous sûr de vouloir supprimer cette plante ?');
+    
+    if (confirmed) {
+      try {
+        console.log('🗑️ Suppression plante:', plantId);
+        await plantsAPI.deletePlant(plantId);
+        console.log('✅ Plante supprimée');
+        loadPlants();
+      } catch (error) {
+        console.error('❌ Erreur suppression:', error);
+        alert('Impossible de supprimer la plante');
+      }
+    }
   };
 
   if (loading) {
