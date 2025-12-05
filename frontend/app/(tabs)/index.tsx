@@ -156,6 +156,18 @@ export default function Home() {
     }
   };
 
+  const loadSeasonTip = async () => {
+    try {
+      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/season-tips/current`);
+      if (response.ok) {
+        const data = await response.json();
+        setSeasonTip(data);
+      }
+    } catch (error) {
+      console.error('Erreur chargement conseil de saison:', error);
+    }
+  };
+
   const loadData = async () => {
     try {
       // Utiliser le service de synchronisation (cache ou serveur)
@@ -169,6 +181,9 @@ export default function Home() {
       setTasks(fetchedTasks.filter((task: any) => !task.completed));
       setPlants(fetchedPlants);
       setZones(fetchedZones);
+
+      // Charger le conseil de saison
+      await loadSeasonTip();
 
       // Programmer les notifications pour les tâches du jour
       await notificationService.scheduleDailyTaskReminder(fetchedTasks);
