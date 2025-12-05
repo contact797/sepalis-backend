@@ -137,19 +137,15 @@ export default function ScanPlant() {
 
       await plantsAPI.addPlant(plantData);
 
-      // Confetti
-      const { triggerConfetti } = await import('../../utils/haptics');
-      triggerConfetti();
-
-      // Message de confirmation
+      // Message de confirmation avec navigation vers la page Plantes
       Alert.alert(
-        '🌿 Succès !',
-        'Plante enregistrée avec succès dans votre jardin !',
+        '🌿 Plante enregistrée !',
+        'Votre plante a été ajoutée avec succès à votre jardin.',
         [
           { 
             text: 'OK', 
             onPress: () => {
-              router.back();
+              router.push('/(tabs)/plants');
             } 
           },
         ]
