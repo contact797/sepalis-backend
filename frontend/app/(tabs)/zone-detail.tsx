@@ -59,33 +59,47 @@ export default function ZoneDetail() {
   };
 
   const handleGetSuggestions = async () => {
+    setShowSuggestionsModal(true);
+    setLoadingSuggestions(true);
+    setSuggestions([]);
+    
     try {
-      setLoadingSuggestions(true);
-      setShowSuggestionsModal(true);
-      
       const token = await AsyncStorage.getItem('authToken');
-      const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL}/user/zones/${zoneId}/plant-suggestions`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      const url = `${process.env.EXPO_PUBLIC_API_URL}/user/zones/${zoneId}/plant-suggestions`;
+      
+      console.log('🌿 Appel suggestions URL:', url);
+      console.log('🌿 Zone ID:', zoneId);
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
 
+      console.log('📡 Réponse status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('✅ Suggestions reçues:', data.suggestions?.length || 0);
         setSuggestions(data.suggestions || []);
       } else {
-        Alert.alert('Erreur', 'Impossible de générer les suggestions');
-        setShowSuggestionsModal(false);
+        const errorText = await response.text();
+        console.error('❌ Erreur API:', response.status, errorText);
+        Alert.alert(
+          'Erreur',
+          `Impossible de générer les suggestions (${response.status})`,
+          [{ text: 'Fermer', onPress: () => setShowSuggestionsModal(false) }]
+        );
       }
-    } catch (error) {
-      console.error('Erreur suggestions:', error);
-      Alert.alert('Erreur', 'Erreur réseau');
-      setShowSuggestionsModal(false);
+    } catch (error: any) {
+      console.error('❌ Erreur suggestions:', error);
+      Alert.alert(
+        'Erreur réseau',
+        error.message || 'Impossible de contacter le serveur',
+        [{ text: 'Fermer', onPress: () => setShowSuggestionsModal(false) }]
+      );
     } finally {
       setLoadingSuggestions(false);
     }
