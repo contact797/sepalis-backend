@@ -144,8 +144,15 @@ export default function Zones() {
   ];
 
   const handleAddZone = async () => {
-    if (!newZone.name || !newZone.length || !newZone.width) {
-      Alert.alert('Erreur', 'Veuillez remplir tous les champs obligatoires');
+    // Validation du nom
+    if (!newZone.name || newZone.name.trim() === '') {
+      Alert.alert('Nom manquant', 'Veuillez donner un nom à votre zone');
+      return;
+    }
+    
+    // Validation des dimensions
+    if (!newZone.length || !newZone.width) {
+      Alert.alert('Dimensions manquantes', 'Veuillez indiquer les dimensions (longueur et largeur) de votre zone');
       return;
     }
 
