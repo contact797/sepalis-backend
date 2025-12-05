@@ -281,9 +281,10 @@ export default function Zones() {
           <Text style={styles.label}>Type de sol</Text>
           <TouchableOpacity 
             onPress={() => setShowSoilTypeHelp(!showSoilTypeHelp)}
-            style={styles.infoButton}
+            style={styles.infoButtonLarge}
+            activeOpacity={0.7}
           >
-            <Ionicons name="information-circle" size={20} color={Colors.accent} />
+            <Ionicons name="information-circle" size={28} color={Colors.accent} />
           </TouchableOpacity>
         </View>
         
