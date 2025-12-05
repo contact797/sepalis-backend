@@ -22,8 +22,18 @@ export default function AdminPanel() {
   const [showTipModal, setShowTipModal] = useState(false);
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [showEmailsModal, setShowEmailsModal] = useState(false);
+  const [showCalendarTaskModal, setShowCalendarTaskModal] = useState(false);
   const [exportedEmails, setExportedEmails] = useState<any[]>([]);
   const [currentTip, setCurrentTip] = useState<any>(null);
+  
+  // Calendar tasks state
+  const [calendarTasks, setCalendarTasks] = useState<any[]>([]);
+  const [currentCalendarTask, setCurrentCalendarTask] = useState<any>(null);
+  const [taskTitle, setTaskTitle] = useState('');
+  const [taskDescription, setTaskDescription] = useState('');
+  const [taskWeekNumber, setTaskWeekNumber] = useState('1');
+  const [taskType, setTaskType] = useState('general');
+  const [taskPriority, setTaskPriority] = useState('optionnel');
   
   // Analytics stats
   const [analytics, setAnalytics] = useState<any>(null);
