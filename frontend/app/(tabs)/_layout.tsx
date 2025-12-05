@@ -179,6 +179,24 @@ export default function TabLayout() {
           tabBarButton: () => null,
         }}
       />
+      <Tabs.Screen
+        name="about"
+        options={{
+          tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="admin"
+        options={{
+          tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="check-compatibility"
+        options={{
+          tabBarButton: () => null,
+        }}
+      />
     </Tabs>
     </>
   );
