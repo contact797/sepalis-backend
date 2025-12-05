@@ -263,6 +263,85 @@ export default function ScanPlant() {
                 </View>
               )}
 
+              {/* Conseils de soins MOF */}
+              {result.careInstructions && (
+                <View style={styles.careSection}>
+                  <Text style={styles.careSectionTitle}>
+                    <Ionicons name="leaf" size={20} color={Colors.accent} /> Conseils MOF
+                  </Text>
+                  
+                  {result.careInstructions.sunExposure && (
+                    <View style={styles.careCard}>
+                      <Text style={styles.careCardTitle}>☀️ Exposition</Text>
+                      <Text style={styles.careCardText}>{result.careInstructions.sunExposure}</Text>
+                    </View>
+                  )}
+                  
+                  {result.careInstructions.plantingPeriod && (
+                    <View style={styles.careCard}>
+                      <Text style={styles.careCardTitle}>🌱 Période de plantation</Text>
+                      <Text style={styles.careCardText}>{result.careInstructions.plantingPeriod}</Text>
+                    </View>
+                  )}
+                  
+                  {result.careInstructions.pruning && (
+                    <View style={styles.careCard}>
+                      <Text style={styles.careCardTitle}>✂️ Taille & Entretien</Text>
+                      <Text style={styles.careCardText}>{result.careInstructions.pruning}</Text>
+                    </View>
+                  )}
+                  
+                  {result.careInstructions.temperature && (
+                    <View style={styles.careCard}>
+                      <Text style={styles.careCardTitle}>🌡️ Température</Text>
+                      <Text style={styles.careCardText}>{result.careInstructions.temperature}</Text>
+                    </View>
+                  )}
+                  
+                  {result.careInstructions.soilType && (
+                    <View style={styles.careCard}>
+                      <Text style={styles.careCardTitle}>🪴 Type de sol</Text>
+                      <Text style={styles.careCardText}>{result.careInstructions.soilType}</Text>
+                    </View>
+                  )}
+                  
+                  {result.careInstructions.commonIssues && (
+                    <View style={styles.careCard}>
+                      <Text style={styles.careCardTitle}>🐛 Problèmes courants</Text>
+                      <Text style={styles.careCardText}>{result.careInstructions.commonIssues}</Text>
+                    </View>
+                  )}
+                </View>
+              )}
+
+              {/* Sélecteur de zone */}
+              <View style={styles.zoneSection}>
+                <Text style={styles.zoneSectionTitle}>
+                  <Ionicons name="location" size={18} color={Colors.accent} /> Ajouter dans une zone
+                </Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.zoneScroll}>
+                  <TouchableOpacity
+                    style={[styles.zoneChip, !selectedZoneId && styles.zoneChipSelected]}
+                    onPress={() => setSelectedZoneId('')}
+                  >
+                    <Text style={[styles.zoneChipText, !selectedZoneId && styles.zoneChipTextSelected]}>
+                      Aucune zone
+                    </Text>
+                  </TouchableOpacity>
+                  {zones.map((zone: any) => (
+                    <TouchableOpacity
+                      key={zone.id || zone._id}
+                      style={[styles.zoneChip, selectedZoneId === (zone.id || zone._id) && styles.zoneChipSelected]}
+                      onPress={() => setSelectedZoneId(zone.id || zone._id)}
+                    >
+                      <Text style={[styles.zoneChipText, selectedZoneId === (zone.id || zone._id) && styles.zoneChipTextSelected]}>
+                        {zone.name}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+
               <View style={styles.actionButtons}>
                 <TouchableOpacity style={styles.addButton} onPress={handleAddPlant}>
                   <Ionicons name="add-circle" size={20} color={Colors.dark} />
