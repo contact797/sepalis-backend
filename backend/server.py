@@ -78,12 +78,21 @@ class SubscriptionStatus(BaseModel):
 
 
 # ============ PLANT MODELS ============
+class CareInstructions(BaseModel):
+    sunExposure: Optional[str] = None
+    plantingPeriod: Optional[str] = None
+    pruning: Optional[str] = None
+    temperature: Optional[str] = None
+    soilType: Optional[str] = None
+    commonIssues: Optional[str] = None
+
 class PlantBase(BaseModel):
     name: str
     scientificName: Optional[str] = None
     wateringFrequency: Optional[int] = 7
     description: Optional[str] = None
     zoneId: Optional[str] = None
+    careInstructions: Optional[CareInstructions] = None
 
 class PlantCreate(PlantBase):
     pass
