@@ -2702,6 +2702,18 @@ async def distribute_calendar_tasks(credentials: HTTPAuthorizationCredentials = 
                     
                     await db.user_tasks.insert_one(user_task)
                     distributed_count += 1
+                    
+                    # Envoyer une notification push à l'utilisateur
+                    await send_push_notification(
+                        user_id=user_obj["_id"],
+                        title="🏆 Nouvelle tâche MOF",
+                        body=task["title"],
+                        data={
+                            "type": "mof_task",
+                            "taskId": user_task["_id"],
+                            "priority": task["priority"]
+                        }
+                    )
         
         print(f"✅ {distributed_count} tâches distribuées à {len(all_users)} utilisateurs")
         
