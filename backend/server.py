@@ -1313,6 +1313,95 @@ async def delete_zone(zone_id: str, credentials: HTTPAuthorizationCredentials = 
     return {"message": "Zone supprimée avec succès"}
 
 
+@api_router.post("/user/zones/{zone_id}/plant-suggestions")
+async def get_plant_suggestions(zone_id: str, credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Générer des suggestions de plantes adaptées à une zone spécifique"""
+    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    import json as json_lib
+    
+    try:
+        user = await get_current_user(credentials)
+        
+        # Récupérer la zone
+        zone = await db.zones.find_one({"_id": zone_id, "userId": user["_id"]})
+        if not zone:
+            raise HTTPException(status_code=404, detail="Zone non trouvée")
+        
+        print(f"🌿 Génération de suggestions pour la zone: {zone.get('name')}")
+        
+        # Créer un prompt détaillé avec les caractéristiques de la zone
+        prompt = f"""En tant qu'expert MOF (Meilleur Ouvrier de France) en paysagisme, suggère 8 plantes idéales pour cette zone de jardin.
+
+IMPORTANT: Propose UNIQUEMENT des plantes vivaces, arbres, arbustes, rosiers ou plantes grimpantes. PAS de plantes annuelles ni potagères.
+
+Caractéristiques de la zone:
+- Type: {zone.get('type', 'Non spécifié')}
+- Surface: {zone.get('area', 0)}m² ({zone.get('length', 0)}m x {zone.get('width', 0)}m)
+- Exposition solaire: {zone.get('sunExposure', 'Non spécifié')}
+- Type de sol: {zone.get('soilType', 'Non spécifié')}
+- pH du sol: {zone.get('soilPH', 'Non spécifié')}
+- Humidité: {zone.get('humidity', 'Non spécifié')}
+- Zone climatique: {zone.get('climateZone', 'Non spécifié')}
+- Protection contre le vent: {zone.get('windProtection', 'Non spécifié')}
+- Système d'arrosage: {zone.get('wateringSystem', 'Non spécifié')}
+
+Réponds UNIQUEMENT au format JSON suivant (sans markdown):
+{{
+    "suggestions": [
+        {{
+            "name": "Nom français de la plante",
+            "scientificName": "Nom latin",
+            "category": "vivace/arbre/arbuste/rosier/grimpante",
+            "compatibility": 95,
+            "reasons": [
+                "Raison 1 de compatibilité",
+                "Raison 2",
+                "Raison 3"
+            ],
+            "mofAdvice": "Conseil d'expert MOF pour la plantation et l'entretien",
+            "bloomingSeason": "Période de floraison",
+            "height": "Hauteur adulte",
+            "maintenance": "Facile/Moyen/Exigeant"
+        }}
+    ]
+}}"""
+
+        chat = LlmChat(
+            api_key=os.getenv('EMERGENT_LLM_KEY', os.getenv('OPENAI_API_KEY')),
+            session_id=f"plant-suggestions-{uuid.uuid4()}",
+            system_message="Tu es un expert botaniste MOF spécialisé en plantes ornementales vivaces, arbres, arbustes et rosiers."
+        ).with_model("openai", "gpt-4o")
+        
+        response = chat.chat([UserMessage(prompt)])
+        result_text = response.choices[0].message.content.strip()
+        
+        # Nettoyer le JSON
+        if result_text.startswith('```json'):
+            result_text = result_text.split('```json')[1]
+        if result_text.startswith('```'):
+            result_text = result_text.split('```')[1]
+        if result_text.endswith('```'):
+            result_text = result_text.rsplit('```', 1)[0]
+        
+        result_text = result_text.strip()
+        
+        # Parser le JSON
+        suggestions_data = json_lib.loads(result_text)
+        
+        print(f"✅ {len(suggestions_data.get('suggestions', []))} plantes suggérées")
+        
+        return suggestions_data
+        
+    except json_lib.JSONDecodeError as e:
+        print(f"❌ Erreur parsing JSON: {str(e)}")
+        print(f"Réponse reçue: {result_text[:500]}")
+        raise HTTPException(status_code=500, detail="Erreur de format de réponse IA")
+    except Exception as e:
+        print(f"❌ Erreur suggestions: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
 # ============ AI RECOGNITION ROUTES ============
 @api_router.post("/ai/identify-plant")
 async def identify_plant(data: dict):
