@@ -282,6 +282,21 @@ class SeasonTipResponse(SeasonTipBase):
         populate_by_name = True
 
 
+
+# ============ ANALYTICS MODELS ============
+class AnalyticsEvent(BaseModel):
+    userId: Optional[str] = None
+    eventType: str  # page_view, signup, subscription_start, etc.
+    eventData: Optional[Dict] = None
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    platform: Optional[str] = None  # ios, android, web
+    
+class AnalyticsEventCreate(BaseModel):
+    eventType: str
+    eventData: Optional[Dict] = None
+    platform: Optional[str] = None
+
+
 # ============ AUTH HELPERS ============
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
