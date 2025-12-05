@@ -123,6 +123,8 @@ export default function ScanPlant() {
     if (!result) return;
 
     try {
+      console.log('🌿 Début ajout plante...', result.name);
+      
       const plantData: any = {
         name: result.name,
         scientificName: result.scientificName,
@@ -133,25 +135,31 @@ export default function ScanPlant() {
       // Ajouter la zone si sélectionnée
       if (selectedZoneId) {
         plantData.zoneId = selectedZoneId;
+        console.log('📍 Zone sélectionnée:', selectedZoneId);
       }
 
-      await plantsAPI.addPlant(plantData);
+      console.log('📤 Envoi données:', JSON.stringify(plantData, null, 2));
+      const response = await plantsAPI.addPlant(plantData);
+      console.log('✅ Plante ajoutée avec succès:', response.data);
 
-      // Message de confirmation avec navigation vers la page Plantes
+      // Navigation immédiate vers la page Plantes
+      router.push('/(tabs)/plants');
+      
+      // Message de confirmation après navigation
+      setTimeout(() => {
+        Alert.alert(
+          '🌿 Succès !',
+          'Votre plante a été ajoutée à votre jardin.',
+          [{ text: 'OK' }]
+        );
+      }, 500);
+    } catch (error: any) {
+      console.error('❌ Erreur ajout plante:', error);
+      console.error('Détails:', error.response?.data || error.message);
       Alert.alert(
-        '🌿 Plante enregistrée !',
-        'Votre plante a été ajoutée avec succès à votre jardin.',
-        [
-          { 
-            text: 'OK', 
-            onPress: () => {
-              router.push('/(tabs)/plants');
-            } 
-          },
-        ]
+        'Erreur', 
+        `Impossible d'ajouter la plante.\n\n${error.response?.data?.detail || error.message}`
       );
-    } catch (error) {
-      Alert.alert('Erreur', 'Impossible d\'ajouter la plante');
     }
   };
 
