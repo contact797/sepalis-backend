@@ -22,6 +22,8 @@ export default function ScanPlant() {
   const [photo, setPhoto] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<any>(null);
+  const [zones, setZones] = useState<any[]>([]);
+  const [selectedZoneId, setSelectedZoneId] = useState<string>('');
 
   useEffect(() => {
     (async () => {
