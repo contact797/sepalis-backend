@@ -172,9 +172,11 @@ class ZoneHumidityTester:
             if response.status_code == 200:
                 created_zone = response.json()
                 
+                zone_id = created_zone.get("_id") or created_zone.get("id")
                 if (created_zone.get("humidity") == "Humide" and 
-                    "drainage" not in created_zone):
+                    "drainage" not in created_zone and zone_id):
                     
+                    created_zone["id"] = zone_id  # Normaliser l'ID
                     self.created_zones.append(created_zone)
                     self.log_test("POST /api/user/zones (humidity=Humide)", True, 
                                 f"Zone créée. Humidity: {created_zone.get('humidity')}")
