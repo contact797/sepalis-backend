@@ -2588,6 +2588,78 @@ async def delete_calendar_task(task_id: str, credentials: HTTPAuthorizationCrede
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@api_router.post("/admin/calendar-tasks/distribute")
+async def distribute_calendar_tasks(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Distribuer les tâches de la semaine actuelle à tous les utilisateurs (admin uniquement)"""
+    try:
+        user = await get_current_user(credentials)
+        
+        # Calculer le numéro de la semaine actuelle
+        current_week = datetime.utcnow().isocalendar()[1]
+        
+        print(f"🗓️ Distribution des tâches pour la semaine {current_week}")
+        
+        # Trouver les tâches prévues pour cette semaine
+        tasks_to_distribute = await db.calendar_tasks.find({"weekNumber": current_week}).to_list(length=100)
+        
+        if not tasks_to_distribute:
+            return {
+                "message": f"Aucune tâche programmée pour la semaine {current_week}",
+                "weekNumber": current_week,
+                "tasksDistributed": 0
+            }
+        
+        # Récupérer tous les utilisateurs
+        all_users = await db.users.find({}).to_list(length=10000)
+        
+        distributed_count = 0
+        
+        for task in tasks_to_distribute:
+            for user_obj in all_users:
+                # Vérifier si cette tâche n'a pas déjà été distribuée à cet utilisateur
+                existing_task = await db.user_tasks.find_one({
+                    "userId": user_obj["_id"],
+                    "calendarTaskId": task["_id"],
+                    "isMOFSuggestion": True
+                })
+                
+                if not existing_task:
+                    # Créer la tâche pour l'utilisateur
+                    user_task = {
+                        "_id": str(uuid.uuid4()),
+                        "userId": user_obj["_id"],
+                        "title": task["title"],
+                        "description": task["description"],
+                        "taskType": task["taskType"],
+                        "priority": task["priority"],
+                        "completed": False,
+                        "isMOFSuggestion": True,  # Marqueur spécial
+                        "calendarTaskId": task["_id"],  # Référence à la tâche originale
+                        "weekNumber": task["weekNumber"],
+                        "createdAt": datetime.utcnow(),
+                        "dueDate": None
+                    }
+                    
+                    await db.user_tasks.insert_one(user_task)
+                    distributed_count += 1
+        
+        print(f"✅ {distributed_count} tâches distribuées à {len(all_users)} utilisateurs")
+        
+        return {
+            "message": f"Tâches distribuées avec succès",
+            "weekNumber": current_week,
+            "tasksDistributed": distributed_count,
+            "usersCount": len(all_users),
+            "tasksCount": len(tasks_to_distribute)
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Erreur distribution tâches: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ============ ANALYTICS ROUTES ============
 @api_router.post("/analytics/track")
 async def track_event(event: AnalyticsEventCreate, credentials: HTTPAuthorizationCredentials = Depends(security)):
