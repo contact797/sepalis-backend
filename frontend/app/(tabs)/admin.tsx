@@ -47,7 +47,7 @@ export default function AdminPanel() {
     try {
       setLoadingAnalytics(true);
       const token = await AsyncStorage.getItem('authToken');
-      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/admin/analytics/overview`, {
+      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/admin/analytics/overview`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
