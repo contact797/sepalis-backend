@@ -497,23 +497,70 @@ export default function AdminPanel() {
         </TouchableOpacity>
       </View>
 
-      {/* Section: Tâches */}
+      {/* Section: Calendrier annuel MOF */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Ionicons name="list" size={24} color={Colors.accent} />
-          <Text style={styles.sectionTitle}>Gestion des tâches</Text>
+          <Ionicons name="calendar" size={24} color={Colors.accent} />
+          <Text style={styles.sectionTitle}>Calendrier annuel MOF</Text>
         </View>
         <Text style={styles.sectionDesc}>
-          Créez des tâches recommandées pour tous les utilisateurs
+          Créez des tâches de jardinage qui seront automatiquement diffusées aux utilisateurs à la bonne période
         </Text>
 
         <TouchableOpacity
-          style={[styles.addButton, styles.disabledButton]}
-          disabled
+          style={styles.addButton}
+          onPress={() => {
+            resetCalendarTaskForm();
+            setShowCalendarTaskModal(true);
+          }}
         >
-          <Ionicons name="time" size={20} color={Colors.textSecondary} />
-          <Text style={[styles.addButtonText, styles.disabledText]}>Bientôt disponible</Text>
+          <Ionicons name="add-circle" size={20} color={Colors.white} />
+          <Text style={styles.addButtonText}>Créer une tâche</Text>
         </TouchableOpacity>
+
+        {loading ? (
+          <ActivityIndicator size="large" color={Colors.accent} style={{ marginTop: 20 }} />
+        ) : (
+          <View style={styles.tipsList}>
+            {calendarTasks.map((task) => (
+              <View key={task.id} style={styles.tipCard}>
+                <View style={[styles.tipIcon, { backgroundColor: Colors.primary + '30' }]}>
+                  <Text style={{ fontSize: 16, fontWeight: 'bold', color: Colors.primary }}>
+                    S{task.weekNumber}
+                  </Text>
+                </View>
+                <View style={styles.tipContent}>
+                  <Text style={styles.tipTitle}>{task.title}</Text>
+                  <Text style={styles.tipText} numberOfLines={2}>{task.description}</Text>
+                  <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
+                    <Text style={{ fontSize: 11, color: Colors.textSecondary }}>
+                      {task.taskType === 'watering' ? '💧 Arrosage' :
+                       task.taskType === 'pruning' ? '✂️ Taille' :
+                       task.taskType === 'fertilizing' ? '🌱 Fertilisation' :
+                       task.taskType === 'planting' ? '🪴 Plantation' : '📝 Général'}
+                    </Text>
+                    <Text style={{ fontSize: 11, color: 
+                      task.priority === 'urgent' ? Colors.error :
+                      task.priority === 'important' ? Colors.warning : Colors.textSecondary
+                    }}>
+                      {task.priority === 'urgent' ? '🔴 Urgent' :
+                       task.priority === 'important' ? '🟡 Important' : '⚪ Optionnel'}
+                    </Text>
+                  </View>
+                </View>
+                <TouchableOpacity
+                  style={styles.deleteButton}
+                  onPress={() => handleDeleteCalendarTask(task.id)}
+                >
+                  <Ionicons name="trash" size={20} color={Colors.error} />
+                </TouchableOpacity>
+              </View>
+            ))}
+            {calendarTasks.length === 0 && (
+              <Text style={styles.noDataText}>Aucune tâche programmée</Text>
+            )}
+          </View>
+        )}
       </View>
 
       {/* Modal: Créer/Modifier conseil */}
