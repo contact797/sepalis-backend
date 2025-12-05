@@ -171,26 +171,56 @@ export default function PlantDetail() {
           )}
         </View>
 
-        {/* Actions rapides */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Actions rapides</Text>
-          <View style={styles.quickActions}>
-            <TouchableOpacity style={styles.quickActionButton} onPress={handleWater}>
-              <Ionicons name="water" size={28} color={Colors.primary} />
-              <Text style={styles.quickActionText}>Arroser</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.quickActionButton} onPress={() => setShowCareModal(true)}>
-              <Ionicons name="add-circle" size={28} color={Colors.accent} />
-              <Text style={styles.quickActionText}>Soin</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.quickActionButton} onPress={() => router.push('/(tabs)/scan-plant')}>
-              <Ionicons name="camera" size={28} color={Colors.primary} />
-              <Text style={styles.quickActionText}>Scanner</Text>
-            </TouchableOpacity>
+        {/* Conseils de soins MOF */}
+        {plant.careInstructions && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>
+              <Ionicons name="leaf" size={20} color={Colors.accent} /> Conseils MOF
+            </Text>
+            
+            {plant.careInstructions.sunExposure && (
+              <View style={styles.careCard}>
+                <Text style={styles.careCardTitle}>☀️ Exposition</Text>
+                <Text style={styles.careCardText}>{plant.careInstructions.sunExposure}</Text>
+              </View>
+            )}
+            
+            {plant.careInstructions.plantingPeriod && (
+              <View style={styles.careCard}>
+                <Text style={styles.careCardTitle}>🌱 Période de plantation</Text>
+                <Text style={styles.careCardText}>{plant.careInstructions.plantingPeriod}</Text>
+              </View>
+            )}
+            
+            {plant.careInstructions.pruning && (
+              <View style={styles.careCard}>
+                <Text style={styles.careCardTitle}>✂️ Taille & Entretien</Text>
+                <Text style={styles.careCardText}>{plant.careInstructions.pruning}</Text>
+              </View>
+            )}
+            
+            {plant.careInstructions.temperature && (
+              <View style={styles.careCard}>
+                <Text style={styles.careCardTitle}>🌡️ Température</Text>
+                <Text style={styles.careCardText}>{plant.careInstructions.temperature}</Text>
+              </View>
+            )}
+            
+            {plant.careInstructions.soilType && (
+              <View style={styles.careCard}>
+                <Text style={styles.careCardTitle}>🪴 Type de sol</Text>
+                <Text style={styles.careCardText}>{plant.careInstructions.soilType}</Text>
+              </View>
+            )}
+            
+            {plant.careInstructions.commonIssues && (
+              <View style={styles.careCard}>
+                <Text style={styles.careCardTitle}>🐛 Problèmes courants</Text>
+                <Text style={styles.careCardText}>{plant.careInstructions.commonIssues}</Text>
+              </View>
+            )}
           </View>
-        </View>
+        )}
 
         {/* Historique des soins */}
         <View style={styles.section}>
