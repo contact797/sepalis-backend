@@ -81,10 +81,21 @@ class SepalisAPITester:
             self.log_test("Auth Register", False, f"Error: {str(e)}")
     
     def create_test_plant_image(self) -> str:
-        """Créer une image de test encodée en base64 (pixel rouge simple)"""
-        # Image 1x1 pixel rouge en PNG
-        png_data = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\tpHYs\x00\x00\x0b\x13\x00\x00\x0b\x13\x01\x00\x9a\x9c\x18\x00\x00\x00\x0cIDATx\x9cc\xf8\x00\x00\x00\x01\x00\x01\x00\x00\x00\x00\x07\n\xdb\x00\x00\x00\x00IEND\xaeB`\x82'
-        return base64.b64encode(png_data).decode('utf-8')
+        """Créer une image de test encodée en base64 (image JPEG simple)"""
+        # Créer une image JPEG simple 10x10 pixels rouge
+        import io
+        try:
+            from PIL import Image
+            # Créer une image rouge 10x10
+            img = Image.new('RGB', (10, 10), color='red')
+            buffer = io.BytesIO()
+            img.save(buffer, format='JPEG')
+            return base64.b64encode(buffer.getvalue()).decode('utf-8')
+        except ImportError:
+            # Fallback: image JPEG minimale encodée en dur
+            # Image JPEG 1x1 pixel rouge
+            jpeg_data = b'\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x01\x00H\x00H\x00\x00\xff\xdb\x00C\x00\x08\x06\x06\x07\x06\x05\x08\x07\x07\x07\t\t\x08\n\x0c\x14\r\x0c\x0b\x0b\x0c\x19\x12\x13\x0f\x14\x1d\x1a\x1f\x1e\x1d\x1a\x1c\x1c $.\' ",#\x1c\x1c(7),01444\x1f\'9=82<.342\xff\xc0\x00\x11\x08\x00\x01\x00\x01\x01\x01\x11\x00\x02\x11\x01\x03\x11\x01\xff\xc4\x00\x14\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x08\xff\xc4\x00\x14\x10\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\xda\x00\x0c\x03\x01\x00\x02\x11\x03\x11\x00\x3f\x00\xaa\xff\xd9'
+            return base64.b64encode(jpeg_data).decode('utf-8')
 
     async def test_health_check(self):
         """Test basic API health"""
