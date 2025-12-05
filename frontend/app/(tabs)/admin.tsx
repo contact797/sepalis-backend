@@ -218,6 +218,128 @@ export default function AdminPanel() {
     // TODO: Implémenter l'envoi de push notifications ou emails
   };
 
+  // ============ CALENDAR TASKS FUNCTIONS ============
+  const loadCalendarTasks = async () => {
+    try {
+      setLoading(true);
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/admin/calendar-tasks`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setCalendarTasks(data);
+        console.log('✅ Tâches calendrier chargées:', data.length);
+      }
+    } catch (error) {
+      console.error('Erreur chargement tâches calendrier:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveCalendarTask = async () => {
+    if (!taskTitle || !taskDescription) {
+      Alert.alert('Erreur', 'Titre et description sont requis');
+      return;
+    }
+
+    const weekNum = parseInt(taskWeekNumber);
+    if (weekNum < 1 || weekNum > 52) {
+      Alert.alert('Erreur', 'Le numéro de semaine doit être entre 1 et 52');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const token = await AsyncStorage.getItem('authToken');
+      
+      const taskData = {
+        title: taskTitle,
+        description: taskDescription,
+        weekNumber: weekNum,
+        taskType: taskType,
+        priority: taskPriority,
+      };
+
+      const url = currentCalendarTask
+        ? `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/admin/calendar-tasks/${currentCalendarTask.id}`
+        : `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/admin/calendar-tasks`;
+      
+      const method = currentCalendarTask ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(taskData),
+      });
+
+      if (response.ok) {
+        Alert.alert('Succès', 'Tâche enregistrée !');
+        setShowCalendarTaskModal(false);
+        resetCalendarTaskForm();
+        await loadCalendarTasks();
+      } else {
+        Alert.alert('Erreur', 'Impossible de sauvegarder la tâche');
+      }
+    } catch (error) {
+      console.error('Erreur sauvegarde tâche:', error);
+      Alert.alert('Erreur', 'Erreur réseau');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteCalendarTask = async (taskId: string) => {
+    Alert.alert(
+      'Confirmer',
+      'Supprimer cette tâche du calendrier ?',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Supprimer',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const token = await AsyncStorage.getItem('authToken');
+              const response = await fetch(
+                `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/admin/calendar-tasks/${taskId}`,
+                {
+                  method: 'DELETE',
+                  headers: {
+                    'Authorization': `Bearer ${token}`,
+                  },
+                }
+              );
+
+              if (response.ok) {
+                Alert.alert('Succès', 'Tâche supprimée');
+                await loadCalendarTasks();
+              }
+            } catch (error) {
+              Alert.alert('Erreur', 'Impossible de supprimer');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const resetCalendarTaskForm = () => {
+    setTaskTitle('');
+    setTaskDescription('');
+    setTaskWeekNumber('1');
+    setTaskType('general');
+    setTaskPriority('optionnel');
+    setCurrentCalendarTask(null);
+  };
+
   const resetTipForm = () => {
     setSeason('spring');
     setTitle('');
