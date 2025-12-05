@@ -172,55 +172,63 @@ export default function PlantDetail() {
         </View>
 
         {/* Conseils de soins MOF */}
-        {plant.careInstructions && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
-              <Ionicons name="leaf" size={20} color={Colors.accent} /> Conseils MOF
-            </Text>
-            
-            {plant.careInstructions.sunExposure && (
-              <View style={styles.careCard}>
-                <Text style={styles.careCardTitle}>☀️ Exposition</Text>
-                <Text style={styles.careCardText}>{plant.careInstructions.sunExposure}</Text>
-              </View>
-            )}
-            
-            {plant.careInstructions.plantingPeriod && (
-              <View style={styles.careCard}>
-                <Text style={styles.careCardTitle}>🌱 Période de plantation</Text>
-                <Text style={styles.careCardText}>{plant.careInstructions.plantingPeriod}</Text>
-              </View>
-            )}
-            
-            {plant.careInstructions.pruning && (
-              <View style={styles.careCard}>
-                <Text style={styles.careCardTitle}>✂️ Taille & Entretien</Text>
-                <Text style={styles.careCardText}>{plant.careInstructions.pruning}</Text>
-              </View>
-            )}
-            
-            {plant.careInstructions.temperature && (
-              <View style={styles.careCard}>
-                <Text style={styles.careCardTitle}>🌡️ Température</Text>
-                <Text style={styles.careCardText}>{plant.careInstructions.temperature}</Text>
-              </View>
-            )}
-            
-            {plant.careInstructions.soilType && (
-              <View style={styles.careCard}>
-                <Text style={styles.careCardTitle}>🪴 Type de sol</Text>
-                <Text style={styles.careCardText}>{plant.careInstructions.soilType}</Text>
-              </View>
-            )}
-            
-            {plant.careInstructions.commonIssues && (
-              <View style={styles.careCard}>
-                <Text style={styles.careCardTitle}>🐛 Problèmes courants</Text>
-                <Text style={styles.careCardText}>{plant.careInstructions.commonIssues}</Text>
-              </View>
-            )}
-          </View>
-        )}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>
+            <Ionicons name="leaf" size={20} color={Colors.accent} /> Conseils MOF
+          </Text>
+          
+          {plant.careInstructions ? (
+            <>
+              {plant.careInstructions.sunExposure && (
+                <View style={styles.careCard}>
+                  <Text style={styles.careCardTitle}>☀️ Exposition</Text>
+                  <Text style={styles.careCardText}>{plant.careInstructions.sunExposure}</Text>
+                </View>
+              )}
+              
+              {plant.careInstructions.plantingPeriod && (
+                <View style={styles.careCard}>
+                  <Text style={styles.careCardTitle}>🌱 Période de plantation</Text>
+                  <Text style={styles.careCardText}>{plant.careInstructions.plantingPeriod}</Text>
+                </View>
+              )}
+              
+              {plant.careInstructions.pruning && (
+                <View style={styles.careCard}>
+                  <Text style={styles.careCardTitle}>✂️ Taille & Entretien</Text>
+                  <Text style={styles.careCardText}>{plant.careInstructions.pruning}</Text>
+                </View>
+              )}
+              
+              {plant.careInstructions.temperature && (
+                <View style={styles.careCard}>
+                  <Text style={styles.careCardTitle}>🌡️ Température</Text>
+                  <Text style={styles.careCardText}>{plant.careInstructions.temperature}</Text>
+                </View>
+              )}
+              
+              {plant.careInstructions.soilType && (
+                <View style={styles.careCard}>
+                  <Text style={styles.careCardTitle}>🪴 Type de sol</Text>
+                  <Text style={styles.careCardText}>{plant.careInstructions.soilType}</Text>
+                </View>
+              )}
+              
+              {plant.careInstructions.commonIssues && (
+                <View style={styles.careCard}>
+                  <Text style={styles.careCardTitle}>🐛 Problèmes courants</Text>
+                  <Text style={styles.careCardText}>{plant.careInstructions.commonIssues}</Text>
+                </View>
+              )}
+            </>
+          ) : (
+            <View style={styles.emptyHistory}>
+              <Ionicons name="information-circle-outline" size={48} color={Colors.textSecondary} />
+              <Text style={styles.emptyText}>Pas de conseils MOF disponibles</Text>
+              <Text style={styles.emptySubtext}>Scannez de nouvelles plantes pour obtenir des conseils d'expert automatiques</Text>
+            </View>
+          )}
+        </View>
 
         {/* Historique des soins */}
         <View style={styles.section}>
