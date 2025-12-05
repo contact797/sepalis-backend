@@ -186,17 +186,16 @@ export default function Zones() {
       // Réinitialiser le formulaire
       setNewZone({
         name: '',
-        type: 'vegetable',
+        type: 'massif',
         length: '',
         width: '',
         soilType: 'loamy',
         soilPH: 'neutral',
-        drainage: 'good',
+        humidity: 'normal',
         sunExposure: 'full_sun',
         climateZone: 'temperate',
         windProtection: 'moderate',
         wateringSystem: 'manual',
-        humidity: 'normal',
         notes: '',
       });
       setCurrentStep(1);
