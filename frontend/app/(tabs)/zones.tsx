@@ -103,11 +103,11 @@ export default function Zones() {
     { id: 'alkaline', label: 'Alcalin', value: '> 7.5', color: '#4ECDC4' },
   ];
 
-  const drainageOptions = [
-    { id: 'excellent', label: 'Excellent', icon: 'flash' },
-    { id: 'good', label: 'Bon', icon: 'checkmark-circle' },
-    { id: 'moderate', label: 'Moyen', icon: 'remove-circle' },
-    { id: 'poor', label: 'Mauvais', icon: 'close-circle' },
+  const humidityOptions = [
+    { id: 'very_wet', label: 'Très humide', icon: 'water' },
+    { id: 'wet', label: 'Humide', icon: 'rainy' },
+    { id: 'normal', label: 'Normal', icon: 'checkmark-circle' },
+    { id: 'dry', label: 'Sec', icon: 'sunny' },
   ];
 
   const sunExposureOptions = [
