@@ -86,16 +86,17 @@ export default function ScanPlant() {
       console.log('✅ Réponse API:', response.data);
       
       if (response.data && response.data.name) {
+        console.log('🌿 CareInstructions reçues:', response.data.careInstructions);
         setResult({
           name: response.data.name,
           scientificName: response.data.scientificName,
           confidence: response.data.confidence,
-          wateringFrequency: response.data.wateringFrequency || 7,
           description: response.data.description || 'Plante identifiée avec succès',
           family: response.data.family,
           sunlight: response.data.sunlight,
           difficulty: response.data.difficulty,
           tips: response.data.tips,
+          careInstructions: response.data.careInstructions, // AJOUT DES CONSEILS MOF
         });
       } else {
         throw new Error('Réponse API invalide');
