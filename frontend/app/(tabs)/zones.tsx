@@ -320,20 +320,20 @@ export default function Zones() {
       </View>
 
       <View style={styles.inputGroup}>
-        <Text style={styles.label}>Drainage</Text>
+        <Text style={styles.label}>Humidité du sol</Text>
         <View style={styles.optionsRow}>
-          {drainageOptions.map((drain) => (
+          {humidityOptions.map((option) => (
             <TouchableOpacity
-              key={drain.id}
+              key={option.id}
               style={[
                 styles.optionButton,
-                newZone.drainage === drain.id && styles.optionButtonSelected,
+                newZone.humidity === option.id && styles.optionButtonSelected,
               ]}
-              onPress={() => setNewZone({ ...newZone, drainage: drain.id })}
+              onPress={() => setNewZone({ ...newZone, humidity: option.id })}
             >
-              <Ionicons name={drain.icon as any} size={18} color={newZone.drainage === drain.id ? Colors.dark : Colors.textSecondary} />
-              <Text style={[styles.optionButtonText, newZone.drainage === drain.id && styles.optionButtonTextSelected]}>
-                {drain.label}
+              <Ionicons name={option.icon as any} size={18} color={newZone.humidity === option.id ? Colors.dark : Colors.textSecondary} />
+              <Text style={[styles.optionButtonText, newZone.humidity === option.id && styles.optionButtonTextSelected]}>
+                {option.label}
               </Text>
             </TouchableOpacity>
           ))}
