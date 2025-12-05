@@ -68,30 +68,45 @@ export default function AdminPanel() {
     try {
       setLoading(true);
       const token = await AsyncStorage.getItem('authToken');
+      
+      console.log('🔄 Export des emails en cours...');
+      
       const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/admin/analytics/export-emails`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
       });
       
+      console.log('📡 Réponse reçue:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
-        const emailsList = data.emails.map((e: any) => e.email).join(', ');
+        console.log('✅ Données reçues:', data.count, 'emails');
+        
+        // Créer une liste formatée d'emails
+        const emailsList = data.emails.map((e: any) => e.email).join('\n');
+        
         Alert.alert(
-          'Export réussi',
-          `${data.count} emails exportés. Copiez-les ci-dessous:\n\n${emailsList}`,
+          '✅ Export réussi',
+          `${data.count} emails exportés :\n\n${emailsList}`,
           [
-            { text: 'OK' }
+            { 
+              text: 'OK',
+              onPress: () => console.log('Modal fermée')
+            }
           ]
         );
       } else {
-        Alert.alert('Erreur', 'Impossible d\'exporter les emails');
+        const errorText = await response.text();
+        console.error('❌ Erreur réponse:', errorText);
+        Alert.alert('Erreur', `Impossible d'exporter les emails (${response.status})`);
       }
     } catch (error) {
-      console.error('Erreur export:', error);
-      Alert.alert('Erreur', 'Erreur réseau');
+      console.error('❌ Erreur export:', error);
+      Alert.alert('Erreur', `Erreur réseau: ${error}`);
     } finally {
       setLoading(false);
+      console.log('🏁 Export terminé');
     }
   };
 
