@@ -59,7 +59,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const response = await authAPI.login(email, password);
       const { token, user: userData } = response.data;
 
-      await AsyncStorage.setItem('token', token);
+      await AsyncStorage.setItem('authToken', token);
+      await AsyncStorage.setItem('token', token); // Garder les deux pour compatibilité
       await AsyncStorage.setItem('user', JSON.stringify(userData));
       setUser(userData);
     } catch (error: any) {
@@ -72,7 +73,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const response = await authAPI.register(email, password, name);
       const { token, user: userData } = response.data;
 
-      await AsyncStorage.setItem('token', token);
+      await AsyncStorage.setItem('authToken', token);
+      await AsyncStorage.setItem('token', token); // Garder les deux pour compatibilité
       await AsyncStorage.setItem('user', JSON.stringify(userData));
       setUser(userData);
     } catch (error: any) {
