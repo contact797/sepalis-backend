@@ -2225,6 +2225,239 @@ async def delete_season_tip(season: str, credentials: HTTPAuthorizationCredentia
         raise
     except Exception as e:
         print(f"Erreur suppression conseil: {str(e)}")
+
+
+# ============ ANALYTICS ROUTES ============
+@api_router.post("/analytics/track")
+async def track_event(event: AnalyticsEventCreate, credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Enregistrer un événement analytics"""
+    try:
+        user = await get_current_user(credentials)
+        
+        event_dict = {
+            "_id": str(uuid.uuid4()),
+            "userId": user["_id"],
+            "eventType": event.eventType,
+            "eventData": event.eventData,
+            "platform": event.platform,
+            "timestamp": datetime.utcnow()
+        }
+        
+        await db.analytics_events.insert_one(event_dict)
+        return {"message": "Event tracked successfully"}
+    except Exception as e:
+        # Ne pas bloquer l'app si le tracking échoue
+        print(f"Erreur tracking: {str(e)}")
+        return {"message": "Event tracking failed silently"}
+
+
+@api_router.get("/admin/analytics/overview")
+async def get_analytics_overview(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Obtenir les statistiques globales (admin uniquement)"""
+    try:
+        # Vérifier l'authentification admin
+        user = await get_current_user(credentials)
+        
+        # Total d'utilisateurs inscrits
+        total_users = await db.users.count_documents({})
+        
+        # Utilisateurs inscrits cette semaine
+        week_ago = datetime.utcnow() - timedelta(days=7)
+        new_users_week = await db.users.count_documents({
+            "createdAt": {"$gte": week_ago}
+        })
+        
+        # Utilisateurs actifs (dernière connexion < 7 jours)
+        active_users = await db.analytics_events.distinct("userId", {
+            "timestamp": {"$gte": week_ago}
+        })
+        active_users_count = len(active_users)
+        
+        # Abonnements Premium actifs
+        premium_users = await db.users.count_documents({
+            "$or": [
+                {"isPremium": True},
+                {"subscriptionStatus": "active"}
+            ]
+        })
+        
+        # Essais actifs
+        trial_users = await db.users.count_documents({
+            "trialActive": True,
+            "trialEndsAt": {"$gte": datetime.utcnow()}
+        })
+        
+        # Taux de conversion (premium / total)
+        conversion_rate = (premium_users / total_users * 100) if total_users > 0 else 0
+        
+        # Événements par type (derniers 30 jours)
+        month_ago = datetime.utcnow() - timedelta(days=30)
+        event_pipeline = [
+            {"$match": {"timestamp": {"$gte": month_ago}}},
+            {"$group": {
+                "_id": "$eventType",
+                "count": {"$sum": 1}
+            }}
+        ]
+        event_counts = await db.analytics_events.aggregate(event_pipeline).to_list(length=100)
+        
+        # Pages les plus visitées
+        page_views = [e for e in event_counts if e["_id"] == "page_view"]
+        total_page_views = page_views[0]["count"] if page_views else 0
+        
+        return {
+            "overview": {
+                "totalUsers": total_users,
+                "newUsersThisWeek": new_users_week,
+                "activeUsers": active_users_count,
+                "premiumUsers": premium_users,
+                "trialUsers": trial_users,
+                "conversionRate": round(conversion_rate, 2),
+                "totalPageViews": total_page_views
+            },
+            "eventCounts": event_counts
+        }
+    except Exception as e:
+        print(f"Erreur analytics overview: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/admin/analytics/users")
+async def get_users_list(
+    limit: int = 100,
+    offset: int = 0,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Obtenir la liste des utilisateurs avec leurs stats (admin uniquement)"""
+    try:
+        user = await get_current_user(credentials)
+        
+        users = await db.users.find(
+            {},
+            {
+                "password": 0  # Ne pas exposer les mots de passe
+            }
+        ).sort("createdAt", -1).skip(offset).limit(limit).to_list(length=limit)
+        
+        for u in users:
+            u["_id"] = str(u["_id"])
+            # Ajouter des stats pour chaque utilisateur
+            if "createdAt" in u:
+                u["createdAt"] = u["createdAt"].isoformat() if isinstance(u["createdAt"], datetime) else u["createdAt"]
+            if "trialEndsAt" in u:
+                u["trialEndsAt"] = u["trialEndsAt"].isoformat() if isinstance(u["trialEndsAt"], datetime) else u["trialEndsAt"]
+        
+        total_count = await db.users.count_documents({})
+        
+        return {
+            "users": users,
+            "total": total_count,
+            "limit": limit,
+            "offset": offset
+        }
+    except Exception as e:
+        print(f"Erreur users list: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/admin/analytics/export-emails")
+async def export_user_emails(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Exporter tous les emails des utilisateurs (admin uniquement)"""
+    try:
+        user = await get_current_user(credentials)
+        
+        users = await db.users.find({}, {"email": 1, "name": 1, "createdAt": 1}).to_list(length=10000)
+        
+        emails = []
+        for u in users:
+            emails.append({
+                "email": u.get("email", ""),
+                "name": u.get("name", ""),
+                "createdAt": u.get("createdAt", "").isoformat() if isinstance(u.get("createdAt"), datetime) else u.get("createdAt", "")
+            })
+        
+        return {
+            "emails": emails,
+            "count": len(emails),
+            "exportDate": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        print(f"Erreur export emails: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/admin/analytics/user-behavior")
+async def get_user_behavior(
+    days: int = 30,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Obtenir les comportements utilisateurs (admin uniquement)"""
+    try:
+        user = await get_current_user(credentials)
+        
+        start_date = datetime.utcnow() - timedelta(days=days)
+        
+        # Activité par jour
+        daily_activity_pipeline = [
+            {"$match": {"timestamp": {"$gte": start_date}}},
+            {"$group": {
+                "_id": {
+                    "$dateToString": {"format": "%Y-%m-%d", "date": "$timestamp"}
+                },
+                "events": {"$sum": 1},
+                "uniqueUsers": {"$addToSet": "$userId"}
+            }},
+            {"$project": {
+                "_id": 1,
+                "events": 1,
+                "uniqueUsers": {"$size": "$uniqueUsers"}
+            }},
+            {"$sort": {"_id": 1}}
+        ]
+        daily_activity = await db.analytics_events.aggregate(daily_activity_pipeline).to_list(length=365)
+        
+        # Features les plus utilisées
+        feature_usage_pipeline = [
+            {"$match": {"timestamp": {"$gte": start_date}}},
+            {"$group": {
+                "_id": "$eventType",
+                "count": {"$sum": 1},
+                "uniqueUsers": {"$addToSet": "$userId"}
+            }},
+            {"$project": {
+                "_id": 1,
+                "count": 1,
+                "uniqueUsers": {"$size": "$uniqueUsers"}
+            }},
+            {"$sort": {"count": -1}},
+            {"$limit": 10}
+        ]
+        feature_usage = await db.analytics_events.aggregate(feature_usage_pipeline).to_list(length=10)
+        
+        # Temps moyen dans l'app (à améliorer avec des événements session)
+        session_pipeline = [
+            {"$match": {
+                "timestamp": {"$gte": start_date},
+                "eventType": {"$in": ["app_open", "app_close"]}
+            }},
+            {"$group": {
+                "_id": "$userId",
+                "sessionCount": {"$sum": 1}
+            }}
+        ]
+        sessions = await db.analytics_events.aggregate(session_pipeline).to_list(length=1000)
+        avg_sessions = sum([s["sessionCount"] for s in sessions]) / len(sessions) if sessions else 0
+        
+        return {
+            "dailyActivity": daily_activity,
+            "featureUsage": feature_usage,
+            "averageSessionsPerUser": round(avg_sessions, 2),
+            "period": f"{days} derniers jours"
+        }
+    except Exception as e:
+        print(f"Erreur user behavior: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
         raise HTTPException(status_code=500, detail=str(e))
 
 
