@@ -343,11 +343,11 @@ agent_communication:
 backend:
   - task: "Fix Zone Creation - Schema Mismatch (drainage vs humidity)"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "critical"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: false
         agent: "user"
@@ -355,6 +355,9 @@ backend:
       - working: "NA"
         agent: "main"
         comment: "DIAGNOSTIC COMPLET avec troubleshoot_agent: Schema mismatch identifié. Le frontend (zones.tsx) envoie le champ 'humidity' après le refactor UX, mais le backend (server.py) avait DEUX CHAMPS: 'drainage' (ligne 229) ET 'humidity' (ligne 234). FIX APPLIQUÉ: Suppression du champ 'drainage' du modèle ZoneBase. Le modèle accepte maintenant uniquement 'humidity'. Backend redémarré. LOGS VÉRIFIÉS: Une création de zone réussie visible dans les logs backend (POST /api/user/zones HTTP/1.1 200 OK). Besoin de tester complètement tous les endpoints de zones."
+      - working: true
+        agent: "testing"
+        comment: "✅ FIX SCHEMA MISMATCH VALIDÉ - Tests complets des endpoints zones RÉUSSIS (9/9 tests passés, 100% de réussite). ENDPOINTS ZONES FONCTIONNELS ✅: POST /api/user/zones (création avec humidity='Normal', 'Humide', 'Sec') ✅, GET /api/user/zones (liste avec champ humidity) ✅, GET /api/user/zones/{id} (récupération par ID) ✅, PUT /api/user/zones/{id} (mise à jour humidity) ✅, DELETE /api/user/zones/{id} (suppression) ✅. CHAMP HUMIDITY ACCEPTÉ ✅: Toutes les valeurs (Normal, Humide, Sec) correctement persistées et récupérées. CHAMP DRAINAGE SUPPRIMÉ ✅: Plus aucune référence au champ 'drainage' dans les réponses. BACKEND COMPLET TESTÉ ✅: Tous les endpoints critiques fonctionnent (20/20 tests passés) - authentification JWT, abonnements, CRUD zones/plantes/tâches, API météo, réservations, contenu. Le fix du schema mismatch est ENTIÈREMENT FONCTIONNEL."
 
 test_plan:
   current_focus:
