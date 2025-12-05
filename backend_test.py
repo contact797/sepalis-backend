@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """
-Tests complets pour l'API backend Sepalis
-Teste tous les endpoints critiques avant lancement
+Tests backend Sepalis - Focus sur le système de conseils de soins automatiques
+Test des nouvelles fonctionnalités CareInstructions et modifications du modèle Plant
 """
 
 import asyncio
 import aiohttp
 import json
+import base64
 import uuid
 from datetime import datetime, timedelta
 import sys
@@ -14,9 +15,9 @@ import os
 
 # Configuration
 BASE_URL = "https://gardenpro-app.preview.emergentagent.com/api"
-TEST_USER_EMAIL = f"test-sepalis-{uuid.uuid4().hex[:8]}@example.com"
+TEST_USER_EMAIL = f"test-care-{uuid.uuid4().hex[:8]}@sepalis.test"
 TEST_USER_PASSWORD = "TestPassword123!"
-TEST_USER_NAME = "Test Sepalis User"
+TEST_USER_NAME = "Test Care Instructions User"
 
 class SepalisAPITester:
     def __init__(self):
