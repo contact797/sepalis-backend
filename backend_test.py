@@ -55,6 +55,30 @@ class SepalisAPITester:
             "success": success,
             "details": details
         })
+
+    async def test_auth_register(self):
+        """Test user registration"""
+        try:
+            payload = {
+                "email": TEST_USER_EMAIL,
+                "password": TEST_USER_PASSWORD,
+                "name": TEST_USER_NAME
+            }
+            
+            async with self.session.post(f"{BASE_URL}/auth/register", json=payload) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if "token" in data and "user" in data:
+                        self.auth_token = data["token"]
+                        self.user_id = data["user"]["id"]
+                        self.log_test("Auth Register", True, f"User created: {data['user']['email']}")
+                    else:
+                        self.log_test("Auth Register", False, "Missing token or user in response")
+                else:
+                    error_text = await response.text()
+                    self.log_test("Auth Register", False, f"Status: {response.status}, Error: {error_text}")
+        except Exception as e:
+            self.log_test("Auth Register", False, f"Error: {str(e)}")
     
     def create_test_plant_image(self) -> str:
         """Créer une image de test encodée en base64 (pixel rouge simple)"""
