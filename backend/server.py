@@ -1637,8 +1637,12 @@ Réponds UNIQUEMENT au format JSON suivant (sans markdown):
             system_message="Tu es un expert MOF (Meilleur Ouvrier de France) en pathologie végétale. Fournis des diagnostics précis et des solutions professionnelles."
         ).with_model("openai", "gpt-4o")
         
+        print("🔄 Appel à GPT-4 Vision...")
+        
         image_content = ImageContent(image_base64=image_base64)
-        response = chat.send([UserMessage([prompt, image_content])])
+        response = chat.chat([UserMessage([prompt, image_content])])
+        
+        print("📡 Réponse GPT-4 reçue")
         result_text = response.choices[0].message.content.strip()
         
         print(f"📡 Réponse IA reçue")
