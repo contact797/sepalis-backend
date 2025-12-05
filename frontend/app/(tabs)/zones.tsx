@@ -574,7 +574,7 @@ export default function Zones() {
                       Alert.alert('Nom manquant', 'Veuillez donner un nom à votre zone');
                       return;
                     }
-                    if (!newZone.length || !newZone.width) {
+                    if (!newZone.length || newZone.length.trim() === '' || !newZone.width || newZone.width.trim() === '') {
                       Alert.alert('Dimensions manquantes', 'Veuillez indiquer les dimensions (longueur et largeur) de votre zone');
                       return;
                     }
