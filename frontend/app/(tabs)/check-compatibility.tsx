@@ -66,7 +66,7 @@ export default function CheckCompatibility() {
 
       const token = await AsyncStorage.getItem('authToken');
       const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL}/ai/check-plant-compatibility`,
+        `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/ai/check-plant-compatibility`,
         {
           method: 'POST',
           headers: {
