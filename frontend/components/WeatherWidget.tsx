@@ -63,20 +63,6 @@ export default function WeatherWidget({ current, forecast }: WeatherWidgetProps)
         </View>
       )}
 
-      {/* Garden Advice */}
-      <View style={[styles.adviceCard, canWater ? styles.waterAdvice : styles.noWaterAdvice]}>
-        <Ionicons 
-          name={canWater ? "water" : "checkmark-circle"} 
-          size={20} 
-          color={canWater ? Colors.primary : Colors.success} 
-        />
-        <Text style={styles.adviceText}>
-          {canWater 
-            ? "💧 N'oubliez pas d'arroser vos plantes aujourd'hui"
-            : "✓ Pas besoin d'arroser aujourd'hui"}
-        </Text>
-      </View>
-
       {/* Garden Tip */}
       <View style={styles.tipCard}>
         <Ionicons name="leaf" size={18} color={Colors.primary} />
