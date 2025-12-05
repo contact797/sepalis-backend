@@ -1394,6 +1394,112 @@ Réponds UNIQUEMENT au format JSON suivant (sans markdown):
         
     except json_lib.JSONDecodeError as e:
         print(f"❌ Erreur parsing JSON: {str(e)}")
+
+
+@api_router.post("/ai/check-plant-compatibility")
+async def check_plant_compatibility(data: dict, credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Vérifier la compatibilité d'une plante scannée avec les zones de l'utilisateur"""
+    from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
+    import json as json_lib
+    
+    try:
+        user = await get_current_user(credentials)
+        
+        image_base64 = data.get('image')
+        if not image_base64:
+            raise HTTPException(status_code=400, detail="Image requise")
+        
+        # Extraire le base64 pur
+        if 'base64,' in image_base64:
+            image_base64 = image_base64.split('base64,')[1]
+        
+        # Récupérer toutes les zones de l'utilisateur
+        zones = await db.zones.find({"userId": user["_id"]}).to_list(length=100)
+        
+        if not zones:
+            return {"plant": {}, "compatibility": [], "message": "Aucune zone créée"}
+        
+        print(f"🔍 Analyse compatibilité pour {len(zones)} zones")
+        
+        # Créer un prompt détaillé avec toutes les zones
+        zones_info = "\n".join([
+            f"Zone {i+1} - {z.get('name')}: Type={z.get('type')}, Exposition={z.get('sunExposure')}, Sol={z.get('soilType')}, pH={z.get('soilPH')}, Humidité={z.get('humidity')}, Climat={z.get('climateZone')}"
+            for i, z in enumerate(zones)
+        ])
+        
+        prompt = f"""En tant qu'expert MOF (Meilleur Ouvrier de France) en paysagisme, analyse cette plante et détermine sa compatibilité avec les zones de jardin de l'utilisateur.
+
+ZONES DU JARDIN:
+{zones_info}
+
+Pour chaque zone, évalue la compatibilité et explique pourquoi la plante conviendrait ou non.
+
+Réponds UNIQUEMENT au format JSON suivant (sans markdown):
+{{
+    "plant": {{
+        "name": "Nom français de la plante",
+        "scientificName": "Nom latin",
+        "category": "vivace/arbre/arbuste/rosier/grimpante",
+        "requirements": {{
+            "sunlight": "Plein soleil/Mi-ombre/Ombre",
+            "soilType": "Type de sol idéal",
+            "humidity": "Humide/Normal/Sec",
+            "hardiness": "Rusticité",
+            "soilPH": "pH idéal"
+        }}
+    }},
+    "compatibility": [
+        {{
+            "zoneName": "Nom de la zone",
+            "zoneId": "{zones[0].get('_id')}",
+            "score": 85,
+            "status": "excellent/good/fair/poor",
+            "explanation": "Explication détaillée de la compatibilité",
+            "pros": ["Avantage 1", "Avantage 2"],
+            "cons": ["Inconvénient 1"],
+            "recommendations": "Conseils MOF pour améliorer les conditions si nécessaire"
+        }}
+    ]
+}}
+
+STATUS: excellent (90-100%), good (70-89%), fair (50-69%), poor (<50%)"""
+
+        # Appel à GPT-4 Vision
+        chat = LlmChat(
+            api_key=os.getenv('EMERGENT_LLM_KEY', os.getenv('OPENAI_API_KEY')),
+            session_id=f"plant-compatibility-{uuid.uuid4()}",
+            system_message="Tu es un expert botaniste MOF spécialisé en compatibilité des plantes avec leur environnement."
+        ).with_model("openai", "gpt-4o")
+        
+        image_content = ImageContent(image_base64=image_base64)
+        response = chat.chat([UserMessage([prompt, image_content])])
+        result_text = response.choices[0].message.content.strip()
+        
+        # Nettoyer le JSON
+        if result_text.startswith('```json'):
+            result_text = result_text.split('```json')[1]
+        if result_text.startswith('```'):
+            result_text = result_text.split('```')[1]
+        if result_text.endswith('```'):
+            result_text = result_text.rsplit('```', 1)[0]
+        
+        result_text = result_text.strip()
+        
+        # Parser le JSON
+        compatibility_data = json_lib.loads(result_text)
+        
+        print(f"✅ Compatibilité analysée pour {compatibility_data.get('plant', {}).get('name', 'Plante')}")
+        
+        return compatibility_data
+        
+    except json_lib.JSONDecodeError as e:
+        print(f"❌ Erreur parsing JSON: {str(e)}")
+        print(f"Réponse reçue: {result_text[:500]}")
+        raise HTTPException(status_code=500, detail="Erreur de format de réponse IA")
+    except Exception as e:
+        print(f"❌ Erreur compatibilité: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
         print(f"Réponse reçue: {result_text[:500]}")
         raise HTTPException(status_code=500, detail="Erreur de format de réponse IA")
     except Exception as e:
