@@ -369,6 +369,49 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = security)
     return user
 
 
+# ============ NOTIFICATION HELPERS ============
+async def send_push_notification(user_id: str, title: str, body: str, data: dict = None):
+    """Envoyer une notification push à un utilisateur"""
+    try:
+        # Récupérer le push token de l'utilisateur
+        push_token_doc = await db.push_tokens.find_one({"userId": user_id})
+        
+        if not push_token_doc or not push_token_doc.get("token"):
+            print(f"📵 Pas de push token pour l'utilisateur {user_id}")
+            return False
+        
+        push_token = push_token_doc["token"]
+        
+        # Vérifier que le token est valide (format ExponentPushToken[...])
+        if not PushClient().is_exponent_push_token(push_token):
+            print(f"❌ Token push invalide pour {user_id}: {push_token}")
+            return False
+        
+        # Créer le message de notification
+        message = PushMessage(
+            to=push_token,
+            title=title,
+            body=body,
+            data=data or {},
+            sound='default',
+            badge=1,
+            priority='high'
+        )
+        
+        # Envoyer la notification
+        response = PushClient().publish(message)
+        
+        print(f"📤 Notification envoyée à {user_id}: {title}")
+        return True
+        
+    except PushServerError as e:
+        print(f"❌ Erreur serveur Expo: {str(e)}")
+        return False
+    except Exception as e:
+        print(f"❌ Erreur envoi notification: {str(e)}")
+        return False
+
+
 # ============ AUTH ROUTES ============
 @api_router.post("/auth/register", response_model=TokenResponse)
 async def register(user_data: UserRegister):
