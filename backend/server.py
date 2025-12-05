@@ -256,6 +256,32 @@ class ZoneResponse(ZoneBase):
         populate_by_name = True
 
 
+# ============ SEASON TIP MODELS ============
+class SeasonTipBase(BaseModel):
+    season: str  # spring, summer, fall, winter
+    title: str
+    text: str
+    icon: str
+    color: str
+
+class SeasonTipCreate(SeasonTipBase):
+    pass
+
+class SeasonTipUpdate(BaseModel):
+    title: Optional[str] = None
+    text: Optional[str] = None
+    icon: Optional[str] = None
+    color: Optional[str] = None
+
+class SeasonTipResponse(SeasonTipBase):
+    id: str = Field(alias="_id")
+    createdAt: datetime
+    updatedAt: datetime
+
+    class Config:
+        populate_by_name = True
+
+
 # ============ AUTH HELPERS ============
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
