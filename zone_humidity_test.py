@@ -284,9 +284,10 @@ class ZoneHumidityTester:
             if response.status_code == 200:
                 zone = response.json()
                 
+                actual_id = zone.get("_id") or zone.get("id")
                 if ("humidity" in zone and 
                     "drainage" not in zone and 
-                    zone.get("id") == zone_id):
+                    actual_id == zone_id):
                     
                     self.log_test("GET /api/user/zones/{id} (avec humidity)", True, 
                                 f"Zone: {zone.get('name')}, Humidity: {zone.get('humidity')}")
