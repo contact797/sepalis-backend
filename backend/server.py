@@ -2928,6 +2928,86 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# ============ SCHEDULER CONFIGURATION ============
+scheduler = AsyncIOScheduler()
+
+async def auto_distribute_weekly_tasks():
+    """Fonction automatique pour distribuer les tâches de la semaine"""
+    try:
+        current_week = datetime.utcnow().isocalendar()[1]
+        
+        print(f"🤖 [AUTO] Distribution automatique pour la semaine {current_week}")
+        
+        # Trouver les tâches prévues pour cette semaine
+        tasks_to_distribute = await db.calendar_tasks.find({"weekNumber": current_week}).to_list(length=100)
+        
+        if not tasks_to_distribute:
+            print(f"ℹ️ [AUTO] Aucune tâche programmée pour la semaine {current_week}")
+            return
+        
+        # Récupérer tous les utilisateurs
+        all_users = await db.users.find({}).to_list(length=10000)
+        
+        distributed_count = 0
+        
+        for task in tasks_to_distribute:
+            for user_obj in all_users:
+                # Vérifier si cette tâche n'a pas déjà été distribuée à cet utilisateur
+                existing_task = await db.user_tasks.find_one({
+                    "userId": user_obj["_id"],
+                    "calendarTaskId": task["_id"],
+                    "isMOFSuggestion": True
+                })
+                
+                if not existing_task:
+                    # Créer la tâche pour l'utilisateur
+                    user_task = {
+                        "_id": str(uuid.uuid4()),
+                        "userId": user_obj["_id"],
+                        "title": task["title"],
+                        "description": task["description"],
+                        "taskType": task["taskType"],
+                        "priority": task["priority"],
+                        "type": task["taskType"],  # Compatibilité
+                        "completed": False,
+                        "isMOFSuggestion": True,
+                        "calendarTaskId": task["_id"],
+                        "weekNumber": task["weekNumber"],
+                        "createdAt": datetime.utcnow(),
+                        "dueDate": None
+                    }
+                    
+                    await db.user_tasks.insert_one(user_task)
+                    distributed_count += 1
+        
+        print(f"✅ [AUTO] {distributed_count} tâches distribuées à {len(all_users)} utilisateurs")
+        
+    except Exception as e:
+        print(f"❌ [AUTO] Erreur distribution automatique: {str(e)}")
+
+@app.on_event("startup")
+async def startup_scheduler():
+    """Démarrer le scheduler au lancement de l'application"""
+    print("🚀 Démarrage du scheduler de tâches MOF...")
+    
+    # Planifier la distribution chaque lundi à 6h00 du matin (UTC)
+    scheduler.add_job(
+        auto_distribute_weekly_tasks,
+        CronTrigger(day_of_week='mon', hour=6, minute=0),
+        id='weekly_tasks_distribution',
+        name='Distribution hebdomadaire des tâches MOF',
+        replace_existing=True
+    )
+    
+    scheduler.start()
+    print("✅ Scheduler démarré : Distribution automatique chaque lundi à 6h00")
+
+@app.on_event("shutdown")
+async def shutdown_scheduler():
+    """Arrêter le scheduler proprement"""
+    scheduler.shutdown()
+    print("🛑 Scheduler arrêté")
+
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
