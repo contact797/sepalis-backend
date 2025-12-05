@@ -1284,12 +1284,11 @@ async def identify_plant(data: dict):
         if not image_base64:
             raise HTTPException(status_code=400, detail="Image requise")
         
-        # S'assurer que l'image a le bon préfixe pour GPT-4 Vision
-        if not image_base64.startswith('data:image/'):
-            # Ajouter le préfixe si manquant
-            image_base64 = f"data:image/jpeg;base64,{image_base64}"
+        # Extraire seulement le base64 pur (sans préfixe)
+        if 'base64,' in image_base64:
+            image_base64 = image_base64.split('base64,')[1]
         
-        print("🔍 Identification avec GPT-4 Vision via Emergent...")
+        print(f"🔍 Identification avec GPT-4 Vision via Emergent... (Image length: {len(image_base64)} chars)")
         
         # Créer une session chat avec Emergent Integrations
         chat = LlmChat(
