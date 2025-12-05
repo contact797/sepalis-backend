@@ -9,7 +9,7 @@
 ### Étape 1 : Ouvrir l'application
 👉 **Cliquez sur ce lien :**
 ```
-https://gardenpro-app.preview.emergentagent.com
+https://plant-ai-helper-1.preview.emergentagent.com
 ```
 
 ### Étape 2 : Créer un compte
@@ -133,4 +133,4 @@ Je peux ensuite développer :
 
 ---
 
-**Testez maintenant : https://gardenpro-app.preview.emergentagent.com** 🌱
+**Testez maintenant : https://plant-ai-helper-1.preview.emergentagent.com** 🌱

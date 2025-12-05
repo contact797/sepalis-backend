@@ -11,7 +11,7 @@ from datetime import datetime
 import sys
 
 # Configuration
-BASE_URL = "https://gardenpro-app.preview.emergentagent.com/api"
+BASE_URL = "https://plant-ai-helper-1.preview.emergentagent.com/api"
 TEST_USER_EMAIL = "marie.jardiniere@sepalis.fr"
 TEST_USER_PASSWORD = "MotDePasse2024!"
 TEST_USER_NAME = "Marie Jardinière"

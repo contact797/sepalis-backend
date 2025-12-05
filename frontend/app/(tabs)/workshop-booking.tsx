@@ -80,7 +80,7 @@ export default function WorkshopBooking() {
     try {
       const originUrl = Constants.expoConfig?.extra?.backendUrl || 
                        process.env.EXPO_PUBLIC_BACKEND_URL || 
-                       'https://gardenpro-app.preview.emergentagent.com';
+                       'https://plant-ai-helper-1.preview.emergentagent.com';
 
       const bookingData = {
         workshopSlug: workshop.slug,
