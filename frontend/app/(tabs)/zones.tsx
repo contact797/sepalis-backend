@@ -277,7 +277,30 @@ export default function Zones() {
       <Text style={styles.stepTitle}>Caractéristiques du sol</Text>
 
       <View style={styles.inputGroup}>
-        <Text style={styles.label}>Type de sol</Text>
+        <View style={styles.labelRow}>
+          <Text style={styles.label}>Type de sol</Text>
+          <TouchableOpacity 
+            onPress={() => setShowSoilTypeHelp(!showSoilTypeHelp)}
+            style={styles.infoButton}
+          >
+            <Ionicons name="information-circle" size={20} color={Colors.accent} />
+          </TouchableOpacity>
+        </View>
+        
+        {showSoilTypeHelp && (
+          <View style={styles.helpBubble}>
+            <Text style={styles.helpBubbleTitle}>🌱 Test du Boudin (Conseil MOF)</Text>
+            <Text style={styles.helpBubbleText}>
+              1. Prenez une poignée de terre humide{'\n'}
+              2. Formez un boudin entre vos mains{'\n'}
+              {'\n'}
+              <Text style={styles.helpBold}>• Argileux :</Text> Le boudin se forme facilement et ne se casse pas{'\n'}
+              <Text style={styles.helpBold}>• Limoneux :</Text> Le boudin se forme mais se casse en morceaux{'\n'}
+              <Text style={styles.helpBold}>• Sableux :</Text> Impossible de former un boudin, le sol est friable
+            </Text>
+          </View>
+        )}
+        
         <View style={styles.optionsGrid}>
           {soilTypes.map((soil) => (
             <TouchableOpacity
