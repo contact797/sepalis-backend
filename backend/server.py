@@ -226,12 +226,11 @@ class ZoneBase(BaseModel):
     area: float
     soilType: str
     soilPH: str
-    drainage: str
+    humidity: str
     sunExposure: str
     climateZone: str
     windProtection: str
     wateringSystem: str
-    humidity: str
     notes: Optional[str] = ""
     color: str
 
