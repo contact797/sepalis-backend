@@ -507,16 +507,26 @@ export default function AdminPanel() {
           Créez des tâches de jardinage qui seront automatiquement diffusées aux utilisateurs à la bonne période
         </Text>
 
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={() => {
-            resetCalendarTaskForm();
-            setShowCalendarTaskModal(true);
-          }}
-        >
-          <Ionicons name="add-circle" size={20} color={Colors.white} />
-          <Text style={styles.addButtonText}>Créer une tâche</Text>
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', gap: 12 }}>
+          <TouchableOpacity
+            style={[styles.addButton, { flex: 1 }]}
+            onPress={() => {
+              resetCalendarTaskForm();
+              setShowCalendarTaskModal(true);
+            }}
+          >
+            <Ionicons name="add-circle" size={20} color={Colors.white} />
+            <Text style={styles.addButtonText}>Créer une tâche</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.addButton, { flex: 1, backgroundColor: Colors.primary }]}
+            onPress={handleDistributeTasks}
+          >
+            <Ionicons name="share-social" size={20} color={Colors.white} />
+            <Text style={styles.addButtonText}>Distribuer</Text>
+          </TouchableOpacity>
+        </View>
 
         {loading ? (
           <ActivityIndicator size="large" color={Colors.accent} style={{ marginTop: 20 }} />
