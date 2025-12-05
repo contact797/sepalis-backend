@@ -220,6 +220,9 @@ const styles = StyleSheet.create({
   plantsGrid: {
     padding: 16,
   },
+  plantCardContainer: {
+    position: 'relative',
+  },
   plantCard: {
     backgroundColor: Colors.white,
     borderRadius: 16,
