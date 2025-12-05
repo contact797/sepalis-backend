@@ -26,27 +26,34 @@ export default function Register() {
   const router = useRouter();
 
   const handleRegister = async () => {
+    console.log('📝 Tentative d\'inscription...', { name, email });
+    
     if (!name || !email || !password || !confirmPassword) {
-      Alert.alert('Erreur', 'Veuillez remplir tous les champs');
+      alert('Veuillez remplir tous les champs');
       return;
     }
 
     if (password !== confirmPassword) {
-      Alert.alert('Erreur', 'Les mots de passe ne correspondent pas');
+      alert('Les mots de passe ne correspondent pas');
       return;
     }
 
     if (password.length < 6) {
-      Alert.alert('Erreur', 'Le mot de passe doit contenir au moins 6 caractères');
+      alert('Le mot de passe doit contenir au moins 6 caractères');
       return;
     }
 
     setLoading(true);
     try {
+      console.log('🔄 Appel API inscription...');
       await signUp(email, password, name);
-      router.replace('/(tabs)');
+      console.log('✅ Inscription réussie, redirection...');
+      
+      // Redirection avec rechargement complet
+      window.location.href = '/';
     } catch (error: any) {
-      Alert.alert('Erreur', error.message);
+      console.error('❌ Erreur inscription:', error);
+      alert(`Erreur d'inscription: ${error.message}`);
     } finally {
       setLoading(false);
     }
