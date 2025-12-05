@@ -206,28 +206,28 @@ export default function Home() {
     if (month >= 2 && month <= 4) {
       return {
         title: 'Printemps - Temps de plantation',
-        text: "C'est le moment idéal pour semer vos graines et préparer vos semis. N'oubliez pas d'arroser régulièrement !",
+        text: "C'est le moment idéal pour semer vos graines et préparer vos semis. Taillez les plantes vivaces fanées pour favoriser la nouvelle croissance.",
         icon: 'flower',
         color: Colors.primary,
       };
     } else if (month >= 5 && month <= 7) {
       return {
-        title: 'Été - Arrosage et récoltes',
-        text: "Arrosez tôt le matin ou tard le soir. C'est le moment des premières récoltes !",
+        title: 'Été - Entretien et récoltes',
+        text: "Pincez les gourmands des tomates. Taillez les arbustes à floraison printanière. C'est le moment des premières récoltes !",
         icon: 'sunny',
         color: Colors.warning,
       };
     } else if (month >= 8 && month <= 10) {
       return {
         title: 'Automne - Préparation',
-        text: 'Préparez votre jardin pour l\'hiver. Paillez et protégez vos plantes fragiles.',
+        text: 'Taillez les rosiers et les arbustes. Divisez les vivaces. Préparez votre jardin pour l\'hiver.',
         icon: 'leaf',
         color: '#FF8C00',
       };
     } else {
       return {
         title: 'Hiver - Repos végétatif',
-        text: 'Planifiez la saison prochaine et entretenez vos outils. Protégez les plantes sensibles au gel.',
+        text: 'Taillez les arbres fruitiers et les arbustes caducs. Planifiez la saison prochaine et entretenez vos outils.',
         icon: 'snow',
         color: '#4A90E2',
       };
