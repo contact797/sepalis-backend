@@ -40,7 +40,60 @@ export default function AdminPanel() {
 
   useEffect(() => {
     loadSeasonTips();
+    loadAnalytics();
   }, []);
+
+  const loadAnalytics = async () => {
+    try {
+      setLoadingAnalytics(true);
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/admin/analytics/overview`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setAnalytics(data);
+      }
+    } catch (error) {
+      console.error('Erreur chargement analytics:', error);
+    } finally {
+      setLoadingAnalytics(false);
+    }
+  };
+
+  const handleExportEmails = async () => {
+    try {
+      setLoading(true);
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/admin/analytics/export-emails`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        const emailsList = data.emails.map((e: any) => e.email).join(', ');
+        Alert.alert(
+          'Export réussi',
+          `${data.count} emails exportés. Copiez-les ci-dessous:\n\n${emailsList}`,
+          [
+            { text: 'OK' }
+          ]
+        );
+      } else {
+        Alert.alert('Erreur', 'Impossible d\'exporter les emails');
+      }
+    } catch (error) {
+      console.error('Erreur export:', error);
+      Alert.alert('Erreur', 'Erreur réseau');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const loadSeasonTips = async () => {
     try {
