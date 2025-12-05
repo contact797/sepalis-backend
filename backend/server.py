@@ -1285,7 +1285,7 @@ async def identify_plant(data: dict):
         chat = LlmChat(
             api_key=os.getenv('EMERGENT_LLM_KEY', os.getenv('OPENAI_API_KEY')),
             session_id=f"plant-id-{uuid.uuid4()}",
-            system_message="""Tu es un botaniste expert. Identifie précisément la plante dans l'image.
+            system_message="""Tu es un expert botaniste MOF (Meilleur Ouvrier de France) en paysagisme. Identifie précisément la plante dans l'image et fournis des conseils d'expert complets.
             Réponds UNIQUEMENT au format JSON suivant (sans markdown, sans texte supplémentaire):
             {
                 "name": "Nom commun français de la plante",
@@ -1293,13 +1293,17 @@ async def identify_plant(data: dict):
                 "confidence": 0.XX,
                 "family": "Famille botanique",
                 "description": "Description courte en 2-3 phrases",
-                "wateringFrequency": 7,
                 "sunlight": "Plein soleil/Mi-ombre/Ombre",
                 "difficulty": "Facile/Moyen/Difficile",
-                "growthRate": "Rapide/Moyen/Lent",
-                "toxicity": "Non toxique/Légèrement toxique/Toxique",
-                "commonNames": ["nom1", "nom2"],
-                "tips": "Conseil d'entretien principal"
+                "careInstructions": {
+                    "sunExposure": "Description détaillée de l'exposition solaire idéale",
+                    "plantingPeriod": "Période de plantation recommandée",
+                    "pruning": "Conseils de taille et d'entretien",
+                    "temperature": "Température idéale et tolérance au froid/chaud",
+                    "soilType": "Type de sol recommandé (drainage, pH, composition)",
+                    "commonIssues": "Problèmes courants et solutions"
+                },
+                "tips": "Conseil d'entretien principal du MOF"
             }"""
         ).with_model("openai", "gpt-4o")
         
