@@ -1596,61 +1596,76 @@ async def identify_plant(data: dict):
 
 @api_router.post("/ai/diagnose-disease")
 async def diagnose_disease(data: dict):
-    """Diagnostiquer une maladie avec OpenAI Vision"""
-    from openai import OpenAI
+    """Diagnostiquer une maladie avec GPT-4 Vision"""
+    from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
+    import json as json_lib
     
     try:
         image_base64 = data.get('image')
         if not image_base64:
             raise HTTPException(status_code=400, detail="Image requise")
         
-        # S'assurer que l'image a le bon format
-        if not image_base64.startswith('data:image'):
-            image_base64 = f"data:image/jpeg;base64,{image_base64}"
+        print(f"🏥 Début diagnostic maladie...")
         
-        # Utiliser Emergent LLM key
-        client = OpenAI(
-            api_key=os.getenv('OPENAI_API_KEY'),
-            base_url="https://api.emergentmethods.ai/llm/openai/v1"
-        )
+        # Extraire le base64 pur (sans préfixe)
+        if 'base64,' in image_base64:
+            image_base64 = image_base64.split('base64,')[1]
         
-        # Appel OpenAI Vision
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {
-                    "role": "system",
-                    "content": "Tu es un expert en pathologie végétale. Analyse l'image de la plante et fournis un diagnostic détaillé en français. Réponds UNIQUEMENT au format JSON suivant sans aucun texte supplémentaire: {\"disease\": \"nom de la maladie\", \"confidence\": 0.XX, \"severity\": \"Léger/Modéré/Grave\", \"description\": \"description\", \"symptoms\": [\"symptome1\", \"symptome2\"], \"solutions\": [\"solution1\", \"solution2\"], \"prevention\": [\"conseil1\", \"conseil2\"]}"
-                },
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": "Analyse cette plante et détecte les éventuelles maladies ou problèmes. Si la plante est saine, indique-le."
-                        },
-                        {
-                            "type": "image_url",
-                            "image_url": {"url": image_base64}
-                        }
-                    ]
-                }
-            ],
-            max_tokens=1000,
-            temperature=0.3,
-        )
+        print(f"📸 Image reçue (longueur: {len(image_base64)} chars)")
         
-        # Extraire la réponse
-        content = response.choices[0].message.content
+        # Prompt pour le diagnostic
+        prompt = """Analyse cette plante et détecte les éventuelles maladies ou problèmes.
+
+Si la plante est saine, indique "Plante en bonne santé" comme maladie.
+Si tu détectes un problème, fournis un diagnostic détaillé.
+
+Réponds UNIQUEMENT au format JSON suivant (sans markdown):
+{
+    "disease": "Nom de la maladie ou 'Plante en bonne santé'",
+    "confidence": 0.85,
+    "severity": "Léger/Modéré/Grave/Aucun",
+    "description": "Description détaillée du problème ou de l'état de la plante",
+    "symptoms": ["Symptôme 1", "Symptôme 2", "Symptôme 3"],
+    "solutions": ["Solution 1", "Solution 2", "Solution 3"],
+    "prevention": ["Conseil de prévention 1", "Conseil 2"]
+}"""
+
+        # Appel à GPT-4 Vision via emergentintegrations
+        chat = LlmChat(
+            api_key=os.getenv('EMERGENT_LLM_KEY', os.getenv('OPENAI_API_KEY')),
+            session_id=f"plant-diagnosis-{uuid.uuid4()}",
+            system_message="Tu es un expert MOF (Meilleur Ouvrier de France) en pathologie végétale. Fournis des diagnostics précis et des solutions professionnelles."
+        ).with_model("openai", "gpt-4o")
+        
+        image_content = ImageContent(image_base64=image_base64)
+        response = chat.chat([UserMessage([prompt, image_content])])
+        result_text = response.choices[0].message.content.strip()
+        
+        print(f"📡 Réponse IA reçue")
+        
+        # Nettoyer le JSON
+        if result_text.startswith('```json'):
+            result_text = result_text.split('```json')[1]
+        if result_text.startswith('```'):
+            result_text = result_text.split('```')[1]
+        if result_text.endswith('```'):
+            result_text = result_text.rsplit('```', 1)[0]
+        
+        result_text = result_text.strip()
         
         # Parser le JSON
-        import json
-        diagnosis = json.loads(content)
+        diagnosis = json_lib.loads(result_text)
+        
+        print(f"✅ Diagnostic: {diagnosis.get('disease', 'Inconnu')}")
         
         return diagnosis
         
+    except json_lib.JSONDecodeError as e:
+        print(f"❌ Erreur parsing JSON: {str(e)}")
+        print(f"Réponse reçue: {result_text[:500]}")
+        raise HTTPException(status_code=500, detail="Erreur de format de réponse IA")
     except Exception as e:
-        print(f"Erreur diagnostic: {str(e)}")
+        print(f"❌ Erreur diagnostic: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
