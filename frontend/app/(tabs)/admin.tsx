@@ -21,6 +21,8 @@ export default function AdminPanel() {
   const [seasonTips, setSeasonTips] = useState<any[]>([]);
   const [showTipModal, setShowTipModal] = useState(false);
   const [showMessageModal, setShowMessageModal] = useState(false);
+  const [showEmailsModal, setShowEmailsModal] = useState(false);
+  const [exportedEmails, setExportedEmails] = useState<any[]>([]);
   const [currentTip, setCurrentTip] = useState<any>(null);
   
   // Analytics stats
