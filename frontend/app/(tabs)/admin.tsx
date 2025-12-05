@@ -331,6 +331,57 @@ export default function AdminPanel() {
     );
   };
 
+  const handleDistributeTasks = async () => {
+    Alert.alert(
+      'Distribuer les tâches',
+      'Cette action va distribuer les tâches de la semaine actuelle à tous les utilisateurs. Continuer ?',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Distribuer',
+          onPress: async () => {
+            try {
+              setLoading(true);
+              const token = await AsyncStorage.getItem('authToken');
+              
+              console.log('🚀 Lancement de la distribution...');
+              
+              const response = await fetch(
+                `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/admin/calendar-tasks/distribute`,
+                {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${token}`,
+                  },
+                }
+              );
+
+              if (response.ok) {
+                const data = await response.json();
+                console.log('✅ Distribution réussie:', data);
+                
+                Alert.alert(
+                  '✅ Distribution réussie',
+                  `${data.tasksDistributed} tâches distribuées à ${data.usersCount} utilisateurs pour la semaine ${data.weekNumber}`,
+                  [{ text: 'OK' }]
+                );
+              } else {
+                const errorText = await response.text();
+                console.error('❌ Erreur distribution:', errorText);
+                Alert.alert('Erreur', 'Impossible de distribuer les tâches');
+              }
+            } catch (error) {
+              console.error('❌ Erreur distribution:', error);
+              Alert.alert('Erreur', `Erreur réseau: ${error}`);
+            } finally {
+              setLoading(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const resetCalendarTaskForm = () => {
     setTaskTitle('');
     setTaskDescription('');
