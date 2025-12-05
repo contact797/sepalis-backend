@@ -300,6 +300,12 @@ export default function Zones() {
 
       <View style={styles.inputGroup}>
         <Text style={styles.label}>pH du sol</Text>
+        <View style={styles.helperBox}>
+          <Ionicons name="information-circle" size={16} color={Colors.accent} />
+          <Text style={styles.helperText}>
+            💡 Conseil MOF : Utilisez une bandelette pH disponible en jardinerie pour identifier facilement le pH de votre sol.
+          </Text>
+        </View>
         <View style={styles.phRow}>
           {soilPHOptions.map((ph) => (
             <TouchableOpacity
