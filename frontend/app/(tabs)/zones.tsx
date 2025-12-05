@@ -137,12 +137,6 @@ export default function Zones() {
     { id: 'none', label: 'Aucun', icon: 'close-circle' },
   ];
 
-  const humidityOptions = [
-    { id: 'dry', label: 'Sec', icon: 'flame' },
-    { id: 'normal', label: 'Normal', icon: 'checkmark-circle' },
-    { id: 'humid', label: 'Humide', icon: 'water' },
-  ];
-
   const handleAddZone = async () => {
     // Validation du nom
     if (!newZone.name || newZone.name.trim() === '') {
