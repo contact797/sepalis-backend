@@ -227,6 +227,71 @@ export default function AdminPanel() {
         <View style={{ width: 40 }} />
       </View>
 
+      {/* Section: Statistiques */}
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <Ionicons name="stats-chart" size={24} color={Colors.accent} />
+          <Text style={styles.sectionTitle}>Statistiques de l'app</Text>
+        </View>
+        <Text style={styles.sectionDesc}>
+          Vue d'ensemble des performances de Sepalis
+        </Text>
+
+        {loadingAnalytics ? (
+          <ActivityIndicator size="large" color={Colors.accent} style={{ marginTop: 20 }} />
+        ) : analytics ? (
+          <>
+            <View style={styles.statsGrid}>
+              <View style={[styles.statCard, { backgroundColor: Colors.primary + '20' }]}>
+                <Ionicons name="people" size={28} color={Colors.primary} />
+                <Text style={styles.statValue}>{analytics.overview?.totalUsers || 0}</Text>
+                <Text style={styles.statLabel}>Utilisateurs</Text>
+              </View>
+
+              <View style={[styles.statCard, { backgroundColor: Colors.accent + '20' }]}>
+                <Ionicons name="person-add" size={28} color={Colors.accent} />
+                <Text style={styles.statValue}>{analytics.overview?.newUsersThisWeek || 0}</Text>
+                <Text style={styles.statLabel}>Nouveaux (7j)</Text>
+              </View>
+
+              <View style={[styles.statCard, { backgroundColor: Colors.success + '20' }]}>
+                <Ionicons name="diamond" size={28} color={Colors.success} />
+                <Text style={styles.statValue}>{analytics.overview?.premiumUsers || 0}</Text>
+                <Text style={styles.statLabel}>Premium</Text>
+              </View>
+
+              <View style={[styles.statCard, { backgroundColor: Colors.warning + '20' }]}>
+                <Ionicons name="time" size={28} color={Colors.warning} />
+                <Text style={styles.statValue}>{analytics.overview?.trialUsers || 0}</Text>
+                <Text style={styles.statLabel}>En essai</Text>
+              </View>
+
+              <View style={[styles.statCard, { backgroundColor: '#9C27B0' + '20' }]}>
+                <Ionicons name="pulse" size={28} color="#9C27B0" />
+                <Text style={styles.statValue}>{analytics.overview?.activeUsers || 0}</Text>
+                <Text style={styles.statLabel}>Actifs (7j)</Text>
+              </View>
+
+              <View style={[styles.statCard, { backgroundColor: '#FF5722' + '20' }]}>
+                <Ionicons name="trending-up" size={28} color="#FF5722" />
+                <Text style={styles.statValue}>{analytics.overview?.conversionRate || 0}%</Text>
+                <Text style={styles.statLabel}>Conversion</Text>
+              </View>
+            </View>
+
+            <TouchableOpacity
+              style={styles.exportButton}
+              onPress={handleExportEmails}
+            >
+              <Ionicons name="download" size={20} color={Colors.white} />
+              <Text style={styles.exportButtonText}>Exporter les emails</Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <Text style={styles.noDataText}>Aucune donnée disponible</Text>
+        )}
+      </View>
+
       {/* Section: Conseils de saison */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
