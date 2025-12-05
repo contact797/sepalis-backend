@@ -476,6 +476,23 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: Colors.text,
   },
+  careCard: {
+    backgroundColor: Colors.backgroundLight,
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 10,
+  },
+  careCardTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: Colors.accent,
+    marginBottom: 4,
+  },
+  careCardText: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    lineHeight: 18,
+  },
   emptyHistory: {
     alignItems: 'center',
     padding: 32,
