@@ -357,6 +357,15 @@ export default function ZoneDetail() {
             </TouchableOpacity>
           </View>
 
+          {/* Bouton Suggestions MOF */}
+          <TouchableOpacity
+            style={styles.suggestionsButton}
+            onPress={handleGetSuggestions}
+          >
+            <Ionicons name="bulb" size={20} color={Colors.white} />
+            <Text style={styles.suggestionsButtonText}>Suggestions MOF pour cette zone</Text>
+          </TouchableOpacity>
+
           {loadingPlants ? (
             <ActivityIndicator color={Colors.accent} style={{ marginTop: 20 }} />
           ) : plants.length === 0 ? (
