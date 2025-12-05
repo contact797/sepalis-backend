@@ -123,16 +123,37 @@ export default function ScanPlant() {
     if (!result) return;
 
     try {
-      await plantsAPI.addPlant({
+      const plantData: any = {
         name: result.name,
         scientificName: result.scientificName,
-        wateringFrequency: result.wateringFrequency,
         description: result.description,
-      });
+        careInstructions: result.careInstructions,
+      };
 
-      Alert.alert('Succès', 'Plante ajoutée à votre jardin !', [
-        { text: 'OK', onPress: () => router.back() },
-      ]);
+      // Ajouter la zone si sélectionnée
+      if (selectedZoneId) {
+        plantData.zoneId = selectedZoneId;
+      }
+
+      await plantsAPI.addPlant(plantData);
+
+      // Confetti
+      const { triggerConfetti } = await import('../../utils/haptics');
+      triggerConfetti();
+
+      // Message de confirmation
+      Alert.alert(
+        '🌿 Succès !',
+        'Plante enregistrée avec succès dans votre jardin !',
+        [
+          { 
+            text: 'OK', 
+            onPress: () => {
+              router.back();
+            } 
+          },
+        ]
+      );
     } catch (error) {
       Alert.alert('Erreur', 'Impossible d\'ajouter la plante');
     }
