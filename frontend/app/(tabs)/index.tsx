@@ -382,11 +382,6 @@ export default function Home() {
         <TasksChart data={getTasksChartData()} />
       )}
 
-      {/* Graphique des températures */}
-      {weatherForecast.length > 0 && (
-        <TemperatureChart forecast={weatherForecast} />
-      )}
-
       {/* Statistiques */}
       <View style={styles.statsContainer}>
         <AnimatedListItem index={0} delay={80}>
