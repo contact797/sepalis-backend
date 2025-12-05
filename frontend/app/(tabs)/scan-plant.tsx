@@ -110,7 +110,7 @@ export default function ScanPlant() {
         'Erreur d\'identification',
         `Impossible d'identifier la plante.\n\nDétails: ${errorMessage}\n\nVérifiez votre connexion internet et réessayez.`,
         [
-          { text: 'Réessayer', onPress: () => setPhoto(null) },
+          { text: 'Scanner une autre plante', onPress: () => setPhoto(null) },
           { text: 'Annuler', style: 'cancel' }
         ]
       );
