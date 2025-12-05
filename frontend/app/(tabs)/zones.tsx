@@ -43,17 +43,16 @@ export default function Zones() {
   const [currentStep, setCurrentStep] = useState(1);
   const [newZone, setNewZone] = useState({
     name: '',
-    type: 'vegetable',
+    type: 'massif',
     length: '',
     width: '',
     soilType: 'loamy',
     soilPH: 'neutral',
-    drainage: 'good',
+    humidity: 'normal',
     sunExposure: 'full_sun',
     climateZone: 'temperate',
     windProtection: 'moderate',
     wateringSystem: 'manual',
-    humidity: 'normal',
     notes: '',
   });
 
