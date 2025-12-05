@@ -70,7 +70,7 @@ export default function ZoneDetail() {
           onPress: async () => {
             try {
               setDeleting(true);
-              await zonesAPI.deleteZone(zone.id);
+              await zonesAPI.deleteZone(zoneId);
               Alert.alert('Succès', 'Zone supprimée avec succès');
               router.back();
             } catch (error) {
