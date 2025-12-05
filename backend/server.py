@@ -2072,6 +2072,147 @@ async def get_weather_forecast(lat: float, lon: float, days: int = 7):
         raise HTTPException(status_code=500, detail=f"Erreur lors de la récupération des prévisions: {str(e)}")
 
 
+
+# ============ SEASON TIPS ROUTES ============
+@api_router.get("/season-tips/current")
+async def get_current_season_tip():
+    """Obtenir le conseil de saison actuel basé sur le mois"""
+    try:
+        month = datetime.now().month
+        
+        # Déterminer la saison
+        if month >= 3 and month <= 5:
+            season = "spring"
+        elif month >= 6 and month <= 8:
+            season = "summer"
+        elif month >= 9 and month <= 11:
+            season = "fall"
+        else:
+            season = "winter"
+        
+        # Chercher un conseil personnalisé pour cette saison
+        tip = await db.season_tips.find_one({"season": season})
+        
+        if tip:
+            tip["_id"] = str(tip["_id"])
+            return tip
+        
+        # Sinon, retourner un conseil par défaut
+        default_tips = {
+            "spring": {
+                "season": "spring",
+                "title": "Printemps - Temps de plantation",
+                "text": "C'est le moment idéal pour semer vos graines et préparer vos semis. Taillez les plantes vivaces fanées pour favoriser la nouvelle croissance.",
+                "icon": "flower",
+                "color": "#4CAF50"
+            },
+            "summer": {
+                "season": "summer",
+                "title": "Été - Entretien et récoltes",
+                "text": "Pincez les gourmands des tomates. Taillez les arbustes à floraison printanière. C'est le moment des premières récoltes !",
+                "icon": "sunny",
+                "color": "#FFA726"
+            },
+            "fall": {
+                "season": "fall",
+                "title": "Automne - Préparation",
+                "text": "Taillez les rosiers et les arbustes. Divisez les vivaces. Préparez votre jardin pour l'hiver.",
+                "icon": "leaf",
+                "color": "#FF8C00"
+            },
+            "winter": {
+                "season": "winter",
+                "title": "Hiver - Repos végétatif",
+                "text": "Taillez les arbres fruitiers et les arbustes caducs. Planifiez la saison prochaine et entretenez vos outils.",
+                "icon": "snow",
+                "color": "#4A90E2"
+            }
+        }
+        
+        return default_tips[season]
+    except Exception as e:
+        print(f"Erreur conseil de saison: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/admin/season-tips", response_model=List[SeasonTipResponse])
+async def get_all_season_tips(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Obtenir tous les conseils de saison (admin uniquement)"""
+    try:
+        # Vérifier l'authentification
+        user = await get_current_user(credentials)
+        
+        tips = await db.season_tips.find().to_list(length=100)
+        for tip in tips:
+            tip["_id"] = str(tip["_id"])
+        
+        return tips
+    except Exception as e:
+        print(f"Erreur récupération conseils: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/admin/season-tips", response_model=SeasonTipResponse)
+async def create_season_tip(tip: SeasonTipCreate, credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Créer ou mettre à jour un conseil de saison (admin uniquement)"""
+    try:
+        # Vérifier l'authentification
+        user = await get_current_user(credentials)
+        
+        # Vérifier si un conseil existe déjà pour cette saison
+        existing = await db.season_tips.find_one({"season": tip.season})
+        
+        if existing:
+            # Mettre à jour
+            await db.season_tips.update_one(
+                {"season": tip.season},
+                {"$set": {
+                    "title": tip.title,
+                    "text": tip.text,
+                    "icon": tip.icon,
+                    "color": tip.color,
+                    "updatedAt": datetime.utcnow()
+                }}
+            )
+            updated = await db.season_tips.find_one({"season": tip.season})
+            updated["_id"] = str(updated["_id"])
+            return updated
+        else:
+            # Créer
+            tip_dict = tip.dict()
+            tip_dict["_id"] = str(uuid.uuid4())
+            tip_dict["createdAt"] = datetime.utcnow()
+            tip_dict["updatedAt"] = datetime.utcnow()
+            
+            await db.season_tips.insert_one(tip_dict)
+            tip_dict["_id"] = str(tip_dict["_id"])
+            
+            return tip_dict
+    except Exception as e:
+        print(f"Erreur création conseil: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.delete("/admin/season-tips/{season}")
+async def delete_season_tip(season: str, credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Supprimer un conseil de saison (admin uniquement)"""
+    try:
+        # Vérifier l'authentification
+        user = await get_current_user(credentials)
+        
+        result = await db.season_tips.delete_one({"season": season})
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Conseil non trouvé")
+        
+        return {"message": "Conseil supprimé avec succès"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Erreur suppression conseil: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ============ ROOT ROUTE ============
 @api_router.get("/")
 async def root():
