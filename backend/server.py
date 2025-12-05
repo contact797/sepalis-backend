@@ -1638,7 +1638,7 @@ Réponds UNIQUEMENT au format JSON suivant (sans markdown):
         ).with_model("openai", "gpt-4o")
         
         image_content = ImageContent(image_base64=image_base64)
-        response = chat.chat([UserMessage([prompt, image_content])])
+        response = chat.send([UserMessage([prompt, image_content])])
         result_text = response.choices[0].message.content.strip()
         
         print(f"📡 Réponse IA reçue")
