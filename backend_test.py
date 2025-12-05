@@ -301,7 +301,7 @@ class SepalisAPITester:
                         self.log_test("Zones - Suppression drainage", False, "Le champ drainage est encore présent")
                         return False
                     
-                    self.test_zone_id = data["id"]
+                    self.test_zone_id = data.get("id") or data.get("_id")
                     self.log_test("Zones - Création avec humidity", True, f"Zone créée ID: {self.test_zone_id}")
                     return True
                     
