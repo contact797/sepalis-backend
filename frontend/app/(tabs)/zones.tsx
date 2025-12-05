@@ -567,7 +567,20 @@ export default function Zones() {
                 </TouchableOpacity>
               )}
               {currentStep < 4 ? (
-                <TouchableOpacity style={styles.nextButton} onPress={() => setCurrentStep(currentStep + 1)}>
+                <TouchableOpacity style={styles.nextButton} onPress={() => {
+                  // Validation de l'étape 1
+                  if (currentStep === 1) {
+                    if (!newZone.name || newZone.name.trim() === '') {
+                      Alert.alert('Nom manquant', 'Veuillez donner un nom à votre zone');
+                      return;
+                    }
+                    if (!newZone.length || !newZone.width) {
+                      Alert.alert('Dimensions manquantes', 'Veuillez indiquer les dimensions (longueur et largeur) de votre zone');
+                      return;
+                    }
+                  }
+                  setCurrentStep(currentStep + 1);
+                }}>
                   <Text style={styles.nextButtonText}>Suivant</Text>
                   <Ionicons name="arrow-forward" size={20} color={Colors.dark} />
                 </TouchableOpacity>
