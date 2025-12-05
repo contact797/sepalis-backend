@@ -15,7 +15,7 @@ import os
 
 # Configuration
 BASE_URL = "https://gardenpro-app.preview.emergentagent.com/api"
-TEST_USER_EMAIL = f"test-care-{uuid.uuid4().hex[:8]}@sepalis.test"
+TEST_USER_EMAIL = f"test-care-{uuid.uuid4().hex[:8]}@example.com"
 TEST_USER_PASSWORD = "TestPassword123!"
 TEST_USER_NAME = "Test Care Instructions User"
 
