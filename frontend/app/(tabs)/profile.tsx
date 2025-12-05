@@ -18,22 +18,26 @@ export default function Profile() {
   const { isPremium, isTrial, expiresAt } = useSubscription();
   const router = useRouter();
 
-  const handleLogout = () => {
-    Alert.alert(
-      'Déconnexion',
-      'Êtes-vous sûr de vouloir vous déconnecter ?',
-      [
-        { text: 'Annuler', style: 'cancel' },
-        {
-          text: 'Déconnecter',
-          style: 'destructive',
-          onPress: async () => {
-            await signOut();
-            router.replace('/(auth)/login');
-          },
-        },
-      ]
-    );
+  const handleLogout = async () => {
+    console.log('🔴 Bouton déconnexion cliqué !');
+    
+    try {
+      const confirmed = window.confirm('Êtes-vous sûr de vouloir vous déconnecter ?');
+      
+      if (confirmed) {
+        console.log('✅ Confirmation reçue, déconnexion...');
+        await signOut();
+        console.log('✅ SignOut terminé, redirection...');
+        
+        // Forcer le rechargement complet de la page
+        window.location.href = '/';
+      } else {
+        console.log('❌ Déconnexion annulée par l\'utilisateur');
+      }
+    } catch (error) {
+      console.error('❌ Erreur handleLogout:', error);
+      alert('Erreur lors de la déconnexion. Consultez la console.');
+    }
   };
 
   const menuItems = [
