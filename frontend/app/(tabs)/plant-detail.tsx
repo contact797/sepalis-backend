@@ -101,11 +101,6 @@ export default function PlantDetail() {
     Alert.alert('Succès', 'Soin enregistré !');
   };
 
-  const handleWater = () => {
-    Alert.alert('Arrosage', `"${plant.name}" a été arrosée ! 💧`);
-    // TODO: Enregistrer dans l'historique
-  };
-
   if (!plant) {
     return (
       <View style={styles.container}>
