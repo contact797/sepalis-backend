@@ -146,12 +146,6 @@ export default function PlantDetail() {
           </Text>
           
           <View style={styles.infoList}>
-            <View style={styles.infoRow}>
-              <Ionicons name="water" size={20} color={Colors.primary} />
-              <Text style={styles.rowLabel}>Arrosage</Text>
-              <Text style={styles.rowValue}>Tous les {plant.wateringFrequency || 7} jours</Text>
-            </View>
-
             {plant.zoneName && (
               <TouchableOpacity style={styles.infoRow} onPress={() => setShowMoveModal(true)}>
                 <Ionicons name="location" size={20} color={Colors.accent} />
