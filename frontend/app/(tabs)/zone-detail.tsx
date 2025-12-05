@@ -23,6 +23,11 @@ export default function ZoneDetail() {
   const [plants, setPlants] = useState([]);
   const [loadingPlants, setLoadingPlants] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  
+  // Suggestions de plantes
+  const [showSuggestionsModal, setShowSuggestionsModal] = useState(false);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
 
   // Gérer les deux formats d'ID (id ou _id)
   const zoneId = zone?.id || zone?._id;
