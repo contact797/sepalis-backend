@@ -124,6 +124,8 @@ class TaskResponse(TaskBase):
     userId: str
     plantId: Optional[str] = None
     createdAt: datetime
+    isMOFSuggestion: Optional[bool] = False
+    weekNumber: Optional[int] = None
 
     class Config:
         populate_by_name = True
