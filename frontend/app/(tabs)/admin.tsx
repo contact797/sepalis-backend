@@ -750,6 +750,114 @@ export default function AdminPanel() {
           </View>
         </View>
       </Modal>
+
+      {/* Modal: Créer/Modifier tâche calendrier */}
+      <Modal
+        visible={showCalendarTaskModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowCalendarTaskModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Tâche du calendrier MOF</Text>
+              <TouchableOpacity onPress={() => setShowCalendarTaskModal(false)}>
+                <Ionicons name="close" size={28} color={Colors.text} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.modalBody}>
+              <Text style={styles.label}>Titre de la tâche *</Text>
+              <TextInput
+                style={styles.input}
+                value={taskTitle}
+                onChangeText={setTaskTitle}
+                placeholder="Ex: Tailler les rosiers"
+              />
+
+              <Text style={styles.label}>Description détaillée *</Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                value={taskDescription}
+                onChangeText={setTaskDescription}
+                placeholder="Conseil détaillé du MOF pour cette tâche..."
+                multiline
+                numberOfLines={6}
+              />
+
+              <Text style={styles.label}>Semaine de l'année (1-52) *</Text>
+              <TextInput
+                style={styles.input}
+                value={taskWeekNumber}
+                onChangeText={setTaskWeekNumber}
+                placeholder="Ex: 12"
+                keyboardType="numeric"
+              />
+
+              <Text style={styles.label}>Type de tâche</Text>
+              <View style={styles.seasonButtons}>
+                {[
+                  { key: 'general', label: '📝 Général' },
+                  { key: 'watering', label: '💧 Arrosage' },
+                  { key: 'pruning', label: '✂️ Taille' },
+                  { key: 'fertilizing', label: '🌱 Fertilisation' },
+                  { key: 'planting', label: '🪴 Plantation' },
+                ].map((type) => (
+                  <TouchableOpacity
+                    key={type.key}
+                    style={[
+                      styles.seasonButton,
+                      taskType === type.key && { backgroundColor: Colors.accent + '30', borderColor: Colors.accent },
+                    ]}
+                    onPress={() => setTaskType(type.key)}
+                  >
+                    <Text style={styles.seasonButtonText}>{type.label}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              <Text style={styles.label}>Priorité</Text>
+              <View style={styles.seasonButtons}>
+                {[
+                  { key: 'optionnel', label: '⚪ Optionnel', color: Colors.textSecondary },
+                  { key: 'important', label: '🟡 Important', color: Colors.warning },
+                  { key: 'urgent', label: '🔴 Urgent', color: Colors.error },
+                ].map((priority) => (
+                  <TouchableOpacity
+                    key={priority.key}
+                    style={[
+                      styles.seasonButton,
+                      taskPriority === priority.key && { 
+                        backgroundColor: priority.color + '20', 
+                        borderColor: priority.color 
+                      },
+                    ]}
+                    onPress={() => setTaskPriority(priority.key)}
+                  >
+                    <Text style={styles.seasonButtonText}>{priority.label}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              <TouchableOpacity
+                style={[styles.saveButton, loading && styles.disabledButton]}
+                onPress={handleSaveCalendarTask}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator color={Colors.white} />
+                ) : (
+                  <>
+                    <Ionicons name="checkmark-circle" size={20} color={Colors.white} />
+                    <Text style={styles.saveButtonText}>Enregistrer</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
