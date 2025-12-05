@@ -163,7 +163,7 @@ export default function AdminPanel() {
             try {
               const token = await AsyncStorage.getItem('authToken');
               const response = await fetch(
-                `${process.env.EXPO_PUBLIC_API_URL}/admin/season-tips/${seasonToDelete}`,
+                `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/admin/season-tips/${seasonToDelete}`,
                 {
                   method: 'DELETE',
                   headers: {
