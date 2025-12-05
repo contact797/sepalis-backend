@@ -168,15 +168,19 @@ class SepalisAPITester:
     async def test_create_plant_with_care_instructions(self):
         """Test: POST /api/user/plants avec careInstructions"""
         try:
-            if not hasattr(self, 'test_plant_data'):
-                self.log_test("Create Plant - Données test", False, "Pas de données de plante test disponibles")
-                return False
-            
+            # Créer des données de test manuellement au lieu de dépendre de l'IA
             plant_data = {
-                "name": self.test_plant_data["name"],
-                "scientificName": self.test_plant_data.get("scientificName"),
-                "description": self.test_plant_data.get("description"),
-                "careInstructions": self.test_plant_data["careInstructions"]
+                "name": "Tomate Cerise Test MOF",
+                "scientificName": "Solanum lycopersicum var. cerasiforme",
+                "description": "Tomate cerise pour test des conseils MOF",
+                "careInstructions": {
+                    "sunExposure": "Plein soleil, 6-8h par jour minimum",
+                    "plantingPeriod": "Mars-avril sous abri, mai-juin en pleine terre",
+                    "pruning": "Tailler les gourmands régulièrement, étêter à 6-7 bouquets",
+                    "temperature": "Optimale 20-25°C, résiste jusqu'à 10°C",
+                    "soilType": "Sol riche, bien drainé, pH 6.0-7.0",
+                    "commonIssues": "Mildiou, pucerons, pourriture apicale - traiter préventivement"
+                }
             }
             
             headers = {"Authorization": f"Bearer {self.auth_token}"}
@@ -201,8 +205,11 @@ class SepalisAPITester:
                             self.log_test("Create Plant - CareInstructions intégrité", False, f"Champ {field} modifié lors de la persistance")
                             return False
                     
-                    self.test_plant_id = data["id"]
+                    self.test_plant_id = data.get("id") or data.get("_id")
                     self.log_test("Create Plant - Avec CareInstructions", True, f"Plante créée ID: {self.test_plant_id}")
+                    
+                    # Stocker les données pour les tests suivants
+                    self.test_plant_data = data
                     return True
                     
                 else:
