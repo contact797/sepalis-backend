@@ -148,6 +148,12 @@ export default function Plants() {
       </ScrollView>
 
       <View style={styles.fabContainer}>
+        <TouchableOpacity 
+          style={styles.fabQuaternary} 
+          onPress={() => router.push('/(tabs)/check-compatibility')}
+        >
+          <Ionicons name="checkmark-done" size={24} color={Colors.white} />
+        </TouchableOpacity>
         <TouchableOpacity style={styles.fabSecondary} onPress={() => router.push('/(tabs)/scan-plant')}>
           <Ionicons name="camera" size={24} color={Colors.white} />
         </TouchableOpacity>
