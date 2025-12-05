@@ -359,12 +359,56 @@ backend:
         agent: "testing"
         comment: "✅ FIX SCHEMA MISMATCH VALIDÉ - Tests complets des endpoints zones RÉUSSIS (9/9 tests passés, 100% de réussite). ENDPOINTS ZONES FONCTIONNELS ✅: POST /api/user/zones (création avec humidity='Normal', 'Humide', 'Sec') ✅, GET /api/user/zones (liste avec champ humidity) ✅, GET /api/user/zones/{id} (récupération par ID) ✅, PUT /api/user/zones/{id} (mise à jour humidity) ✅, DELETE /api/user/zones/{id} (suppression) ✅. CHAMP HUMIDITY ACCEPTÉ ✅: Toutes les valeurs (Normal, Humide, Sec) correctement persistées et récupérées. CHAMP DRAINAGE SUPPRIMÉ ✅: Plus aucune référence au champ 'drainage' dans les réponses. BACKEND COMPLET TESTÉ ✅: Tous les endpoints critiques fonctionnent (20/20 tests passés) - authentification JWT, abonnements, CRUD zones/plantes/tâches, API météo, réservations, contenu. Le fix du schema mismatch est ENTIÈREMENT FONCTIONNEL."
 
+backend:
+  - task: "Conseils de soins automatiques via IA pour les plantes"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Système de conseils MOF implémenté. Modification du prompt GPT-4 Vision pour générer des conseils d'expert complets (exposition solaire, période de plantation, taille, température, type de sol, problèmes courants). SANS fréquence d'arrosage comme demandé. Ajout d'un nouveau modèle Pydantic 'CareInstructions' dans le modèle PlantBase avec 6 champs optionnels. Le endpoint /api/ai/identify-plant retourne maintenant careInstructions dans la réponse JSON."
+
+frontend:
+  - task: "Amélioration page Scanner - Conseils MOF + Sélecteur de zone + Confirmation"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/(tabs)/scan-plant.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "3 améliorations majeures: 1) AFFICHAGE CONSEILS MOF: Après l'identification, affichage de 6 cartes détaillées (Exposition, Période plantation, Taille, Température, Type de sol, Problèmes courants) avec emojis et mise en forme élégante. 2) SÉLECTEUR DE ZONE: Scroll horizontal avec chips pour sélectionner une zone existante ou 'Aucune zone'. Chargement automatique des zones au montage du composant. 3) CONFIRMATION: Message 'Plante enregistrée avec succès' avec emoji + confetti + redirection automatique vers la liste. La plante est associée à la zone sélectionnée."
+
+  - task: "Retrait des fonctions d'arrosage dans les détails des plantes"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/(tabs)/plant-detail.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Suppression complète des fonctions d'arrosage: 1) Retrait de la fonction handleWater, 2) Suppression du bouton 'Arroser' dans les actions rapides, 3) Suppression de l'affichage 'Arrosage: Tous les X jours' dans les infos. Remplacement par l'affichage des conseils MOF (mêmes 6 sections que dans le scanner). Les utilisateurs voient maintenant uniquement les conseils d'expert MOF, pas de gestion manuelle d'arrosage."
+
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Conseils de soins automatiques via IA pour les plantes"
+    - "Amélioration page Scanner - Conseils MOF + Sélecteur de zone + Confirmation"
+    - "Retrait des fonctions d'arrosage dans les détails des plantes"
   stuck_tasks: []
-  test_all: true
-  test_priority: "completed"
-  status: "FIX SCHEMA MISMATCH ZONES VALIDÉ - BACKEND ENTIÈREMENT FONCTIONNEL"
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: "Implémentation majeure des améliorations plantes : 1) BACKEND: Le endpoint /api/ai/identify-plant génère maintenant des conseils MOF complets via GPT-4o (exposition, plantation, taille, température, sol, problèmes) SANS fréquence d'arrosage. 2) FRONTEND SCAN: Ajout d'un sélecteur de zone pour associer la plante à une zone lors du scan + affichage des conseils MOF en 6 cartes détaillées + message de confirmation avec confetti. 3) FRONTEND DÉTAILS: Retrait complet des fonctions d'arrosage (bouton, affichage fréquence), remplacées par l'affichage des conseils MOF. Services redémarrés. Besoin de tester le flow complet de scan et l'affichage des conseils."
 
 agent_communication:
   - agent: "main"
