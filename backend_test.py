@@ -129,6 +129,155 @@ class SepalisAPITester:
         except Exception as e:
             self.log_test("AI Identify Plant - Exception", False, f"Exception: {str(e)}")
             return False
+
+    async def test_create_plant_with_care_instructions(self):
+        """Test: POST /api/user/plants avec careInstructions"""
+        try:
+            if not hasattr(self, 'test_plant_data'):
+                self.log_test("Create Plant - Données test", False, "Pas de données de plante test disponibles")
+                return False
+            
+            plant_data = {
+                "name": self.test_plant_data["name"],
+                "scientificName": self.test_plant_data.get("scientificName"),
+                "description": self.test_plant_data.get("description"),
+                "careInstructions": self.test_plant_data["careInstructions"]
+            }
+            
+            headers = {"Authorization": f"Bearer {self.auth_token}"}
+            
+            async with self.session.post(f"{BASE_URL}/user/plants", 
+                                       json=plant_data, 
+                                       headers=headers) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    
+                    # Vérifier que la plante a été créée avec careInstructions
+                    if "careInstructions" not in data:
+                        self.log_test("Create Plant - CareInstructions persistance", False, "careInstructions manquant dans la réponse")
+                        return False
+                    
+                    created_care = data["careInstructions"]
+                    original_care = plant_data["careInstructions"]
+                    
+                    # Vérifier que tous les champs careInstructions sont persistés
+                    for field in ["sunExposure", "plantingPeriod", "pruning", "temperature", "soilType", "commonIssues"]:
+                        if created_care.get(field) != original_care.get(field):
+                            self.log_test("Create Plant - CareInstructions intégrité", False, f"Champ {field} modifié lors de la persistance")
+                            return False
+                    
+                    self.test_plant_id = data["id"]
+                    self.log_test("Create Plant - Avec CareInstructions", True, f"Plante créée ID: {self.test_plant_id}")
+                    return True
+                    
+                else:
+                    error_text = await response.text()
+                    self.log_test("Create Plant - Endpoint", False, f"Status: {response.status}, Error: {error_text}")
+                    return False
+                    
+        except Exception as e:
+            self.log_test("Create Plant - Exception", False, f"Exception: {str(e)}")
+            return False
+
+    async def test_get_plants_with_care_instructions(self):
+        """Test: GET /api/user/plants avec careInstructions"""
+        try:
+            headers = {"Authorization": f"Bearer {self.auth_token}"}
+            
+            async with self.session.get(f"{BASE_URL}/user/plants", 
+                                      headers=headers) as response:
+                if response.status == 200:
+                    plants = await response.json()
+                    
+                    if not plants:
+                        self.log_test("Get Plants - Liste vide", False, "Aucune plante trouvée")
+                        return False
+                    
+                    # Trouver notre plante de test
+                    test_plant = None
+                    for plant in plants:
+                        if plant.get("id") == getattr(self, 'test_plant_id', None):
+                            test_plant = plant
+                            break
+                    
+                    if not test_plant:
+                        self.log_test("Get Plants - Plante test", False, "Plante de test non trouvée dans la liste")
+                        return False
+                    
+                    # Vérifier la présence de careInstructions
+                    if "careInstructions" not in test_plant:
+                        self.log_test("Get Plants - CareInstructions présence", False, "careInstructions manquant dans la plante récupérée")
+                        return False
+                    
+                    care_instructions = test_plant["careInstructions"]
+                    required_fields = ["sunExposure", "plantingPeriod", "pruning", "temperature", "soilType", "commonIssues"]
+                    missing_fields = [field for field in required_fields if field not in care_instructions]
+                    
+                    if missing_fields:
+                        self.log_test("Get Plants - CareInstructions structure", False, f"Champs manquants: {missing_fields}")
+                        return False
+                    
+                    self.log_test("Get Plants - Avec CareInstructions", True, f"Plante récupérée avec {len(care_instructions)} champs de soins")
+                    return True
+                    
+                else:
+                    error_text = await response.text()
+                    self.log_test("Get Plants - Endpoint", False, f"Status: {response.status}, Error: {error_text}")
+                    return False
+                    
+        except Exception as e:
+            self.log_test("Get Plants - Exception", False, f"Exception: {str(e)}")
+            return False
+
+    async def test_zones_humidity_field(self):
+        """Test: Vérifier que les zones fonctionnent avec le champ humidity (pas drainage)"""
+        try:
+            zone_data = {
+                "name": "Zone Test Care Instructions",
+                "type": "ornamental",
+                "length": 5.0,
+                "width": 3.0,
+                "area": 15.0,
+                "soilType": "Argileux",
+                "soilPH": "Neutre (6.5-7)",
+                "humidity": "Normal",  # Champ critique - doit être humidity, pas drainage
+                "sunExposure": "Plein soleil",
+                "climateZone": "Tempéré",
+                "windProtection": "Protégé",
+                "wateringSystem": "Arrosage manuel",
+                "color": "#4CAF50"
+            }
+            
+            headers = {"Authorization": f"Bearer {self.auth_token}"}
+            
+            async with self.session.post(f"{BASE_URL}/user/zones", 
+                                       json=zone_data, 
+                                       headers=headers) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    
+                    # Vérifier que le champ humidity est présent et correct
+                    if data.get("humidity") != "Normal":
+                        self.log_test("Zones - Champ humidity", False, f"Humidity incorrect: {data.get('humidity')}")
+                        return False
+                    
+                    # Vérifier que drainage n'est PAS présent
+                    if "drainage" in data:
+                        self.log_test("Zones - Suppression drainage", False, "Le champ drainage est encore présent")
+                        return False
+                    
+                    self.test_zone_id = data["id"]
+                    self.log_test("Zones - Création avec humidity", True, f"Zone créée ID: {self.test_zone_id}")
+                    return True
+                    
+                else:
+                    error_text = await response.text()
+                    self.log_test("Zones - Création", False, f"Status: {response.status}, Error: {error_text}")
+                    return False
+                    
+        except Exception as e:
+            self.log_test("Zones - Exception", False, f"Exception: {str(e)}")
+            return False
     
     async def test_auth_register(self):
         """Test user registration"""
