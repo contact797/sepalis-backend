@@ -22,24 +22,27 @@ export default function ZoneDetail() {
   const [loadingPlants, setLoadingPlants] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
+  // Gérer les deux formats d'ID (id ou _id)
+  const zoneId = zone?.id || zone?._id;
+
   useEffect(() => {
-    if (zone?.id) {
+    if (zoneId) {
       loadPlants();
     }
-  }, [zone?.id]);
+  }, [zoneId]);
 
   useFocusEffect(
     React.useCallback(() => {
-      if (zone?.id) {
+      if (zoneId) {
         loadPlants();
       }
-    }, [zone?.id])
+    }, [zoneId])
   );
 
   const loadPlants = async () => {
     try {
       setLoadingPlants(true);
-      const response = await zonesAPI.getZonePlants(zone.id);
+      const response = await zonesAPI.getZonePlants(zoneId);
       setPlants(response.data);
     } catch (error) {
       console.error('Erreur chargement plantes:', error);
