@@ -361,7 +361,7 @@ export default function ScanPlant() {
                   }}
                 >
                   <Ionicons name="refresh" size={20} color={Colors.text} />
-                  <Text style={styles.retryButtonText}>Réessayer</Text>
+                  <Text style={styles.retryButtonText}>Scanner une autre plante</Text>
                 </TouchableOpacity>
               </View>
             </View>
