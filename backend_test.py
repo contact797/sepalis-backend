@@ -321,6 +321,53 @@ class SepalisAPITester:
         except Exception as e:
             self.log_test("Zones - Exception", False, f"Exception: {str(e)}")
             return False
+
+    async def test_ai_identify_plant_simple(self):
+        """Test simple: POST /api/ai/identify-plant avec image valide"""
+        try:
+            # Utiliser une image de test simple mais valide
+            # Image JPEG 1x1 pixel rouge valide
+            jpeg_base64 = "/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/2wBDAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwA/wA=="
+            
+            payload = {
+                "image": jpeg_base64
+            }
+            
+            async with self.session.post(f"{BASE_URL}/ai/identify-plant", json=payload) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    
+                    # Vérifications de base
+                    if "name" in data and "careInstructions" in data:
+                        care_instructions = data.get("careInstructions", {})
+                        required_care_fields = ["sunExposure", "plantingPeriod", "pruning", "temperature", "soilType", "commonIssues"]
+                        missing_care_fields = [field for field in required_care_fields if field not in care_instructions]
+                        
+                        if not missing_care_fields:
+                            # Vérifier que wateringFrequency n'est PAS présent
+                            if "wateringFrequency" in data:
+                                self.log_test("AI Identify Plant - Suppression wateringFrequency", False, "Le champ wateringFrequency est encore présent")
+                                return False
+                            else:
+                                self.log_test("AI Identify Plant - Suppression wateringFrequency", True, "Le champ wateringFrequency a été correctement supprimé")
+                            
+                            self.log_test("AI Identify Plant - Structure complète", True, f"Plante: {data.get('name')}, CareInstructions: {len(care_instructions)} champs")
+                            return True
+                        else:
+                            self.log_test("AI Identify Plant - CareInstructions structure", False, f"Champs careInstructions manquants: {missing_care_fields}")
+                            return False
+                    else:
+                        self.log_test("AI Identify Plant - Structure de base", False, "Champs 'name' ou 'careInstructions' manquants")
+                        return False
+                        
+                else:
+                    error_text = await response.text()
+                    self.log_test("AI Identify Plant - Endpoint", False, f"Status: {response.status}, Error: {error_text}")
+                    return False
+                    
+        except Exception as e:
+            self.log_test("AI Identify Plant - Exception", False, f"Exception: {str(e)}")
+            return False
     
     async def test_auth_register(self):
         """Test user registration"""
