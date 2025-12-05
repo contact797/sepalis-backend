@@ -84,10 +84,10 @@ export default function Zones() {
   );
 
   const zoneTypes = [
-    { id: 'vegetable', label: 'Potager', icon: 'leaf', color: Colors.primary },
-    { id: 'ornamental', label: 'Ornement', icon: 'flower', color: '#FF6B9D' },
-    { id: 'orchard', label: 'Verger', icon: 'nutrition', color: '#FFA500' },
-    { id: 'herb', label: 'Aromates', icon: 'sparkles', color: '#9C27B0' },
+    { id: 'massif', label: 'Massif', icon: 'flower', color: '#FF6B9D' },
+    { id: 'terrace', label: 'Terrasse', icon: 'home', color: Colors.primary },
+    { id: 'garden', label: 'Jardin', icon: 'leaf', color: '#4CAF50' },
+    { id: 'pond', label: 'Bassin', icon: 'water', color: '#2196F3' },
   ];
 
   const soilTypes = [
