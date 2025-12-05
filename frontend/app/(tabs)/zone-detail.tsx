@@ -58,6 +58,71 @@ export default function ZoneDetail() {
     }
   };
 
+  const handleGetSuggestions = async () => {
+    try {
+      setLoadingSuggestions(true);
+      setShowSuggestionsModal(true);
+      
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_API_URL}/user/zones/${zoneId}/plant-suggestions`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setSuggestions(data.suggestions || []);
+      } else {
+        Alert.alert('Erreur', 'Impossible de générer les suggestions');
+        setShowSuggestionsModal(false);
+      }
+    } catch (error) {
+      console.error('Erreur suggestions:', error);
+      Alert.alert('Erreur', 'Erreur réseau');
+      setShowSuggestionsModal(false);
+    } finally {
+      setLoadingSuggestions(false);
+    }
+  };
+
+  const handleAddSuggestedPlant = async (plant: any) => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_API_URL}/user/plants`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: plant.name,
+            scientificName: plant.scientificName,
+            description: `${plant.category} - ${plant.mofAdvice}`,
+            zoneId: zoneId,
+          }),
+        }
+      );
+
+      if (response.ok) {
+        Alert.alert('Succès', `${plant.name} a été ajoutée à votre zone !`);
+        loadPlants();
+      } else {
+        Alert.alert('Erreur', 'Impossible d\'ajouter la plante');
+      }
+    } catch (error) {
+      console.error('Erreur ajout plante:', error);
+      Alert.alert('Erreur', 'Erreur réseau');
+    }
+  };
+
   const handleEdit = () => {
     router.push({
       pathname: '/(tabs)/edit-zone',
