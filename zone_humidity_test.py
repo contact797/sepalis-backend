@@ -115,13 +115,16 @@ class ZoneHumidityTester:
                 created_zone = response.json()
                 
                 # Vérifications critiques
+                zone_id = created_zone.get("_id") or created_zone.get("id")
                 if (created_zone.get("humidity") == "Normal" and 
                     "drainage" not in created_zone and
-                    created_zone.get("name") == zone_data["name"]):
+                    created_zone.get("name") == zone_data["name"] and
+                    zone_id):
                     
+                    created_zone["id"] = zone_id  # Normaliser l'ID
                     self.created_zones.append(created_zone)
                     self.log_test("POST /api/user/zones (humidity=Normal)", True, 
-                                f"Zone créée avec succès. ID: {created_zone.get('id')}")
+                                f"Zone créée avec succès. ID: {zone_id}")
                     return created_zone
                 else:
                     self.log_test("POST /api/user/zones (humidity=Normal)", False, 
