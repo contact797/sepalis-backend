@@ -201,40 +201,12 @@ export default function Home() {
     return tasks.filter((task: any) => !task.completed);
   };
 
-  const getSeasonTip = () => {
-    const month = new Date().getMonth();
-    if (month >= 2 && month <= 4) {
-      return {
-        title: 'Printemps - Temps de plantation',
-        text: "C'est le moment idéal pour semer vos graines et préparer vos semis. Taillez les plantes vivaces fanées pour favoriser la nouvelle croissance.",
-        icon: 'flower',
-        color: Colors.primary,
-      };
-    } else if (month >= 5 && month <= 7) {
-      return {
-        title: 'Été - Entretien et récoltes',
-        text: "Pincez les gourmands des tomates. Taillez les arbustes à floraison printanière. C'est le moment des premières récoltes !",
-        icon: 'sunny',
-        color: Colors.warning,
-      };
-    } else if (month >= 8 && month <= 10) {
-      return {
-        title: 'Automne - Préparation',
-        text: 'Taillez les rosiers et les arbustes. Divisez les vivaces. Préparez votre jardin pour l\'hiver.',
-        icon: 'leaf',
-        color: '#FF8C00',
-      };
-    } else {
-      return {
-        title: 'Hiver - Repos végétatif',
-        text: 'Taillez les arbres fruitiers et les arbustes caducs. Planifiez la saison prochaine et entretenez vos outils.',
-        icon: 'snow',
-        color: '#4A90E2',
-      };
-    }
-  };
-
-  const seasonTip = getSeasonTip();
+  const [seasonTip, setSeasonTip] = useState<any>({
+    title: 'Conseil de saison',
+    text: 'Chargement...',
+    icon: 'leaf',
+    color: Colors.primary,
+  });
 
   const getGreeting = () => {
     const hour = new Date().getHours();
