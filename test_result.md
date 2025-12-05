@@ -362,15 +362,18 @@ backend:
 backend:
   - task: "Conseils de soins automatiques via IA pour les plantes"
     implemented: true
-    working: "NA"
+    working: false
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Système de conseils MOF implémenté. Modification du prompt GPT-4 Vision pour générer des conseils d'expert complets (exposition solaire, période de plantation, taille, température, type de sol, problèmes courants). SANS fréquence d'arrosage comme demandé. Ajout d'un nouveau modèle Pydantic 'CareInstructions' dans le modèle PlantBase avec 6 champs optionnels. Le endpoint /api/ai/identify-plant retourne maintenant careInstructions dans la réponse JSON."
+      - working: false
+        agent: "testing"
+        comment: "Tests du système de conseils de soins automatiques effectués. PROBLÈME CRITIQUE IDENTIFIÉ ❌: L'endpoint POST /api/ai/identify-plant échoue avec une erreur d'image non supportée (Status: 500, litellm.BadRequestError: You uploaded an unsupported image). TESTS RÉUSSIS ✅: Création et récupération de plantes avec careInstructions fonctionnent parfaitement - les 6 champs (sunExposure, plantingPeriod, pruning, temperature, soilType, commonIssues) sont correctement persistés et récupérés. ZONES AVEC HUMIDITY ✅: Le fix du champ humidity fonctionne correctement (pas de drainage). RECOMMANDATION: L'endpoint IA nécessite une correction du format d'image ou de la configuration LiteLLM pour fonctionner avec GPT-4 Vision."
 
 frontend:
   - task: "Amélioration page Scanner - Conseils MOF + Sélecteur de zone + Confirmation"
