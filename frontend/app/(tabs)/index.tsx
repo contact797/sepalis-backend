@@ -765,4 +765,17 @@ const styles = StyleSheet.create({
     color: Colors.text,
     fontWeight: '600',
   },
+  mofBadge: {
+    backgroundColor: Colors.accent + '30',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: Colors.accent,
+  },
+  mofBadgeText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: Colors.accent,
+  },
 });
