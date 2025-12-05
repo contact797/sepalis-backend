@@ -38,6 +38,13 @@ export default function Profile() {
 
   const menuItems = [
     {
+      title: 'Panneau Admin',
+      icon: 'shield-checkmark',
+      badge: '🔧',
+      onPress: () => router.push('/(tabs)/admin' as any),
+      admin: true, // Visible uniquement pour l'admin
+    },
+    {
       title: 'Premium',
       icon: 'diamond-outline',
       badge: '✨',
