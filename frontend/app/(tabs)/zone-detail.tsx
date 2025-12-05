@@ -576,4 +576,20 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     color: Colors.textSecondary,
   },
+  suggestionsButton: {
+    backgroundColor: Colors.primary,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginBottom: 16,
+    gap: 8,
+  },
+  suggestionsButtonText: {
+    color: Colors.white,
+    fontSize: 14,
+    fontWeight: '600',
+  },
 });
