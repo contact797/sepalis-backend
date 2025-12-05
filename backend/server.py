@@ -1372,8 +1372,12 @@ Réponds UNIQUEMENT au format JSON suivant (sans markdown):
             system_message="Tu es un expert botaniste MOF spécialisé en plantes ornementales vivaces, arbres, arbustes et rosiers."
         ).with_model("openai", "gpt-4o")
         
-        response = chat.chat([UserMessage(prompt)])
-        result_text = response.choices[0].message.content.strip()
+        print("🔄 Appel à GPT-4o pour suggestions...")
+        
+        user_message = UserMessage(text=prompt)
+        result_text = await chat.send_message(user_message)
+        
+        print(f"📡 Réponse reçue: {result_text[:200]}...")
         
         # Nettoyer le JSON
         if result_text.startswith('```json'):
