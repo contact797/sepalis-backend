@@ -395,6 +395,66 @@ export default function ZoneDetail() {
           )}
         </View>
       </ScrollView>
+
+      {/* Modal des suggestions */}
+      <Modal
+        visible={showSuggestionsModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Suggestions MOF</Text>
+            <TouchableOpacity
+              onPress={() => setShowSuggestionsModal(false)}
+              style={styles.closeButton}
+            >
+              <Ionicons name="close" size={24} color={Colors.text} />
+            </TouchableOpacity>
+          </View>
+
+          {loadingSuggestions ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={Colors.primary} />
+              <Text style={styles.loadingText}>Génération des suggestions...</Text>
+            </View>
+          ) : (
+            <ScrollView style={styles.suggestionsScroll}>
+              {suggestions.map((plant, index) => (
+                <View key={index} style={styles.suggestionCard}>
+                  <View style={styles.suggestionHeader}>
+                    <Text style={styles.suggestionName}>{plant.name}</Text>
+                    <Text style={styles.suggestionScientific}>{plant.scientificName}</Text>
+                  </View>
+                  
+                  <Text style={styles.suggestionCategory}>
+                    <Ionicons name="leaf" size={16} color={Colors.accent} /> {plant.category}
+                  </Text>
+                  
+                  <Text style={styles.suggestionAdvice}>{plant.mofAdvice}</Text>
+                  
+                  <TouchableOpacity
+                    style={styles.addSuggestionButton}
+                    onPress={() => handleAddSuggestedPlant(plant)}
+                  >
+                    <Ionicons name="add" size={20} color={Colors.white} />
+                    <Text style={styles.addSuggestionButtonText}>Ajouter à ma zone</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+              
+              {suggestions.length === 0 && !loadingSuggestions && (
+                <View style={styles.noSuggestions}>
+                  <Ionicons name="leaf-outline" size={48} color={Colors.textSecondary} />
+                  <Text style={styles.noSuggestionsText}>
+                    Aucune suggestion disponible pour cette zone
+                  </Text>
+                </View>
+              )}
+            </ScrollView>
+          )}
+        </View>
+      </Modal>
     </View>
   );
 }
