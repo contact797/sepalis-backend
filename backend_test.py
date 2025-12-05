@@ -238,7 +238,8 @@ class SepalisAPITester:
                     # Trouver notre plante de test
                     test_plant = None
                     for plant in plants:
-                        if plant.get("id") == getattr(self, 'test_plant_id', None):
+                        plant_id = plant.get("id") or plant.get("_id")
+                        if plant_id == getattr(self, 'test_plant_id', None):
                             test_plant = plant
                             break
                     
