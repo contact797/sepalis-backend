@@ -442,27 +442,6 @@ export default function Zones() {
       </View>
 
       <View style={styles.inputGroup}>
-        <Text style={styles.label}>Niveau d'humidité</Text>
-        <View style={styles.optionsRow}>
-          {humidityOptions.map((hum) => (
-            <TouchableOpacity
-              key={hum.id}
-              style={[
-                styles.optionButton,
-                newZone.humidity === hum.id && styles.optionButtonSelected,
-              ]}
-              onPress={() => setNewZone({ ...newZone, humidity: hum.id })}
-            >
-              <Ionicons name={hum.icon as any} size={18} color={newZone.humidity === hum.id ? Colors.dark : Colors.textSecondary} />
-              <Text style={[styles.optionButtonText, newZone.humidity === hum.id && styles.optionButtonTextSelected]}>
-                {hum.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
-
-      <View style={styles.inputGroup}>
         <Text style={styles.label}>Notes (optionnel)</Text>
         <TextInput
           style={[styles.input, styles.textArea]}
