@@ -400,7 +400,8 @@ export default function ZoneDetail() {
       <Modal
         visible={showSuggestionsModal}
         animationType="slide"
-        presentationStyle="pageSheet"
+        transparent={false}
+        onRequestClose={() => setShowSuggestionsModal(false)}
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalHeader}>
