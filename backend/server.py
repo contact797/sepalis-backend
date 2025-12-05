@@ -1639,11 +1639,16 @@ Réponds UNIQUEMENT au format JSON suivant (sans markdown):
         
         print("🔄 Appel à GPT-4 Vision...")
         
+        # Créer le message avec l'image
         image_content = ImageContent(image_base64=image_base64)
-        response = chat.chat([UserMessage([prompt, image_content])])
+        user_message = UserMessage(
+            text=prompt,
+            file_contents=[image_content]
+        )
         
-        print("📡 Réponse GPT-4 reçue")
-        result_text = response.choices[0].message.content.strip()
+        # Envoyer le message et obtenir la réponse
+        result_text = await chat.send_message(user_message)
+        print(f"📡 Réponse GPT-4 reçue: {result_text[:200]}...")
         
         print(f"📡 Réponse IA reçue")
         
