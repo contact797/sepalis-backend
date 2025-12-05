@@ -418,6 +418,8 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: "Implémentation majeure des améliorations plantes : 1) BACKEND: Le endpoint /api/ai/identify-plant génère maintenant des conseils MOF complets via GPT-4o (exposition, plantation, taille, température, sol, problèmes) SANS fréquence d'arrosage. 2) FRONTEND SCAN: Ajout d'un sélecteur de zone pour associer la plante à une zone lors du scan + affichage des conseils MOF en 6 cartes détaillées + message de confirmation avec confetti. 3) FRONTEND DÉTAILS: Retrait complet des fonctions d'arrosage (bouton, affichage fréquence), remplacées par l'affichage des conseils MOF. Services redémarrés. Besoin de tester le flow complet de scan et l'affichage des conseils."
+  - agent: "testing"
+    message: "🧪 TESTS SYSTÈME CONSEILS DE SOINS AUTOMATIQUES EFFECTUÉS - RÉSULTATS MIXTES. ✅ SUCCÈS CRITIQUES: Création et récupération de plantes avec careInstructions fonctionnent parfaitement (6 champs persistés correctement). Zones avec champ humidity opérationnelles (drainage supprimé). ❌ PROBLÈME IDENTIFIÉ: Endpoint POST /api/ai/identify-plant échoue avec erreur d'image non supportée (litellm.BadRequestError). 🔧 RECOMMANDATION: Corriger le format d'image ou la configuration LiteLLM pour GPT-4 Vision. Le système de base fonctionne, seule l'intégration IA nécessite un ajustement."
 
 agent_communication:
   - agent: "main"
