@@ -81,9 +81,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }
 
   async function signOut() {
-    await AsyncStorage.removeItem('token');
-    await AsyncStorage.removeItem('user');
-    setUser(null);
+    try {
+      console.log('🔓 Déconnexion en cours...');
+      await AsyncStorage.removeItem('token');
+      await AsyncStorage.removeItem('authToken'); // Support des deux noms
+      await AsyncStorage.removeItem('user');
+      await AsyncStorage.removeItem('onboardingCompleted');
+      setUser(null);
+      console.log('✅ Déconnexion réussie');
+    } catch (error) {
+      console.error('❌ Erreur déconnexion:', error);
+    }
   }
 
   return (
