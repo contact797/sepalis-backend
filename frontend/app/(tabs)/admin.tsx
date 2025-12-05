@@ -125,7 +125,7 @@ export default function AdminPanel() {
     try {
       setLoading(true);
       const token = await AsyncStorage.getItem('authToken');
-      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/admin/season-tips`, {
+      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/admin/season-tips`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
