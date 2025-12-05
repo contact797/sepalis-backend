@@ -887,10 +887,10 @@ const styles = StyleSheet.create({
   },
   infoButtonLarge: {
     padding: 4,
-    marginLeft: 8,
+    marginLeft: 4,
     backgroundColor: Colors.accent + '15',
     borderRadius: 20,
-    paddingHorizontal: 8,
+    paddingHorizontal: 6,
   },
   helpBubble: {
     backgroundColor: Colors.accent + '15',
