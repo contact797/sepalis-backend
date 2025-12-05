@@ -53,6 +53,7 @@ export default function AdminPanel() {
   useEffect(() => {
     loadSeasonTips();
     loadAnalytics();
+    loadCalendarTasks();
   }, []);
 
   const loadAnalytics = async () => {
