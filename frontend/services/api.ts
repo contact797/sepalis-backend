@@ -33,9 +33,18 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 401) {
+      console.log('🔒 Token invalide ou expiré - Nettoyage des données...');
+      
       // Token expiré, déconnecter l'utilisateur
       await AsyncStorage.removeItem('token');
+      await AsyncStorage.removeItem('authToken');
       await AsyncStorage.removeItem('user');
+      
+      // Recharger la page pour forcer la redirection vers login
+      if (typeof window !== 'undefined') {
+        console.log('🔄 Redirection vers login...');
+        window.location.href = '/';
+      }
     }
     return Promise.reject(error);
   }
