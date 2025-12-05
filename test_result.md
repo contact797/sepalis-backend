@@ -339,5 +339,29 @@ agent_communication:
     message: "Tests backend complets TERMINÉS avec SUCCÈS ✅ (20/20 tests passés, 100% de réussite). SYSTÈME D'ABONNEMENT ✅: Endpoints start-trial et subscription fonctionnent parfaitement avec protection JWT. AUTHENTIFICATION ✅: Inscription, connexion, validation JWT opérationnels. CRUD ✅: Zones, plantes, tâches - toutes les opérations testées avec succès. API MÉTÉO ✅: Current et forecast fonctionnent (Open-Meteo). RÉSERVATIONS ✅: Endpoint bookings opérationnel. CONTENU ✅: Workshops (5) et courses (4) avec images accessibles. BACKEND ENTIÈREMENT PRÊT POUR LE LANCEMENT PUBLIC. Aucun bug critique identifié. Tous les endpoints critiques validés et fonctionnels."
   - agent: "testing"
     message: "🎉 TESTS FRONTEND SEPALIS COMPLETS - APPLICATION PRÊTE POUR LE LANCEMENT ! ✅ ONBOARDING: 4 écrans avec MOF, animations fluides ✅ AUTHENTIFICATION: Inscription/connexion fonctionnelles ✅ DASHBOARD: Messages personnalisés, stat cards, météo ✅ TRIAL BANNER: Jours restants, couleurs adaptatives ✅ PAYWALL: Badge MOF 🏆, confettis 🎊, plans tarifaires ✅ PAGE À PROPOS: MOF + 3 valeurs (Excellence, Passion, Innovation) ✅ SWIPE BIDIRECTIONNEL: Droite=terminer(vert), Gauche=supprimer(rouge) ✅ NAVIGATION: Tous onglets fonctionnels ✅ MOBILE FIRST: Interface 390x844px optimisée. AUCUN BUG CRITIQUE. Toutes les fonctionnalités prioritaires validées. L'expérience utilisateur est fluide et professionnelle. SEPALIS EST PRÊT POUR LES BETA TESTEURS ! 🚀"
+
+backend:
+  - task: "Fix Zone Creation - Schema Mismatch (drainage vs humidity)"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "Utilisateur signale que les zones ne peuvent pas être créées - le bouton 'Créer ma zone' est cliqué mais rien ne se passe"
+      - working: "NA"
+        agent: "main"
+        comment: "DIAGNOSTIC COMPLET avec troubleshoot_agent: Schema mismatch identifié. Le frontend (zones.tsx) envoie le champ 'humidity' après le refactor UX, mais le backend (server.py) avait DEUX CHAMPS: 'drainage' (ligne 229) ET 'humidity' (ligne 234). FIX APPLIQUÉ: Suppression du champ 'drainage' du modèle ZoneBase. Le modèle accepte maintenant uniquement 'humidity'. Backend redémarré. LOGS VÉRIFIÉS: Une création de zone réussie visible dans les logs backend (POST /api/user/zones HTTP/1.1 200 OK). Besoin de tester complètement tous les endpoints de zones."
+
+test_plan:
+  current_focus:
+    - "Fix Zone Creation - Schema Mismatch (drainage vs humidity)"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "critical_first"
+
   - agent: "main"
     message: "BUG CRITIQUE FIX: Les utilisateurs ne pouvaient pas créer de zones. Cause identifiée: le backend avait un DOUBLE CHAMP dans le modèle ZoneBase - à la fois 'drainage' (ligne 229) ET 'humidity' (ligne 234). Le frontend envoyait uniquement 'humidity' après le refactor UX. CORRECTION APPLIQUÉE: Suppression du champ 'drainage' du modèle ZoneBase dans server.py. Le modèle accepte maintenant uniquement 'humidity' comme le frontend l'envoie. FICHIER MODIFIÉ: /app/backend/server.py (lignes 221-237). BESOIN DE TEST: Vérifier que les endpoints de création de zones POST /api/user/zones fonctionnent maintenant correctement avec le champ 'humidity'. Services backend et frontend redémarrés."
