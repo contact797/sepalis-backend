@@ -458,7 +458,14 @@ export default function Home() {
                 <Ionicons name="checkbox-outline" size={24} color={Colors.accent} />
               </View>
               <View style={styles.taskContent}>
-                <Text style={styles.taskTitle}>{task.title}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <Text style={styles.taskTitle}>{task.title}</Text>
+                  {task.isMOFSuggestion && (
+                    <View style={styles.mofBadge}>
+                      <Text style={styles.mofBadgeText}>🏆 MOF</Text>
+                    </View>
+                  )}
+                </View>
                 {task.description && (
                   <Text style={styles.taskDescription} numberOfLines={1}>{task.description}</Text>
                 )}
