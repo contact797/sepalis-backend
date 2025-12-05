@@ -168,12 +168,11 @@ export default function Zones() {
         area: area,
         soilType: newZone.soilType,
         soilPH: newZone.soilPH,
-        drainage: newZone.drainage,
+        humidity: newZone.humidity,
         sunExposure: newZone.sunExposure,
         climateZone: newZone.climateZone,
         windProtection: newZone.windProtection,
         wateringSystem: newZone.wateringSystem,
-        humidity: newZone.humidity,
         notes: newZone.notes,
         color: selectedType?.color || Colors.primary,
       };
