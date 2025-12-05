@@ -297,6 +297,33 @@ class AnalyticsEventCreate(BaseModel):
     platform: Optional[str] = None
 
 
+# ============ CALENDAR TASK MODELS ============
+class CalendarTaskBase(BaseModel):
+    title: str
+    description: str
+    weekNumber: int  # 1-52
+    taskType: str  # watering, pruning, fertilizing, planting, general
+    priority: str = "optionnel"  # optionnel, important, urgent
+    
+class CalendarTaskCreate(CalendarTaskBase):
+    pass
+
+class CalendarTaskUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    weekNumber: Optional[int] = None
+    taskType: Optional[str] = None
+    priority: Optional[str] = None
+
+class CalendarTaskResponse(CalendarTaskBase):
+    id: str = Field(alias="_id")
+    createdAt: datetime
+    updatedAt: datetime
+    
+    class Config:
+        populate_by_name = True
+
+
 # ============ AUTH HELPERS ============
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
