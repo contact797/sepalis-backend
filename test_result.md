@@ -360,11 +360,14 @@ backend:
         comment: "✅ FIX SCHEMA MISMATCH VALIDÉ - Tests complets des endpoints zones RÉUSSIS (9/9 tests passés, 100% de réussite). ENDPOINTS ZONES FONCTIONNELS ✅: POST /api/user/zones (création avec humidity='Normal', 'Humide', 'Sec') ✅, GET /api/user/zones (liste avec champ humidity) ✅, GET /api/user/zones/{id} (récupération par ID) ✅, PUT /api/user/zones/{id} (mise à jour humidity) ✅, DELETE /api/user/zones/{id} (suppression) ✅. CHAMP HUMIDITY ACCEPTÉ ✅: Toutes les valeurs (Normal, Humide, Sec) correctement persistées et récupérées. CHAMP DRAINAGE SUPPRIMÉ ✅: Plus aucune référence au champ 'drainage' dans les réponses. BACKEND COMPLET TESTÉ ✅: Tous les endpoints critiques fonctionnent (20/20 tests passés) - authentification JWT, abonnements, CRUD zones/plantes/tâches, API météo, réservations, contenu. Le fix du schema mismatch est ENTIÈREMENT FONCTIONNEL."
 
 test_plan:
-  current_focus:
-    - "Fix Zone Creation - Schema Mismatch (drainage vs humidity)"
+  current_focus: []
   stuck_tasks: []
-  test_all: false
-  test_priority: "critical_first"
+  test_all: true
+  test_priority: "completed"
+  status: "FIX SCHEMA MISMATCH ZONES VALIDÉ - BACKEND ENTIÈREMENT FONCTIONNEL"
 
+agent_communication:
   - agent: "main"
     message: "BUG CRITIQUE FIX: Les utilisateurs ne pouvaient pas créer de zones. Cause identifiée: le backend avait un DOUBLE CHAMP dans le modèle ZoneBase - à la fois 'drainage' (ligne 229) ET 'humidity' (ligne 234). Le frontend envoyait uniquement 'humidity' après le refactor UX. CORRECTION APPLIQUÉE: Suppression du champ 'drainage' du modèle ZoneBase dans server.py. Le modèle accepte maintenant uniquement 'humidity' comme le frontend l'envoie. FICHIER MODIFIÉ: /app/backend/server.py (lignes 221-237). BESOIN DE TEST: Vérifier que les endpoints de création de zones POST /api/user/zones fonctionnent maintenant correctement avec le champ 'humidity'. Services backend et frontend redémarrés."
+  - agent: "testing"
+    message: "🎉 FIX SCHEMA MISMATCH ZONES ENTIÈREMENT VALIDÉ ! ✅ TESTS SPÉCIFIQUES HUMIDITY RÉUSSIS (9/9 tests, 100% de réussite): POST /api/user/zones fonctionne parfaitement avec humidity='Normal', 'Humide', 'Sec' ✅ GET /api/user/zones retourne toutes les zones avec champ humidity ✅ GET /api/user/zones/{id} récupération par ID fonctionnelle ✅ PUT /api/user/zones/{id} mise à jour du champ humidity opérationnelle ✅ DELETE /api/user/zones/{id} suppression fonctionnelle ✅ CHAMP DRAINAGE COMPLÈTEMENT SUPPRIMÉ - plus aucune référence dans les réponses ✅ BACKEND COMPLET TESTÉ (20/20 tests passés): authentification JWT, abonnements, CRUD zones/plantes/tâches, API météo, réservations, contenu. Le problème de création de zones est RÉSOLU. Les utilisateurs peuvent maintenant créer des zones sans problème. SEPALIS BACKEND PRÊT POUR LE LANCEMENT !"
