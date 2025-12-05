@@ -23,6 +23,10 @@ export default function AdminPanel() {
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [currentTip, setCurrentTip] = useState<any>(null);
   
+  // Analytics stats
+  const [analytics, setAnalytics] = useState<any>(null);
+  const [loadingAnalytics, setLoadingAnalytics] = useState(false);
+  
   // Form states
   const [season, setSeason] = useState('spring');
   const [title, setTitle] = useState('');
