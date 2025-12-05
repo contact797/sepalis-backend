@@ -119,13 +119,16 @@ export default function Diagnostic() {
             <View style={styles.analyzingCard}>
               <ActivityIndicator size="large" color={Colors.accent} />
               <Text style={styles.analyzingText}>Analyse en cours...</Text>
+              <Text style={styles.analyzingSubtext}>
+                Diagnostic par IA MOF - Cela peut prendre jusqu'à 20 secondes
+              </Text>
             </View>
           ) : diagnosis ? (
             <View style={styles.diagnosisContainer}>
               <View style={styles.diagnosisHeader}>
                 <View>
                   <Text style={styles.diseaseTitle}>{diagnosis.disease}</Text>
-                  <Text style={styles.diseaseSubtitle}>Diagnostic IA</Text>
+                  <Text style={styles.diseaseSubtitle}>Diagnostic IA MOF</Text>
                 </View>
                 <View style={[styles.severityBadge, { backgroundColor: getSeverityColor(diagnosis.severity) + '20' }]}>
                   <Text style={[styles.severityText, { color: getSeverityColor(diagnosis.severity) }]}>
@@ -139,25 +142,29 @@ export default function Diagnostic() {
                 <Text style={styles.sectionText}>{diagnosis.description}</Text>
               </View>
 
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Symptômes</Text>
-                {diagnosis.symptoms.map((symptom: string, index: number) => (
-                  <View key={index} style={styles.listItem}>
-                    <Ionicons name="alert-circle" size={18} color={Colors.warning} />
-                    <Text style={styles.listText}>{symptom}</Text>
-                  </View>
-                ))}
-              </View>
+              {diagnosis.symptoms && diagnosis.symptoms.length > 0 && (
+                <View style={styles.section}>
+                  <Text style={styles.sectionTitle}>Symptômes</Text>
+                  {diagnosis.symptoms.map((symptom: string, index: number) => (
+                    <View key={index} style={styles.listItem}>
+                      <Ionicons name="alert-circle" size={18} color={Colors.warning} />
+                      <Text style={styles.listText}>{symptom}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
 
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Solutions</Text>
-                {diagnosis.solutions.map((solution: string, index: number) => (
-                  <View key={index} style={styles.listItem}>
-                    <Ionicons name="medical" size={18} color={Colors.primary} />
-                    <Text style={styles.listText}>{solution}</Text>
-                  </View>
-                ))}
-              </View>
+              {diagnosis.solutions && diagnosis.solutions.length > 0 && (
+                <View style={styles.section}>
+                  <Text style={styles.sectionTitle}>Solutions</Text>
+                  {diagnosis.solutions.map((solution: string, index: number) => (
+                    <View key={index} style={styles.listItem}>
+                      <Ionicons name="medical" size={18} color={Colors.primary} />
+                      <Text style={styles.listText}>{solution}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
 
               <TouchableOpacity
                 style={styles.retryButton}
@@ -170,7 +177,25 @@ export default function Diagnostic() {
                 <Text style={styles.retryButtonText}>Nouveau diagnostic</Text>
               </TouchableOpacity>
             </View>
-          ) : null}
+          ) : (
+            <View style={styles.errorContainer}>
+              <Ionicons name="alert-circle" size={60} color={Colors.error} />
+              <Text style={styles.errorTitle}>Échec de l'analyse</Text>
+              <Text style={styles.errorText}>
+                Impossible d'analyser la plante. Assurez-vous d'être connecté et réessayez.
+              </Text>
+              <TouchableOpacity
+                style={styles.retryButton}
+                onPress={() => {
+                  setPhoto(null);
+                  setDiagnosis(null);
+                }}
+              >
+                <Ionicons name="refresh" size={20} color={Colors.text} />
+                <Text style={styles.retryButtonText}>Réessayer</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
       )}
     </ScrollView>
