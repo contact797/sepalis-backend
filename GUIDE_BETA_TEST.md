@@ -10,7 +10,7 @@ Votre feedback est précieux pour améliorer l'application avant le lancement pu
 
 ## 🔗 Accès à l'Application
 
-**URL Web** : https://garden-buddy-23.preview.emergentagent.com
+**URL Web** : https://gardenpro-app.preview.emergentagent.com
 
 **Mobile (Expo Go)** :
 1. Installez l'app **Expo Go** depuis l'App Store ou Google Play
