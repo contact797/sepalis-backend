@@ -108,39 +108,45 @@ export default function Plants() {
         ) : (
           <View style={styles.plantsGrid}>
             {plants.map((plant: any) => (
-              <TouchableOpacity
-                key={plant._id}
-                style={styles.plantCard}
-                onPress={() => router.push({
-                  pathname: '/(tabs)/plant-detail',
-                  params: { plant: JSON.stringify(plant) }
-                })}
-                onLongPress={() => handleDeletePlant(plant._id)}
-              >
-                <View style={styles.plantImage}>
-                  <Ionicons name="leaf" size={40} color={Colors.primary} />
-                </View>
-                <View style={styles.plantInfo}>
-                  <Text style={styles.plantName}>{plant.name}</Text>
-                  {plant.scientificName && (
-                    <Text style={styles.plantScientific}>{plant.scientificName}</Text>
-                  )}
-                  {plant.zoneName && (
-                    <View style={styles.zoneTag}>
-                      <Ionicons name="location" size={12} color={Colors.accent} />
-                      <Text style={styles.zoneTagText}>{plant.zoneName}</Text>
-                    </View>
-                  )}
-                  <View style={styles.plantMeta}>
-                    <View style={styles.metaItem}>
-                      <Ionicons name="water" size={14} color={Colors.primary} />
-                      <Text style={styles.metaText}>
-                        {plant.wateringFrequency || '7'} jours
-                      </Text>
+              <View key={plant._id} style={styles.plantCardContainer}>
+                <TouchableOpacity
+                  style={styles.plantCard}
+                  onPress={() => router.push({
+                    pathname: '/(tabs)/plant-detail',
+                    params: { plant: JSON.stringify(plant) }
+                  })}
+                >
+                  <View style={styles.plantImage}>
+                    <Ionicons name="leaf" size={40} color={Colors.primary} />
+                  </View>
+                  <View style={styles.plantInfo}>
+                    <Text style={styles.plantName}>{plant.name}</Text>
+                    {plant.scientificName && (
+                      <Text style={styles.plantScientific}>{plant.scientificName}</Text>
+                    )}
+                    {plant.zoneName && (
+                      <View style={styles.zoneTag}>
+                        <Ionicons name="location" size={12} color={Colors.accent} />
+                        <Text style={styles.zoneTagText}>{plant.zoneName}</Text>
+                      </View>
+                    )}
+                    <View style={styles.plantMeta}>
+                      <View style={styles.metaItem}>
+                        <Ionicons name="water" size={14} color={Colors.primary} />
+                        <Text style={styles.metaText}>
+                          {plant.wateringFrequency || '7'} jours
+                        </Text>
+                      </View>
                     </View>
                   </View>
-                </View>
-              </TouchableOpacity>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.deleteButton}
+                  onPress={(e) => handleDeletePlant(plant._id, e)}
+                >
+                  <Ionicons name="trash" size={20} color={Colors.white} />
+                </TouchableOpacity>
+              </View>
             ))}
           </View>
         )}
