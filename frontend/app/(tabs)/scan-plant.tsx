@@ -585,4 +585,70 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: Colors.text,
   },
+  careSection: {
+    marginTop: 20,
+    paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
+  },
+  careSectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: Colors.text,
+    marginBottom: 12,
+  },
+  careCard: {
+    backgroundColor: Colors.backgroundLight,
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 10,
+  },
+  careCardTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: Colors.accent,
+    marginBottom: 4,
+  },
+  careCardText: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    lineHeight: 18,
+  },
+  zoneSection: {
+    marginTop: 20,
+    paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
+  },
+  zoneSectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: Colors.text,
+    marginBottom: 12,
+  },
+  zoneScroll: {
+    flexGrow: 0,
+  },
+  zoneChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    backgroundColor: Colors.backgroundLight,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    marginRight: 8,
+  },
+  zoneChipSelected: {
+    backgroundColor: Colors.accent + '20',
+    borderColor: Colors.accent,
+  },
+  zoneChipText: {
+    fontSize: 14,
+    color: Colors.text,
+    fontWeight: '500',
+  },
+  zoneChipTextSelected: {
+    color: Colors.accent,
+    fontWeight: 'bold',
+  },
 });
