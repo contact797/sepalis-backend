@@ -65,7 +65,7 @@ export default function ZoneDetail() {
     
     try {
       const token = await AsyncStorage.getItem('authToken');
-      const url = `${process.env.EXPO_PUBLIC_API_URL}/user/zones/${zoneId}/plant-suggestions`;
+      const url = `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/user/zones/${zoneId}/plant-suggestions`;
       
       console.log('🌿 Appel suggestions URL:', url);
       console.log('🌿 Zone ID:', zoneId);
