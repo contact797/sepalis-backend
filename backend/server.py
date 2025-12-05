@@ -1284,9 +1284,10 @@ async def identify_plant(data: dict):
         if not image_base64:
             raise HTTPException(status_code=400, detail="Image requise")
         
-        # Extraire seulement le base64 si le préfixe est présent
-        if 'base64,' in image_base64:
-            image_base64 = image_base64.split('base64,')[1]
+        # S'assurer que l'image a le bon préfixe pour GPT-4 Vision
+        if not image_base64.startswith('data:image/'):
+            # Ajouter le préfixe si manquant
+            image_base64 = f"data:image/jpeg;base64,{image_base64}"
         
         print("🔍 Identification avec GPT-4 Vision via Emergent...")
         
