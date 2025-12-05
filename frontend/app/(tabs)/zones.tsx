@@ -862,6 +862,38 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     marginTop: 4,
   },
+  labelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  infoButton: {
+    padding: 4,
+  },
+  helpBubble: {
+    backgroundColor: Colors.accent + '15',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    borderLeftWidth: 3,
+    borderLeftColor: Colors.accent,
+  },
+  helpBubbleTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: Colors.text,
+    marginBottom: 8,
+  },
+  helpBubbleText: {
+    fontSize: 14,
+    color: Colors.text,
+    lineHeight: 22,
+  },
+  helpBold: {
+    fontWeight: '600',
+    color: Colors.accent,
+  },
   helperBox: {
     flexDirection: 'row',
     alignItems: 'center',
