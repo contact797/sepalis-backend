@@ -516,6 +516,60 @@ export default function AdminPanel() {
           </View>
         </View>
       </Modal>
+
+      {/* Modal: Exporter emails */}
+      <Modal
+        visible={showEmailsModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowEmailsModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>📧 Export des emails ({exportedEmails.length})</Text>
+              <TouchableOpacity onPress={() => setShowEmailsModal(false)}>
+                <Ionicons name="close" size={28} color={Colors.text} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.modalBody}>
+              <Text style={styles.sectionDesc}>
+                Liste complète des emails de tous les utilisateurs inscrits :
+              </Text>
+              
+              {exportedEmails.map((user, index) => (
+                <View key={index} style={styles.emailCard}>
+                  <View style={styles.emailIcon}>
+                    <Ionicons name="mail" size={20} color={Colors.accent} />
+                  </View>
+                  <View style={styles.emailContent}>
+                    <Text style={styles.emailAddress}>{user.email}</Text>
+                    <Text style={styles.emailName}>{user.name}</Text>
+                  </View>
+                </View>
+              ))}
+
+              <View style={styles.emailActionsContainer}>
+                <Text style={styles.label}>Copier tous les emails :</Text>
+                <View style={styles.emailCopyBox}>
+                  <Text style={styles.emailCopyText} selectable>
+                    {exportedEmails.map(e => e.email).join(', ')}
+                  </Text>
+                </View>
+              </View>
+
+              <TouchableOpacity
+                style={styles.saveButton}
+                onPress={() => setShowEmailsModal(false)}
+              >
+                <Ionicons name="checkmark" size={20} color={Colors.white} />
+                <Text style={styles.saveButtonText}>Fermer</Text>
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
