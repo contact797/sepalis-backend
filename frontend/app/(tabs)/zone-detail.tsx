@@ -7,11 +7,13 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  Modal,
 } from 'react-native';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { Colors } from '../../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import { zonesAPI } from '../../services/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function ZoneDetail() {
   const router = useRouter();
