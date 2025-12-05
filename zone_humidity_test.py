@@ -331,9 +331,11 @@ class ZoneHumidityTester:
             if response.status_code == 200:
                 updated_zone = response.json()
                 
+                updated_id = updated_zone.get("_id") or updated_zone.get("id")
                 if (updated_zone.get("humidity") == "Humide" and 
                     updated_zone.get("name") == update_data["name"] and
-                    "drainage" not in updated_zone):
+                    "drainage" not in updated_zone and
+                    updated_id == zone_id):
                     
                     self.log_test("PUT /api/user/zones/{id} (humidity update)", True, 
                                 f"Humidity mis à jour: {updated_zone.get('humidity')}")
