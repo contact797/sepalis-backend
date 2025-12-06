@@ -9,7 +9,7 @@
 ### Étape 1 : Ouvrir l'application
 👉 **Cliquez sur ce lien :**
 ```
-https://plant-ai-helper-1.preview.emergentagent.com
+https://daily-garden-1.preview.emergentagent.com
 ```
 
 ### Étape 2 : Créer un compte
@@ -133,4 +133,4 @@ Je peux ensuite développer :
 
 ---
 
-**Testez maintenant : https://plant-ai-helper-1.preview.emergentagent.com** 🌱
+**Testez maintenant : https://daily-garden-1.preview.emergentagent.com** 🌱

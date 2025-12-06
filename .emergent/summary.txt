@@ -1,102 +1,88 @@
 <analysis>
+The trajectory details an intensely iterative development cycle for the Sepalis mobile application, driven by direct user feedback. The work began with critical bug fixes in the admin panel, specifically correcting API endpoint URLs in  that prevented statistics from loading and email exports from functioning. The unreliable web  was also replaced with a custom .
+
+Following these fixes, development shifted to two major new features requested by the user. First, a comprehensive MOF Task Calendar was built. This involved creating backend models and CRUD endpoints in , a full management interface in the admin panel, and logic to automatically distribute these tasks to all users. A significant portion of this work involved debugging the backend, where tasks were not being correctly fetched due to querying the wrong collection and response models missing necessary fields.
+
+The second major feature was a gamified Daily Quiz to improve user retention. This required a complete implementation cycle: backend models and endpoints for questions and user stats, a management UI in the admin panel, and a new user-facing screen (). A major backend refactoring was necessary to fix a critical bug where new API routes were registered in the wrong order in . The work concluded with adding push notification capabilities and starting the implementation of a notification badge on the quiz tab icon.
+
 The user's primary language is French. All subsequent responses must be in French.
-
-The trajectory details an intensely iterative development process for the Sepalis mobile app. The work began by adding images to existing formation (course) listings. This was followed by a request to create a pre-inscription form, which involved creating a new frontend page and a corresponding backend endpoint.
-
-A significant portion of the work was dedicated to resolving a complex UI bug with the bottom tab bar. The issue evolved from content being obscured, to tab labels being hidden on Android, to unwanted hidden screens appearing, to an app crash, and finally to icons not being distributed evenly. After multiple failed attempts to fix the layout with standard Expo Router props, the solution was to reduce the number of tabs from 7 to 5 and implement a fully custom tab bar component (), which finally resolved the issue.
-
-Subsequently, the project expanded to include a full-fledged booking and payment system for ateliers (workshops). This involved integrating Stripe (for payments) and SendGrid (for email confirmations), adding the necessary keys to the environment, installing Python dependencies, creating Pydantic models and API endpoints in the backend, and building multiple new pages on the frontend (detail, booking, success).
-
-The most recent work follows a user-approved plan. The engineer successfully unified the booking system for courses to match workshops (including debugging the payment flow) and has now begun implementing a My Bookings history page. The backend endpoint is complete, but the frontend page was just created after the user reported a Not Found error.
 </analysis>
 
 <product_requirements>
-The project is to build and enhance the Sepalis mobile gardening app for iOS and Android. The app's goal is to be a comprehensive assistant for gardeners, mirroring and extending the functionality of an existing web application.
+The project, Sepalis, is a premium mobile gardening assistant designed to provide an expert-in-your-pocket experience, validated by a Meilleur Ouvrier de France (MOF) landscaper.
 
-**Core Features Implemented:**
--   **Full-Stack Base:** An Expo (React Native) frontend with a FastAPI/MongoDB backend.
--   **User Authentication:** Standard JWT-based login/registration.
--   **Dark Theme UI:** A premium dark mode UI consistent with the brand's aesthetic.
--   **Zone Management:** Users can create, view, edit, and delete garden zones with detailed agronomic properties.
--   **AI Plant Scanner:** Utilizes GPT-4 Vision for plant identification from a user's photo.
--   **Academy Section:** Displays lists of Formations (online courses) and Ateliers (workshops).
+**Core Goal:** Leverage AI and expert knowledge to provide personalized, actionable gardening advice.
 
-**Advanced Booking System:**
--   A complete end-to-end booking system for both workshops and courses.
--   **Payment Integration:** Uses Stripe for secure credit card payments.
--   **Email Confirmation:** Uses SendGrid to send a confirmation email to the user upon successful booking.
--   **Flow:** Users can browse items in the Academy, view details, proceed to a booking page with a form, pay via a Stripe checkout session, and land on a success confirmation page.
+**Implemented Features:**
+*   **Core Functionality:** Zone management, AI-powered plant suggestions, compatibility scanning, and disease diagnosis.
+*   **Admin Dashboard:** A private section for app analytics (user stats, email export) and content management.
+
+**Recent Additions (from Trajectory):**
+1.  **MOF Task Calendar:** A system allowing the admin to create a yearly schedule of gardening tasks. These tasks are automatically distributed to all users' task lists on a weekly basis, marked with a special MOF badge to indicate their expert origin. The distribution is automated via a scheduled job.
+2.  **Daily Quiz (MVP):** A gamified feature to drive daily engagement. It presents one new question each day with a QCM format. It includes a streak counter, XP points, and a system of five essential badges for motivation. An admin interface was also built for the user to add new questions.
+3.  **Push Notifications:** A system was implemented to send daily reminders for the quiz and notifications for new MOF tasks.
 </product_requirements>
 
 <key_technical_concepts>
 - **Frameworks:** Expo (React Native), FastAPI (Python).
 - **Database:** MongoDB.
-- **Routing:** Expo Router, with a shift to a custom Tab Bar component for layout control.
-- **API & Communication:** Axios with a centralized API service (), JWT authentication.
-- **Third-Party Integrations:**
-  - **Stripe:** For processing payments.
-  - **SendGrid:** For sending transactional emails.
-- **Backend:** Pydantic for data modeling, JWT for security.
-- **Frontend:**  for forms,  for opening web URLs (Stripe Checkout).
+- **AI/LLM:**  for AI features.
+- **Authentication:** JWT with  and an Axios 401 interceptor.
+- **Routing:** Expo Router (file-based).
+- **Asynchronous Tasks:**  for running weekly task distribution and daily quiz notifications.
+- **Notifications:**  (backend) and  (frontend) for push notifications.
+- **State Management:** React Context () and local component state ().
 </key_technical_concepts>
 
 <code_architecture>
-The application uses a monorepo structure with distinct  and  directories.
-
-**Directory Structure:**
+The application is a standard monorepo with a  Expo app and a  FastAPI server.
 
 
-**Key File Summaries:**
+- ****
+    - **Importance:** This is the application's central nervous system, handling all logic, database interactions, AI calls, and scheduled tasks.
+    - **Summary of Changes:** This file was massively extended and refactored.
+        - **Task Calendar:** New Pydantic models () and full CRUD endpoints () were added. A distribution endpoint () was created to populate the  collection.
+        - **Daily Quiz:** New models (, ) and API endpoints (, ) were implemented to manage the quiz logic, user progress, streaks, and badges.
+        - **Scheduler:**  was installed and configured to run two cron jobs: one for distributing MOF tasks weekly and another for sending daily quiz notifications.
+        - **Refactoring:** A major refactoring was performed to fix a critical bug where new API routes were defined after the router was included in the app, making them inaccessible. This involved moving large blocks of code.
 
--   ****
-    -   **Importance:** The monolithic FastAPI backend. It handles all API logic, from authentication to CRUD for all data models (zones, plants, users).
-    -   **Summary of Changes:** This file was heavily modified to support the entire booking and payment flow. New Pydantic models for  and  were added. Several new endpoints were created:  and  to interact with Stripe, a  to handle successful payments, and  to fetch a user's booking history.
+- ****
+    - **Importance:** Serves as the admin dashboard for analytics and content management.
+    - **Summary of Changes:**
+        - **Bug Fixes:** Corrected API calls by changing  to  and adding the  prefix. Replaced an unreliable  with a custom  for email export.
+        - **Feature Additions:** The UI was heavily extended to include complete management sections for the Calendrier annuel MOF and the Quiz Quotidien, each with its own list view and creation/edit modal.
 
--   ****
-    -   **Importance:** The root layout for the tab-based navigation, powered by Expo Router.
-    -   **Summary of Changes:** This file underwent significant changes to fix UI issues. The key change was replacing the default tab bar with a custom one by passing the  component to the  prop: . It was also edited multiple times to hide new non-navigational screens (like booking and detail pages) from the tab bar using .
+- ****
+    - **Importance:** A brand new screen that houses the entire user-facing daily quiz feature.
+    - **Summary of Changes:** Created from scratch. It handles the golden envelope opening animation, fetching and displaying the daily question, submitting the user's answer, showing the result with the MOF's explanation, and displaying user statistics like streak, XP, and earned badges. It also includes the logic to request push notification permissions.
 
--   ****
-    -   **Importance:** This new file was created as the definitive solution to the persistent tab bar layout problem where icons would not distribute evenly. It provides full control over the tab bar's styling and behavior.
-    -   **Summary of Changes:** This file was created from scratch. It maps over the navigation state's routes to render custom  components for each tab, using Flexbox () to ensure even distribution.
+- ****
+    - **Importance:** Configures the main tab navigation for the app.
+    - **Summary of Changes:** A new  for the Quiz was added with a  icon. Work was started to add a  to this screen to show a 1 when the daily question is unanswered.
 
--   ** & **
-    -   **Importance:** These are the core pages of the payment flow, containing the user form and the Pay button.
-    -   **Summary of Changes:** Created from scratch. They use  to get workshop/course data, manage form state for user details, and call the backend to create a Stripe payment intent. A key debug fix was replacing  with  to handle the redirect to Stripe Checkout, which works more reliably on web previews.
+- ****
+    - **Importance:** The main home/dashboard screen for the user, displaying tasks.
+    - **Summary of Changes:** The task rendering logic was updated to conditionally display a 🏆 MOF badge if the  property is true on a task item.
 
--   ****
-    -   **Importance:** This is the page currently under development. It will display the user's booking history.
-    -   **Summary of Changes:** The file was just created in response to a user-reported Not Found error when clicking the Mes réservations link in the profile. It is currently a boilerplate placeholder.
 </code_architecture>
 
 <pending_tasks>
-Based on the user-approved plan, the following tasks are pending:
-- (5) Integrate a weather API and display contextual advice.
-- (6) Implement automatic task generation based on plants and seasons.
-- (7) Add push notifications for reminders and alerts.
-- (8) Enrich the dashboard with graphs and more dynamic content.
-- (9) Implement a gamification system with badges and levels.
-- (10) Add basic offline mode functionality.
+- **Finalize Quiz Tab Badge:** Complete the implementation to show a 1 on the Quiz tab when the daily question is unanswered and hide it after the user responds.
+- **Filter MOF Tasks:** The user was asked about adding a filter for MOF tasks on the main task list, but this has not been implemented.
+- **Content Population:** The Académie section needs to be filled with articles and videos.
+- **Onboarding:** A guided tour or tooltips for new users to explain the app's features is still pending.
 </pending_tasks>
 
 <current_work>
-The current task is **Point 3: Implement Historique des réservations (Booking History)**.
+The most recent task was a user request to add a small red 1 badge on the Quiz tab icon if the user has not yet answered the daily question.
 
-The work is mid-implementation. The previous engineer has already completed the backend portion and started the frontend work.
-
-**Completed Steps:**
-1.  **Backend Endpoint:** Created a new endpoint  in . This endpoint retrieves all course and workshop bookings associated with the authenticated user from the MongoDB collections ( and ).
-2.  **Profile Link:** Modified  to add a Mes réservations menu item that navigates to the  route.
-
-**Problem Encountered:**
-- The user clicked the new Mes réservations link and received a Not Found error screen because the corresponding page file did not exist yet.
-
-**Immediate Last Action:**
-- In response to the user's screenshot of the error, the AI engineer created the necessary file:
-  
-The file currently contains only boilerplate code. The very next step was to populate this file and configure its associated API call and route hiding.
+The AI engineer started this implementation by:
+1.  **Acknowledging the request:** Confirmed it was a good idea for user engagement.
+2.  **Modifying :** Added necessary React hooks (, ) and started to add the logic to manage the visibility of the badge.
+3.  **Planning the update:** The plan was to add the  prop to the Quiz . This badge's visibility would be controlled by a new state variable, .
+4.  **Connecting Components:** The next logical step, which was about to be implemented, is to update this  state. This requires communication between the  screen (where the user answers the question) and the  file (which controls the tab bar). The state needs to be set to  from  once the user submits their answer. The trajectory ended just as this cross-component state management was being tackled.
 </current_work>
 
 <optional_next_step>
-Continue implementing the  page. This involves adding the API call to , hiding the route in , and then building the UI in  to display the fetched reservations.
+Complete the implementation of the  on the Quiz tab by ensuring the state is updated across components when a user answers the daily question. This will likely involve using a shared React Context or an event emitter.
 </optional_next_step>
