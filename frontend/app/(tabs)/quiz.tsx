@@ -171,6 +171,9 @@ export default function QuizScreen() {
         
         // Recharger les stats
         await loadQuizData();
+        
+        // Notifier que l'utilisateur a répondu (pour mettre à jour le badge)
+        // Le _layout.tsx rechargera automatiquement dans les 60 secondes max
       }
     } catch (error) {
       console.error('Erreur soumission réponse:', error);
