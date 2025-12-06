@@ -3453,9 +3453,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# ============ SCHEDULER CONFIGURATION ============
-scheduler = AsyncIOScheduler()
-    "first_answer": {
+async def auto_distribute_weekly_tasks():
         "name": "Premier Pas",
         "description": "Répondre à votre première question",
         "icon": "🌱"
