@@ -3455,8 +3455,6 @@ logger = logging.getLogger(__name__)
 
 # ============ SCHEDULER CONFIGURATION ============
 scheduler = AsyncIOScheduler()
-
-QUIZ_BADGES_TEMP = {
     "first_answer": {
         "name": "Premier Pas",
         "description": "Répondre à votre première question",
