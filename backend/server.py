@@ -3077,6 +3077,45 @@ async def get_quiz_stats(credentials: HTTPAuthorizationCredentials = Depends(sec
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@api_router.post("/quiz/register-push-token")
+async def register_quiz_push_token(
+    token_data: dict,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Enregistrer le token push d'un utilisateur pour les notifications quiz"""
+    try:
+        user = await get_current_user(credentials)
+        push_token = token_data.get("token")
+        
+        if not push_token:
+            raise HTTPException(status_code=400, detail="Token push requis")
+        
+        # Mettre à jour ou créer le token
+        await db.push_tokens.update_one(
+            {"userId": user["_id"]},
+            {
+                "$set": {
+                    "token": push_token,
+                    "updatedAt": datetime.utcnow()
+                },
+                "$setOnInsert": {
+                    "userId": user["_id"],
+                    "createdAt": datetime.utcnow()
+                }
+            },
+            upsert=True
+        )
+        
+        print(f"✅ Token push enregistré pour {user['_id']}")
+        return {"message": "Token push enregistré avec succès"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Erreur enregistrement token push: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ============ ADMIN - DAILY QUIZ ROUTES ============
 @api_router.get("/admin/quiz/questions", response_model=List[DailyQuizQuestionResponse])
 async def get_all_quiz_questions(credentials: HTTPAuthorizationCredentials = Depends(security)):
