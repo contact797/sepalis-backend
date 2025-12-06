@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View } from 'react-native';
-import { Tabs } from 'expo-router';
+import { View, AppState } from 'react-native';
+import { Tabs, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -29,14 +29,31 @@ export default function TabLayout() {
     } catch (error) {
       console.error('Erreur vérification quiz:', error);
     }
-  }, [setQuizBadge]);
+  }, []);
 
+  // Vérifier le statut au montage initial
   useEffect(() => {
     checkQuizStatus();
-    
-    // Recharger toutes les 60 secondes
-    const interval = setInterval(checkQuizStatus, 60000);
-    return () => clearInterval(interval);
+  }, [checkQuizStatus]);
+
+  // Recharger le statut chaque fois qu'un onglet reçoit le focus
+  useFocusEffect(
+    useCallback(() => {
+      checkQuizStatus();
+    }, [checkQuizStatus])
+  );
+
+  // Recharger le statut quand l'app revient en premier plan
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      if (nextAppState === 'active') {
+        checkQuizStatus();
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
   }, [checkQuizStatus]);
 
   return (
