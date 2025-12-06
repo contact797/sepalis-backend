@@ -7,10 +7,13 @@ import {
   ScrollView,
   ActivityIndicator,
   Animated,
+  Platform,
 } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Notifications from 'expo-notifications';
+import * as Device from 'expo-device';
 
 export default function QuizScreen() {
   const [loading, setLoading] = useState(false);
