@@ -3453,6 +3453,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# ============ SCHEDULER CONFIGURATION ============
 scheduler = AsyncIOScheduler()
 
 async def auto_distribute_weekly_tasks():
