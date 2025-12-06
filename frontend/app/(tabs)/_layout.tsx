@@ -8,6 +8,37 @@ import CustomTabBar from '../../components/CustomTabBar';
 import OfflineIndicator from '../../components/OfflineIndicator';
 
 export default function TabLayout() {
+  const [quizBadge, setQuizBadge] = useState<number | null>(null);
+
+  useEffect(() => {
+    checkQuizStatus();
+    
+    // Recharger toutes les 60 secondes
+    const interval = setInterval(checkQuizStatus, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const checkQuizStatus = async () => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      if (!token) return;
+
+      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/quiz/stats`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const stats = await response.json();
+        // Afficher le badge "1" si l'utilisateur n'a pas encore répondu aujourd'hui
+        setQuizBadge(stats.todayAnswered ? null : 1);
+      }
+    } catch (error) {
+      console.error('Erreur vérification quiz:', error);
+    }
+  };
+
   return (
     <>
       <OfflineIndicator />
