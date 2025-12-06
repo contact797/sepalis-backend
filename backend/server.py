@@ -2800,6 +2800,402 @@ async def distribute_calendar_tasks(credentials: HTTPAuthorizationCredentials = 
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ============ DAILY QUIZ HELPERS ============
+QUIZ_BADGES = {
+    "first_answer": {
+        "name": "Premier Pas",
+        "description": "Répondre à votre première question",
+        "icon": "🌱"
+    },
+    "streak_7": {
+        "name": "Jardinier Assidu",
+        "description": "Série de 7 jours consécutifs",
+        "icon": "🔥"
+    },
+    "streak_30": {
+        "name": "Main Verte",
+        "description": "Série de 30 jours consécutifs",
+        "icon": "🌿"
+    },
+    "correct_50": {
+        "name": "Expert en Herbe",
+        "description": "50 bonnes réponses",
+        "icon": "⭐"
+    },
+    "correct_100": {
+        "name": "Maître Jardinier",
+        "description": "100 bonnes réponses",
+        "icon": "🏆"
+    }
+}
+
+async def check_and_award_badges(user_id: str, stats: dict) -> List[str]:
+    """Vérifier et attribuer les badges gagnés"""
+    new_badges = []
+    current_badges = stats.get("badges", [])
+    
+    # Badge première réponse
+    if "first_answer" not in current_badges and stats["totalAnswered"] >= 1:
+        new_badges.append("first_answer")
+    
+    # Badge streak 7 jours
+    if "streak_7" not in current_badges and stats["currentStreak"] >= 7:
+        new_badges.append("streak_7")
+    
+    # Badge streak 30 jours
+    if "streak_30" not in current_badges and stats["currentStreak"] >= 30:
+        new_badges.append("streak_30")
+    
+    # Badge 50 bonnes réponses
+    if "correct_50" not in current_badges and stats["totalCorrect"] >= 50:
+        new_badges.append("correct_50")
+    
+    # Badge 100 bonnes réponses
+    if "correct_100" not in current_badges and stats["totalCorrect"] >= 100:
+        new_badges.append("correct_100")
+    
+    # Mettre à jour les badges dans la base
+    if new_badges:
+        await db.user_quiz_stats.update_one(
+            {"userId": user_id},
+            {"$addToSet": {"badges": {"$each": new_badges}}}
+        )
+    
+    return new_badges
+
+
+# ============ DAILY QUIZ ROUTES ============
+@api_router.get("/quiz/today")
+async def get_today_quiz(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Obtenir la question du jour"""
+    try:
+        user = await get_current_user(credentials)
+        today = date.today()
+        
+        # Récupérer la question du jour
+        question = await db.daily_quiz_questions.find_one({"scheduledDate": today.isoformat()})
+        
+        if not question:
+            raise HTTPException(status_code=404, detail="Pas de question pour aujourd'hui")
+        
+        # Vérifier si l'utilisateur a déjà répondu aujourd'hui
+        stats = await db.user_quiz_stats.find_one({"userId": user["_id"]})
+        
+        if stats and stats.get("lastAnsweredDate") == today.isoformat():
+            # Déjà répondu aujourd'hui
+            return {
+                "alreadyAnswered": True,
+                "message": "Vous avez déjà répondu à la question du jour !",
+                "nextQuestionIn": "Nouvelle question demain à 7h00"
+            }
+        
+        # Retourner la question sans la bonne réponse
+        return {
+            "alreadyAnswered": False,
+            "question": {
+                "id": question["_id"],
+                "question": question["question"],
+                "answers": question["answers"],
+                "imageUrl": question.get("imageUrl"),
+                "difficulty": question.get("difficulty", "medium"),
+                "category": question.get("category", "general")
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Erreur récupération question du jour: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/quiz/answer", response_model=DailyQuizAnswerResponse)
+async def submit_quiz_answer(
+    answer_data: DailyQuizAnswerRequest,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Soumettre une réponse au quiz quotidien"""
+    try:
+        user = await get_current_user(credentials)
+        today = date.today()
+        
+        # Récupérer la question
+        question = await db.daily_quiz_questions.find_one({"_id": answer_data.questionId})
+        if not question:
+            raise HTTPException(status_code=404, detail="Question non trouvée")
+        
+        # Vérifier si c'est la question du jour
+        if question["scheduledDate"] != today.isoformat():
+            raise HTTPException(status_code=400, detail="Cette question n'est pas pour aujourd'hui")
+        
+        # Vérifier la réponse
+        is_correct = answer_data.selectedAnswer == question["correctAnswer"]
+        
+        # Calculer les XP
+        xp_earned = 50 if is_correct else 10  # 50 XP correct, 10 XP participation
+        
+        # Récupérer ou créer les stats utilisateur
+        stats = await db.user_quiz_stats.find_one({"userId": user["_id"]})
+        
+        if not stats:
+            # Créer les stats
+            stats = {
+                "userId": user["_id"],
+                "currentStreak": 1,
+                "longestStreak": 1,
+                "totalXP": xp_earned,
+                "totalAnswered": 1,
+                "totalCorrect": 1 if is_correct else 0,
+                "lastAnsweredDate": today.isoformat(),
+                "badges": [],
+                "answersHistory": []
+            }
+            await db.user_quiz_stats.insert_one(stats)
+        else:
+            # Mettre à jour les stats
+            last_answered = stats.get("lastAnsweredDate")
+            
+            # Calcul du streak
+            if last_answered:
+                last_date = date.fromisoformat(last_answered)
+                days_diff = (today - last_date).days
+                
+                if days_diff == 1:
+                    # Jour consécutif
+                    new_streak = stats["currentStreak"] + 1
+                elif days_diff == 0:
+                    raise HTTPException(status_code=400, detail="Vous avez déjà répondu aujourd'hui")
+                else:
+                    # Streak cassé
+                    new_streak = 1
+            else:
+                new_streak = 1
+            
+            longest_streak = max(stats.get("longestStreak", 0), new_streak)
+            
+            await db.user_quiz_stats.update_one(
+                {"userId": user["_id"]},
+                {
+                    "$set": {
+                        "currentStreak": new_streak,
+                        "longestStreak": longest_streak,
+                        "lastAnsweredDate": today.isoformat()
+                    },
+                    "$inc": {
+                        "totalXP": xp_earned,
+                        "totalAnswered": 1,
+                        "totalCorrect": 1 if is_correct else 0
+                    },
+                    "$push": {
+                        "answersHistory": {
+                            "date": today.isoformat(),
+                            "questionId": answer_data.questionId,
+                            "correct": is_correct,
+                            "timeSpent": answer_data.timeSpent,
+                            "xpEarned": xp_earned
+                        }
+                    }
+                }
+            )
+            
+            # Recharger les stats
+            stats = await db.user_quiz_stats.find_one({"userId": user["_id"]})
+        
+        # Vérifier les badges
+        new_badges = await check_and_award_badges(user["_id"], stats)
+        
+        return DailyQuizAnswerResponse(
+            correct=is_correct,
+            correctAnswer=question["correctAnswer"],
+            explanation=question["explanation"],
+            xpEarned=xp_earned,
+            newStreak=stats["currentStreak"],
+            newTotalXP=stats["totalXP"],
+            badgesEarned=new_badges
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Erreur soumission réponse quiz: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/quiz/stats", response_model=UserQuizStatsResponse)
+async def get_quiz_stats(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Obtenir les statistiques quiz de l'utilisateur"""
+    try:
+        user = await get_current_user(credentials)
+        today = date.today()
+        
+        # Récupérer les stats
+        stats = await db.user_quiz_stats.find_one({"userId": user["_id"]})
+        
+        if not stats:
+            # Pas encore de stats
+            return UserQuizStatsResponse(
+                currentStreak=0,
+                longestStreak=0,
+                totalXP=0,
+                totalAnswered=0,
+                totalCorrect=0,
+                lastAnsweredDate=None,
+                badges=[],
+                canAnswerToday=True,
+                todayAnswered=False
+            )
+        
+        # Vérifier si déjà répondu aujourd'hui
+        today_answered = stats.get("lastAnsweredDate") == today.isoformat()
+        
+        # Formater les badges
+        badges_formatted = []
+        for badge_id in stats.get("badges", []):
+            if badge_id in QUIZ_BADGES:
+                badge_info = QUIZ_BADGES[badge_id]
+                badges_formatted.append({
+                    "id": badge_id,
+                    "name": badge_info["name"],
+                    "description": badge_info["description"],
+                    "icon": badge_info["icon"]
+                })
+        
+        return UserQuizStatsResponse(
+            currentStreak=stats.get("currentStreak", 0),
+            longestStreak=stats.get("longestStreak", 0),
+            totalXP=stats.get("totalXP", 0),
+            totalAnswered=stats.get("totalAnswered", 0),
+            totalCorrect=stats.get("totalCorrect", 0),
+            lastAnsweredDate=date.fromisoformat(stats["lastAnsweredDate"]) if stats.get("lastAnsweredDate") else None,
+            badges=badges_formatted,
+            canAnswerToday=not today_answered,
+            todayAnswered=today_answered
+        )
+        
+    except Exception as e:
+        print(f"Erreur récupération stats quiz: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============ ADMIN - DAILY QUIZ ROUTES ============
+@api_router.get("/admin/quiz/questions", response_model=List[DailyQuizQuestionResponse])
+async def get_all_quiz_questions(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Obtenir toutes les questions (admin uniquement)"""
+    try:
+        user = await get_current_user(credentials)
+        
+        questions = await db.daily_quiz_questions.find({}).sort("scheduledDate", -1).to_list(length=200)
+        return [DailyQuizQuestionResponse(**q) for q in questions]
+        
+    except Exception as e:
+        print(f"Erreur récupération questions admin: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/admin/quiz/questions", response_model=DailyQuizQuestionResponse)
+async def create_quiz_question(
+    question_data: DailyQuizQuestionCreate,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Créer une nouvelle question (admin uniquement)"""
+    try:
+        user = await get_current_user(credentials)
+        
+        # Vérifier qu'il y a bien 4 réponses
+        if len(question_data.answers) != 4:
+            raise HTTPException(status_code=400, detail="Il faut exactement 4 réponses")
+        
+        # Vérifier que l'index de la bonne réponse est valide
+        if question_data.correctAnswer < 0 or question_data.correctAnswer > 3:
+            raise HTTPException(status_code=400, detail="L'index de la bonne réponse doit être entre 0 et 3")
+        
+        question_id = str(uuid.uuid4())
+        now = datetime.utcnow()
+        
+        new_question = {
+            "_id": question_id,
+            **question_data.model_dump(),
+            "scheduledDate": question_data.scheduledDate.isoformat(),
+            "createdAt": now
+        }
+        
+        await db.daily_quiz_questions.insert_one(new_question)
+        
+        return DailyQuizQuestionResponse(**new_question)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Erreur création question quiz: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.put("/admin/quiz/questions/{question_id}", response_model=DailyQuizQuestionResponse)
+async def update_quiz_question(
+    question_id: str,
+    question_data: DailyQuizQuestionUpdate,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Mettre à jour une question (admin uniquement)"""
+    try:
+        user = await get_current_user(credentials)
+        
+        # Vérifier que la question existe
+        existing = await db.daily_quiz_questions.find_one({"_id": question_id})
+        if not existing:
+            raise HTTPException(status_code=404, detail="Question non trouvée")
+        
+        # Préparer les données à mettre à jour
+        update_data = {k: v for k, v in question_data.model_dump(exclude_unset=True).items() if v is not None}
+        
+        if "scheduledDate" in update_data:
+            update_data["scheduledDate"] = update_data["scheduledDate"].isoformat()
+        
+        if "answers" in update_data and len(update_data["answers"]) != 4:
+            raise HTTPException(status_code=400, detail="Il faut exactement 4 réponses")
+        
+        if "correctAnswer" in update_data:
+            if update_data["correctAnswer"] < 0 or update_data["correctAnswer"] > 3:
+                raise HTTPException(status_code=400, detail="L'index de la bonne réponse doit être entre 0 et 3")
+        
+        await db.daily_quiz_questions.update_one(
+            {"_id": question_id},
+            {"$set": update_data}
+        )
+        
+        updated = await db.daily_quiz_questions.find_one({"_id": question_id})
+        return DailyQuizQuestionResponse(**updated)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Erreur mise à jour question quiz: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.delete("/admin/quiz/questions/{question_id}")
+async def delete_quiz_question(
+    question_id: str,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Supprimer une question (admin uniquement)"""
+    try:
+        user = await get_current_user(credentials)
+        
+        result = await db.daily_quiz_questions.delete_one({"_id": question_id})
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Question non trouvée")
+        
+        return {"message": "Question supprimée avec succès"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Erreur suppression question quiz: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ============ ANALYTICS ROUTES ============
 @api_router.post("/analytics/track")
 async def track_event(event: AnalyticsEventCreate, credentials: HTTPAuthorizationCredentials = Depends(security)):
