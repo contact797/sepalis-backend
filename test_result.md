@@ -105,6 +105,18 @@
 user_problem_statement: "Finalisation du badge Quiz : Ajouter un badge '1' rouge sur l'onglet Quiz dans la barre de navigation inférieure pour indiquer qu'une question quotidienne est disponible et n'a pas encore été répondue. Le badge doit disparaître immédiatement après que l'utilisateur ait soumis sa réponse."
 
 backend:
+  - task: "API Quiz - Endpoint /api/quiz/stats avec todayAnswered"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "L'endpoint /api/quiz/stats retourne déjà le champ 'todayAnswered' (boolean) qui indique si l'utilisateur a déjà répondu à la question du jour. Ce champ est utilisé par le frontend pour afficher/masquer le badge sur l'onglet Quiz. Aucune modification backend nécessaire."
+
   - task: "Endpoints API pour formations avec images"
     implemented: true
     working: true
