@@ -33,7 +33,7 @@ class QuizBadgeTests:
         try:
             # Générer un email unique
             unique_id = str(uuid.uuid4())[:8]
-            self.test_user_email = f"test_quiz_{unique_id}@sepalis.test"
+            self.test_user_email = f"test_quiz_{unique_id}@example.com"
             
             user_data = {
                 "email": self.test_user_email,
