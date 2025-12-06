@@ -35,6 +35,17 @@ export default function AdminPanel() {
   const [taskType, setTaskType] = useState('general');
   const [taskPriority, setTaskPriority] = useState('optionnel');
   
+  // Quiz questions state
+  const [quizQuestions, setQuizQuestions] = useState<any[]>([]);
+  const [showQuizModal, setShowQuizModal] = useState(false);
+  const [currentQuizQuestion, setCurrentQuizQuestion] = useState<any>(null);
+  const [quizQuestion, setQuizQuestion] = useState('');
+  const [quizAnswers, setQuizAnswers] = useState(['', '', '', '']);
+  const [quizCorrectAnswer, setQuizCorrectAnswer] = useState(0);
+  const [quizExplanation, setQuizExplanation] = useState('');
+  const [quizScheduledDate, setQuizScheduledDate] = useState('');
+  const [quizCategory, setQuizCategory] = useState('general');
+  
   // Analytics stats
   const [analytics, setAnalytics] = useState<any>(null);
   const [loadingAnalytics, setLoadingAnalytics] = useState(false);
