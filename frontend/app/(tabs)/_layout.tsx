@@ -10,7 +10,7 @@ import OfflineIndicator from '../../components/OfflineIndicator';
 export default function TabLayout() {
   const [quizBadge, setQuizBadge] = useState<number | null>(null);
 
-  const checkQuizStatus = async () => {
+  const checkQuizStatus = useCallback(async () => {
     try {
       const token = await AsyncStorage.getItem('authToken');
       if (!token) return;
@@ -29,7 +29,7 @@ export default function TabLayout() {
     } catch (error) {
       console.error('Erreur vérification quiz:', error);
     }
-  };
+  }, []);
 
   useEffect(() => {
     checkQuizStatus();
