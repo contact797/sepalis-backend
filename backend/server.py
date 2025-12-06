@@ -3495,6 +3495,52 @@ logger = logging.getLogger(__name__)
 # ============ SCHEDULER CONFIGURATION ============
 scheduler = AsyncIOScheduler()
 
+async def send_daily_quiz_notifications():
+    """Envoyer les notifications push pour la question du jour"""
+    try:
+        today = date.today()
+        print(f"📬 [AUTO] Envoi notifications quiz pour {today}")
+        
+        # Vérifier qu'il y a une question programmée pour aujourd'hui
+        question = await db.daily_quiz_questions.find_one({"scheduledDate": today.isoformat()})
+        
+        if not question:
+            print(f"ℹ️ [AUTO] Pas de question programmée pour {today}")
+            return
+        
+        # Récupérer tous les utilisateurs
+        all_users = await db.users.find({}).to_list(length=10000)
+        
+        notifications_sent = 0
+        
+        for user_obj in all_users:
+            # Vérifier si l'utilisateur a déjà répondu aujourd'hui
+            stats = await db.user_quiz_stats.find_one({"userId": user_obj["_id"]})
+            
+            already_answered = stats and stats.get("lastAnsweredDate") == today.isoformat()
+            
+            if not already_answered:
+                # Envoyer la notification
+                sent = await send_push_notification(
+                    user_id=user_obj["_id"],
+                    title="☕ Nouvelle question du MOF",
+                    body="Testez vos connaissances avec la question du jour ! 🌱",
+                    data={
+                        "type": "daily_quiz",
+                        "questionId": question["_id"],
+                        "date": today.isoformat()
+                    }
+                )
+                
+                if sent:
+                    notifications_sent += 1
+        
+        print(f"✅ [AUTO] {notifications_sent} notifications quiz envoyées")
+        
+    except Exception as e:
+        print(f"❌ [AUTO] Erreur envoi notifications quiz: {str(e)}")
+
+
 async def auto_distribute_weekly_tasks():
     """Fonction automatique pour distribuer les tâches de la semaine"""
     try:
