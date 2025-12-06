@@ -3621,8 +3621,19 @@ async def startup_scheduler():
         replace_existing=True
     )
     
+    # Planifier les notifications quiz chaque jour à 7h00 du matin (UTC)
+    scheduler.add_job(
+        send_daily_quiz_notifications,
+        CronTrigger(hour=7, minute=0),
+        id='daily_quiz_notifications',
+        name='Notifications quiz quotidien',
+        replace_existing=True
+    )
+    
     scheduler.start()
-    print("✅ Scheduler démarré : Distribution automatique chaque lundi à 6h00")
+    print("✅ Scheduler démarré :")
+    print("   - Distribution tâches : Chaque lundi à 6h00")
+    print("   - Notifications quiz : Chaque jour à 7h00")
 
 @app.on_event("shutdown")
 async def shutdown_scheduler():
