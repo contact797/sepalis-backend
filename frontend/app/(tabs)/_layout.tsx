@@ -10,14 +10,6 @@ import OfflineIndicator from '../../components/OfflineIndicator';
 export default function TabLayout() {
   const [quizBadge, setQuizBadge] = useState<number | null>(null);
 
-  useEffect(() => {
-    checkQuizStatus();
-    
-    // Recharger toutes les 60 secondes
-    const interval = setInterval(checkQuizStatus, 60000);
-    return () => clearInterval(interval);
-  }, []);
-
   const checkQuizStatus = async () => {
     try {
       const token = await AsyncStorage.getItem('authToken');
@@ -38,6 +30,14 @@ export default function TabLayout() {
       console.error('Erreur vérification quiz:', error);
     }
   };
+
+  useEffect(() => {
+    checkQuizStatus();
+    
+    // Recharger toutes les 60 secondes
+    const interval = setInterval(checkQuizStatus, 60000);
+    return () => clearInterval(interval);
+  }, [checkQuizStatus]);
 
   return (
     <>
