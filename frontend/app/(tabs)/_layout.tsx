@@ -102,6 +102,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => (
             <Ionicons name="help-circle" size={24} color={color} />
           ),
+          tabBarBadge: quizBadge,
         }}
       />
       <Tabs.Screen
