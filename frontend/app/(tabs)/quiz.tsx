@@ -145,7 +145,7 @@ export default function QuizScreen() {
           <View style={styles.statsContainer}>
             <Text style={styles.statsTitle}>📊 Vos statistiques</Text>
             
-            <View style={styles.stat Card}>
+            <View style={styles.statCard}>
               <Text style={styles.statLabel}>🔥 Série actuelle</Text>
               <Text style={styles.statValue}>{stats.currentStreak} jours</Text>
             </View>
