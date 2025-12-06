@@ -1111,6 +1111,161 @@ export default function AdminPanel() {
           </View>
         </View>
       </Modal>
+
+      {/* Modal: Créer/Modifier question quiz */}
+      <Modal
+        visible={showQuizModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowQuizModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>💡 Question du Quiz MOF</Text>
+              <TouchableOpacity onPress={() => setShowQuizModal(false)}>
+                <Ionicons name="close" size={28} color={Colors.text} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.modalBody}>
+              <Text style={styles.label}>Question *</Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                value={quizQuestion}
+                onChangeText={setQuizQuestion}
+                placeholder="Ex: Quelle est la meilleure période pour tailler les rosiers ?"
+                multiline
+                numberOfLines={3}
+              />
+
+              <Text style={styles.label}>Réponse A *</Text>
+              <TextInput
+                style={styles.input}
+                value={quizAnswers[0]}
+                onChangeText={(text) => {
+                  const newAnswers = [...quizAnswers];
+                  newAnswers[0] = text;
+                  setQuizAnswers(newAnswers);
+                }}
+                placeholder="Première réponse"
+              />
+
+              <Text style={styles.label}>Réponse B *</Text>
+              <TextInput
+                style={styles.input}
+                value={quizAnswers[1]}
+                onChangeText={(text) => {
+                  const newAnswers = [...quizAnswers];
+                  newAnswers[1] = text;
+                  setQuizAnswers(newAnswers);
+                }}
+                placeholder="Deuxième réponse"
+              />
+
+              <Text style={styles.label}>Réponse C *</Text>
+              <TextInput
+                style={styles.input}
+                value={quizAnswers[2]}
+                onChangeText={(text) => {
+                  const newAnswers = [...quizAnswers];
+                  newAnswers[2] = text;
+                  setQuizAnswers(newAnswers);
+                }}
+                placeholder="Troisième réponse"
+              />
+
+              <Text style={styles.label}>Réponse D *</Text>
+              <TextInput
+                style={styles.input}
+                value={quizAnswers[3]}
+                onChangeText={(text) => {
+                  const newAnswers = [...quizAnswers];
+                  newAnswers[3] = text;
+                  setQuizAnswers(newAnswers);
+                }}
+                placeholder="Quatrième réponse"
+              />
+
+              <Text style={styles.label}>Bonne réponse *</Text>
+              <View style={styles.seasonButtons}>
+                {['A', 'B', 'C', 'D'].map((letter, index) => (
+                  <TouchableOpacity
+                    key={letter}
+                    style={[
+                      styles.seasonButton,
+                      quizCorrectAnswer === index && { 
+                        backgroundColor: Colors.accent + '30', 
+                        borderColor: Colors.accent 
+                      },
+                    ]}
+                    onPress={() => setQuizCorrectAnswer(index)}
+                  >
+                    <Text style={styles.seasonButtonText}>{letter}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              <Text style={styles.label}>Explication du MOF *</Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                value={quizExplanation}
+                onChangeText={setQuizExplanation}
+                placeholder="Expliquez pourquoi c'est la bonne réponse et donnez des conseils..."
+                multiline
+                numberOfLines={5}
+              />
+
+              <Text style={styles.label}>Date de publication * (AAAA-MM-JJ)</Text>
+              <TextInput
+                style={styles.input}
+                value={quizScheduledDate}
+                onChangeText={setQuizScheduledDate}
+                placeholder="2025-12-07"
+              />
+
+              <Text style={styles.label}>Catégorie</Text>
+              <View style={styles.seasonButtons}>
+                {[
+                  { key: 'general', label: '📝 Général' },
+                  { key: 'roses', label: '🌹 Roses' },
+                  { key: 'potager', label: '🥕 Potager' },
+                  { key: 'interieur', label: '🪴 Intérieur' },
+                ].map((cat) => (
+                  <TouchableOpacity
+                    key={cat.key}
+                    style={[
+                      styles.seasonButton,
+                      quizCategory === cat.key && { 
+                        backgroundColor: Colors.accent + '30', 
+                        borderColor: Colors.accent 
+                      },
+                    ]}
+                    onPress={() => setQuizCategory(cat.key)}
+                  >
+                    <Text style={styles.seasonButtonText}>{cat.label}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              <TouchableOpacity
+                style={[styles.saveButton, loading && styles.disabledButton]}
+                onPress={handleSaveQuizQuestion}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator color={Colors.white} />
+                ) : (
+                  <>
+                    <Ionicons name="checkmark-circle" size={20} color={Colors.white} />
+                    <Text style={styles.saveButtonText}>Enregistrer</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
