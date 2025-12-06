@@ -286,8 +286,9 @@ backend:
 
 test_plan:
   current_focus:
-    - "Badge Quiz - Affichage conditionnel sur l'onglet Quiz"
-    - "API Quiz - Endpoint /api/quiz/stats avec todayAnswered"
+    - "Conseils de soins automatiques via IA pour les plantes"
+    - "Amélioration page Scanner - Conseils MOF + Sélecteur de zone + Confirmation"
+    - "Retrait des fonctions d'arrosage dans les détails des plantes"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
