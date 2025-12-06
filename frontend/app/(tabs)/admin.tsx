@@ -762,6 +762,60 @@ export default function AdminPanel() {
         )}
       </View>
 
+      {/* Section: Quiz Quotidien MOF */}
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <Ionicons name="help-circle" size={24} color={Colors.accent} />
+          <Text style={styles.sectionTitle}>Quiz Quotidien MOF</Text>
+        </View>
+        <Text style={styles.sectionDesc}>
+          Créez des questions pour le quiz quotidien. Les utilisateurs recevront une question par jour pour tester leurs connaissances.
+        </Text>
+
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => {
+            resetQuizForm();
+            // Pré-remplir la date d'aujourd'hui
+            const today = new Date().toISOString().split('T')[0];
+            setQuizScheduledDate(today);
+            setShowQuizModal(true);
+          }}
+        >
+          <Ionicons name="add-circle" size={20} color={Colors.white} />
+          <Text style={styles.addButtonText}>Créer une question</Text>
+        </TouchableOpacity>
+
+        {loading ? (
+          <ActivityIndicator size="large" color={Colors.accent} style={{ marginTop: 20 }} />
+        ) : (
+          <View style={styles.tipsList}>
+            {quizQuestions.map((q) => (
+              <View key={q.id} style={styles.tipCard}>
+                <View style={[styles.tipIcon, { backgroundColor: Colors.primary + '30' }]}>
+                  <Ionicons name="help-circle" size={24} color={Colors.primary} />
+                </View>
+                <View style={styles.tipContent}>
+                  <Text style={styles.tipTitle}>{q.question}</Text>
+                  <Text style={{ fontSize: 11, color: Colors.textSecondary, marginTop: 4 }}>
+                    📅 {new Date(q.scheduledDate).toLocaleDateString('fr-FR')} • 📂 {q.category}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.deleteButton}
+                  onPress={() => handleDeleteQuizQuestion(q.id)}
+                >
+                  <Ionicons name="trash" size={20} color={Colors.error} />
+                </TouchableOpacity>
+              </View>
+            ))}
+            {quizQuestions.length === 0 && (
+              <Text style={styles.noDataText}>Aucune question créée</Text>
+            )}
+          </View>
+        )}
+      </View>
+
       {/* Modal: Créer/Modifier conseil */}
       <Modal
         visible={showTipModal}
