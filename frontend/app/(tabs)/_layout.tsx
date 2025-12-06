@@ -29,7 +29,7 @@ export default function TabLayout() {
     } catch (error) {
       console.error('Erreur vérification quiz:', error);
     }
-  }, []);
+  }, [setQuizBadge]);
 
   useEffect(() => {
     checkQuizStatus();
