@@ -403,6 +403,132 @@ export default function AdminPanel() {
     setCurrentCalendarTask(null);
   };
 
+  // ============ QUIZ FUNCTIONS ============
+  const loadQuizQuestions = async () => {
+    try {
+      setLoading(true);
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/admin/quiz/questions`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setQuizQuestions(data);
+        console.log('✅ Questions quiz chargées:', data.length);
+      }
+    } catch (error) {
+      console.error('Erreur chargement questions quiz:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveQuizQuestion = async () => {
+    if (!quizQuestion || !quizExplanation || !quizScheduledDate) {
+      Alert.alert('Erreur', 'Question, explication et date sont requis');
+      return;
+    }
+
+    // Vérifier que les 4 réponses sont remplies
+    if (quizAnswers.some(a => !a.trim())) {
+      Alert.alert('Erreur', 'Les 4 réponses doivent être remplies');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const token = await AsyncStorage.getItem('authToken');
+      
+      const questionData = {
+        question: quizQuestion,
+        answers: quizAnswers,
+        correctAnswer: quizCorrectAnswer,
+        explanation: quizExplanation,
+        scheduledDate: quizScheduledDate,
+        difficulty: 'medium',
+        category: quizCategory,
+      };
+
+      const url = currentQuizQuestion
+        ? `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/admin/quiz/questions/${currentQuizQuestion.id}`
+        : `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/admin/quiz/questions`;
+      
+      const method = currentQuizQuestion ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(questionData),
+      });
+
+      if (response.ok) {
+        Alert.alert('Succès', 'Question enregistrée !');
+        setShowQuizModal(false);
+        resetQuizForm();
+        await loadQuizQuestions();
+      } else {
+        const errorData = await response.json();
+        Alert.alert('Erreur', errorData.detail || 'Impossible de sauvegarder la question');
+      }
+    } catch (error) {
+      console.error('Erreur sauvegarde question:', error);
+      Alert.alert('Erreur', 'Erreur réseau');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteQuizQuestion = async (questionId: string) => {
+    Alert.alert(
+      'Confirmer',
+      'Supprimer cette question ?',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Supprimer',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const token = await AsyncStorage.getItem('authToken');
+              const response = await fetch(
+                `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/admin/quiz/questions/${questionId}`,
+                {
+                  method: 'DELETE',
+                  headers: {
+                    'Authorization': `Bearer ${token}`,
+                  },
+                }
+              );
+
+              if (response.ok) {
+                Alert.alert('Succès', 'Question supprimée');
+                await loadQuizQuestions();
+              }
+            } catch (error) {
+              Alert.alert('Erreur', 'Impossible de supprimer');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const resetQuizForm = () => {
+    setQuizQuestion('');
+    setQuizAnswers(['', '', '', '']);
+    setQuizCorrectAnswer(0);
+    setQuizExplanation('');
+    setQuizScheduledDate('');
+    setQuizCategory('general');
+    setCurrentQuizQuestion(null);
+  };
+
   const resetTipForm = () => {
     setSeason('spring');
     setTitle('');
