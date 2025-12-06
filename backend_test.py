@@ -1,23 +1,18 @@
 #!/usr/bin/env python3
 """
-Tests backend Sepalis - Focus sur le système de conseils de soins automatiques
-Test des nouvelles fonctionnalités CareInstructions et modifications du modèle Plant
+Tests complets pour l'implémentation du badge Quiz - Sepalis
+Focus sur les endpoints /api/quiz/stats, /api/quiz/today, et /api/quiz/answer
 """
 
-import asyncio
-import aiohttp
+import requests
 import json
-import base64
 import uuid
-from datetime import datetime, timedelta
-import sys
-import os
+from datetime import datetime, date
+import time
 
 # Configuration
 BASE_URL = "https://daily-garden-1.preview.emergentagent.com/api"
-TEST_USER_EMAIL = f"test-care-{uuid.uuid4().hex[:8]}@example.com"
-TEST_USER_PASSWORD = "TestPassword123!"
-TEST_USER_NAME = "Test Care Instructions User"
+HEADERS = {"Content-Type": "application/json"}
 
 class SepalisAPITester:
     def __init__(self):
