@@ -65,6 +65,7 @@ export default function AdminPanel() {
     loadSeasonTips();
     loadAnalytics();
     loadCalendarTasks();
+    loadQuizQuestions();
   }, []);
 
   const loadAnalytics = async () => {
