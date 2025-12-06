@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Tests complets de l'application Sepalis avant lancement. L'app inclut maintenant : système d'abonnement (essai 7 jours), paywall avec confettis, animations UX complètes (onboarding, skeleton screens, swipe bidirectionnel, haptic feedback), intégration du titre MOF (page À Propos, mentions dans onboarding et paywall), météo, suggestions de tâches, gamification, notifications push. Objectif : tester tous les endpoints backend critiques et identifier les bugs avant le lancement public."
+user_problem_statement: "Finalisation du badge Quiz : Ajouter un badge '1' rouge sur l'onglet Quiz dans la barre de navigation inférieure pour indiquer qu'une question quotidienne est disponible et n'a pas encore été répondue. Le badge doit disparaître immédiatement après que l'utilisateur ait soumis sa réponse."
 
 backend:
   - task: "Endpoints API pour formations avec images"
