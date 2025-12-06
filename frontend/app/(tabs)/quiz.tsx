@@ -31,7 +31,56 @@ export default function QuizScreen() {
 
   useEffect(() => {
     loadQuizData();
+    registerForPushNotifications();
   }, []);
+
+  const registerForPushNotifications = async () => {
+    try {
+      // Vérifier si on est sur un vrai device (pas web/simulateur)
+      if (!Device.isDevice) {
+        console.log('📱 Push notifications nécessitent un vrai device');
+        return;
+      }
+
+      // Demander la permission
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+
+      if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+
+      if (finalStatus !== 'granted') {
+        console.log('❌ Permission notifications refusée');
+        return;
+      }
+
+      // Obtenir le push token
+      const token = (await Notifications.getExpoPushTokenAsync()).data;
+      console.log('✅ Push token obtenu:', token.substring(0, 50) + '...');
+
+      // Enregistrer le token sur le serveur
+      const authToken = await AsyncStorage.getItem('authToken');
+      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/quiz/register-push-token`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token }),
+      });
+
+      if (response.ok) {
+        console.log('✅ Push token enregistré sur le serveur');
+      } else {
+        console.error('❌ Erreur enregistrement push token');
+      }
+
+    } catch (error) {
+      console.error('❌ Erreur push notifications:', error);
+    }
+  };
 
   const loadQuizData = async () => {
     try {
