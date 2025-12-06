@@ -334,6 +334,74 @@ class CalendarTaskResponse(CalendarTaskBase):
         populate_by_name = True
 
 
+# ============ DAILY QUIZ MODELS ============
+class DailyQuizQuestion(BaseModel):
+    question: str
+    answers: List[str]  # 4 réponses possibles (A, B, C, D)
+    correctAnswer: int  # Index de la bonne réponse (0-3)
+    explanation: str  # Explication du MOF
+    imageUrl: Optional[str] = None
+    scheduledDate: date  # Date de publication (YYYY-MM-DD)
+    difficulty: str = "medium"  # easy, medium, hard
+    category: str = "general"  # roses, potager, interieur, etc.
+
+class DailyQuizQuestionCreate(DailyQuizQuestion):
+    pass
+
+class DailyQuizQuestionUpdate(BaseModel):
+    question: Optional[str] = None
+    answers: Optional[List[str]] = None
+    correctAnswer: Optional[int] = None
+    explanation: Optional[str] = None
+    imageUrl: Optional[str] = None
+    scheduledDate: Optional[date] = None
+    difficulty: Optional[str] = None
+    category: Optional[str] = None
+
+class DailyQuizQuestionResponse(DailyQuizQuestion):
+    id: str = Field(alias="_id")
+    createdAt: datetime
+    
+    class Config:
+        populate_by_name = True
+
+class DailyQuizAnswerRequest(BaseModel):
+    questionId: str
+    selectedAnswer: int  # Index de la réponse sélectionnée (0-3)
+    timeSpent: int  # Temps en secondes
+
+class DailyQuizAnswerResponse(BaseModel):
+    correct: bool
+    correctAnswer: int
+    explanation: str
+    xpEarned: int
+    newStreak: int
+    newTotalXP: int
+    badgesEarned: List[str] = []
+
+class UserQuizStats(BaseModel):
+    userId: str
+    currentStreak: int = 0
+    longestStreak: int = 0
+    totalXP: int = 0
+    totalAnswered: int = 0
+    totalCorrect: int = 0
+    lastAnsweredDate: Optional[date] = None
+    badges: List[str] = []
+    answersHistory: List[Dict] = []  # [{date, questionId, correct, timeSpent, xpEarned}]
+
+class UserQuizStatsResponse(BaseModel):
+    currentStreak: int
+    longestStreak: int
+    totalXP: int
+    totalAnswered: int
+    totalCorrect: int
+    lastAnsweredDate: Optional[date]
+    badges: List[Dict]  # [{id, name, description, earnedAt}]
+    canAnswerToday: bool
+    todayAnswered: bool
+
+
 # ============ AUTH HELPERS ============
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
