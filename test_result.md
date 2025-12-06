@@ -145,6 +145,18 @@ backend:
         comment: "Tests complets du système de pré-inscription effectués avec succès (22/22 tests passés, 100% de réussite). ENDPOINT POST /api/courses/preregister ✅: Fonctionne parfaitement avec tous les champs (courseSlug, firstName, lastName, email, phone, message). SAUVEGARDE MONGODB ✅: Les données sont correctement persistées dans la collection 'course_preregistrations' avec 4 pré-inscriptions créées lors des tests. VALIDATION DES DONNÉES ✅: Email invalide correctement rejeté (422), champs manquants correctement rejetés (422), message optionnel vide accepté. AUTHENTIFICATION JWT ✅: Protection correctement implémentée, accès non autorisé bloqué (403). STRUCTURE DE RÉPONSE ✅: Tous les champs requis présents (id, courseSlug, firstName, lastName, email, phone, message, userId, createdAt). Le système de bout en bout fonctionne parfaitement."
 
 frontend:
+  - task: "Badge Quiz - Affichage conditionnel sur l'onglet Quiz"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/(tabs)/_layout.tsx, frontend/app/(tabs)/quiz.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implémentation complète du système de badge pour l'onglet Quiz. FICHIER _layout.tsx: Ajout du hook useFocusEffect d'Expo Router pour recharger le statut du quiz chaque fois qu'un onglet reçoit le focus. Ajout d'un listener AppState pour recharger le statut quand l'app revient en premier plan. La fonction checkQuizStatus() appelle /api/quiz/stats et affiche le badge '1' si todayAnswered=false, sinon le badge est masqué (null). Le badge est configuré via tabBarBadge sur le Tabs.Screen 'quiz'. FICHIER quiz.tsx: Après soumission de la réponse (handleSubmitAnswer), ajout d'une sauvegarde dans AsyncStorage pour signaler que le quiz a été répondu. Le système se met à jour immédiatement grâce au useFocusEffect qui se déclenche lors du changement d'onglet."
+
   - task: "Affichage d'images pour les formations dans l'académie"
     implemented: true
     working: true
