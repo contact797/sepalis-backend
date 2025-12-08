@@ -197,7 +197,7 @@ export default function Profile() {
         
         <TouchableOpacity
           style={styles.legalItem}
-          onPress={() => handleOpenURL('https://votresite.com/privacy', 'Politique de confidentialité')}
+          onPress={() => handleOpenURL('https://contact797.github.io/sepalis-legal/politique%20de%20confidentialit%C3%A9', 'Politique de confidentialité')}
         >
           <View style={styles.legalItemLeft}>
             <View style={styles.legalIcon}>
@@ -210,7 +210,7 @@ export default function Profile() {
 
         <TouchableOpacity
           style={styles.legalItem}
-          onPress={() => handleOpenURL('https://votresite.com/terms', 'Conditions d\'utilisation')}
+          onPress={() => handleOpenURL('https://contact797.github.io/sepalis-legal/cgu', 'Conditions d\'utilisation')}
         >
           <View style={styles.legalItemLeft}>
             <View style={styles.legalIcon}>
