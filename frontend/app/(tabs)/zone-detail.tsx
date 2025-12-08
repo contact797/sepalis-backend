@@ -109,7 +109,7 @@ export default function ZoneDetail() {
     try {
       const token = await AsyncStorage.getItem('authToken');
       const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL}/user/plants`,
+        `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/user/plants`,
         {
           method: 'POST',
           headers: {
@@ -121,15 +121,19 @@ export default function ZoneDetail() {
             scientificName: plant.scientificName,
             description: `${plant.category} - ${plant.mofAdvice}`,
             zoneId: zoneId,
+            isFavorite: true,  // Marquer comme favori pour distinguer des plantes scannées
           }),
         }
       );
 
       if (response.ok) {
-        Alert.alert('Succès', `${plant.name} a été ajoutée à votre zone !`);
+        Alert.alert('✅ Favori ajouté', `${plant.name} a été ajoutée à vos favoris !`);
         loadPlants();
+        setShowSuggestionsModal(false);
       } else {
-        Alert.alert('Erreur', 'Impossible d\'ajouter la plante');
+        const errorText = await response.text();
+        console.error('❌ Erreur ajout:', response.status, errorText);
+        Alert.alert('Erreur', 'Impossible d\'ajouter la plante en favori');
       }
     } catch (error) {
       console.error('Erreur ajout plante:', error);
