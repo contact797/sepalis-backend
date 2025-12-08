@@ -490,6 +490,124 @@ export default function ZoneDetail() {
           )}
         </View>
       </Modal>
+
+      {/* Modal des filtres */}
+      <Modal
+        visible={showFiltersModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>🎨 Personnalisez vos suggestions</Text>
+            <TouchableOpacity
+              onPress={() => setShowFiltersModal(false)}
+              style={styles.closeButton}
+            >
+              <Ionicons name="close" size={24} color={Colors.text} />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView style={styles.filtersScroll}>
+            <Text style={styles.filtersSubtitle}>
+              Affinez les suggestions selon vos préférences
+            </Text>
+
+            {/* Hauteur */}
+            <View style={styles.filterSection}>
+              <Text style={styles.filterLabel}>🌳 Hauteur souhaitée</Text>
+              <View style={styles.filterOptions}>
+                {['Petite (< 50cm)', 'Moyenne (50cm - 1.5m)', 'Grande (> 1.5m)'].map((option) => (
+                  <TouchableOpacity
+                    key={option}
+                    style={[
+                      styles.filterChip,
+                      filters.height === option && styles.filterChipSelected,
+                    ]}
+                    onPress={() => setFilters({ ...filters, height: filters.height === option ? '' : option })}
+                  >
+                    <Text style={[
+                      styles.filterChipText,
+                      filters.height === option && styles.filterChipTextSelected,
+                    ]}>
+                      {option}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            {/* Couleur de floraison */}
+            <View style={styles.filterSection}>
+              <Text style={styles.filterLabel}>🎨 Couleur de floraison</Text>
+              <View style={styles.filterOptions}>
+                {[
+                  { label: 'Blanc', color: '#FFFFFF' },
+                  { label: 'Rose', color: '#FFB6C1' },
+                  { label: 'Rouge', color: '#DC143C' },
+                  { label: 'Bleu', color: '#4169E1' },
+                  { label: 'Jaune', color: '#FFD700' },
+                  { label: 'Orange', color: '#FF8C00' },
+                  { label: 'Violet', color: '#8A2BE2' },
+                ].map((option) => (
+                  <TouchableOpacity
+                    key={option.label}
+                    style={[
+                      styles.colorChip,
+                      filters.color === option.label && styles.colorChipSelected,
+                    ]}
+                    onPress={() => setFilters({ ...filters, color: filters.color === option.label ? '' : option.label })}
+                  >
+                    <View style={[styles.colorCircle, { backgroundColor: option.color, borderWidth: option.label === 'Blanc' ? 1 : 0, borderColor: Colors.border }]} />
+                    <Text style={styles.colorLabel}>{option.label}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            {/* Époque de floraison */}
+            <View style={styles.filterSection}>
+              <Text style={styles.filterLabel}>🌸 Époque de floraison</Text>
+              <View style={styles.filterOptions}>
+                {['Printemps', 'Été', 'Automne', 'Hiver'].map((option) => (
+                  <TouchableOpacity
+                    key={option}
+                    style={[
+                      styles.filterChip,
+                      filters.bloomingSeason === option && styles.filterChipSelected,
+                    ]}
+                    onPress={() => setFilters({ ...filters, bloomingSeason: filters.bloomingSeason === option ? '' : option })}
+                  >
+                    <Text style={[
+                      styles.filterChipText,
+                      filters.bloomingSeason === option && styles.filterChipTextSelected,
+                    ]}>
+                      {option}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            <View style={styles.filterActions}>
+              <TouchableOpacity
+                style={styles.resetButton}
+                onPress={() => setFilters({ height: '', color: '', bloomingSeason: '' })}
+              >
+                <Text style={styles.resetButtonText}>Réinitialiser</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={styles.applyButton}
+                onPress={handleApplyFilters}
+              >
+                <Ionicons name="checkmark-circle" size={20} color={Colors.white} />
+                <Text style={styles.applyButtonText}>Voir les suggestions</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </View>
+      </Modal>
     </View>
   );
 }
