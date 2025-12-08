@@ -1,15 +1,16 @@
 # Conditions Générales d'Utilisation - Sepalis
 
-**Dernière mise à jour : [DATE]**
+**Dernière mise à jour : 8 décembre 2024**
 
 ## 1. Présentation du service
 
 Sepalis est une application mobile d'assistance au jardinage combinant intelligence artificielle et expertise d'un Meilleur Ouvrier de France (MOF) en paysagisme.
 
-**Éditeur** : [NOM DE VOTRE ENTREPRISE]  
-**Siège social** : [ADRESSE]  
-**SIRET** : [NUMÉRO]  
-**Email** : contact@sepalis.com
+**Éditeur** : SEPALIS  
+**Siège social** : rue de la princesse Sophie, 14800 Deauville  
+**SIRET** : 478 499 767 00067  
+**Email** : contact@sepalis.com  
+**Téléphone** : 06 40 39 71 38
 
 ## 2. Acceptation des CGU
 
