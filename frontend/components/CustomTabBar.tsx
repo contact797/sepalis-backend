@@ -83,6 +83,8 @@ function getIconName(routeName: string): string {
       return 'leaf';
     case 'academy':
       return 'school';
+    case 'quiz':
+      return 'help-circle';
     case 'profile':
       return 'person';
     default:
