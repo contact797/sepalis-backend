@@ -19,6 +19,20 @@ export default function Profile() {
   const { isPremium, isTrial, expiresAt } = useSubscription();
   const router = useRouter();
 
+  const handleOpenURL = async (url: string, title: string) => {
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (supported) {
+        await Linking.openURL(url);
+      } else {
+        Alert.alert('Erreur', `Impossible d'ouvrir le lien : ${title}`);
+      }
+    } catch (error) {
+      console.error('Erreur ouverture URL:', error);
+      Alert.alert('Erreur', 'Une erreur est survenue lors de l\'ouverture du lien.');
+    }
+  };
+
   const handleLogout = async () => {
     console.log('🔴 Bouton déconnexion cliqué !');
     
