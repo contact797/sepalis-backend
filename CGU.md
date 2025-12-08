@@ -237,8 +237,8 @@ En cas de litige, nous privilégions une résolution amiable. Contactez-nous à 
 ### 14.3. Médiation
 Conformément à l'article L.612-1 du Code de la consommation, vous pouvez recourir gratuitement à un médiateur de la consommation en cas de litige non résolu.
 
-**Médiateur compétent** : [NOM DU MÉDIATEUR]  
-**Site web** : [URL]
+**Médiateur compétent** : CM2C (Consommation Médiation Conciliation)  
+**Site web** : https://www.cm2c.net
 
 ### 14.4. Juridiction compétente
 À défaut de résolution amiable, compétence est attribuée aux tribunaux français, nonobstant pluralité de défendeurs ou appel en garantie.
