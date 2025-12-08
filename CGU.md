@@ -257,4 +257,4 @@ Pour toute question concernant ces CGU :
 
 **En utilisant Sepalis, vous déclarez avoir lu, compris et accepté les présentes Conditions Générales d'Utilisation.**
 
-© [ANNÉE] [VOTRE ENTREPRISE]. Tous droits réservés.
+© 2024 SEPALIS. Tous droits réservés.
