@@ -250,8 +250,8 @@ Pour les consommateurs résidant dans l'UE : vous bénéficiez également du dro
 Pour toute question concernant ces CGU :
 
 **Email** : contact@sepalis.com  
-**Adresse** : [VOTRE ADRESSE POSTALE]  
-**Téléphone** : [VOTRE NUMÉRO]
+**Adresse** : rue de la princesse Sophie, 14800 Deauville  
+**Téléphone** : 06 40 39 71 38
 
 ---
 
