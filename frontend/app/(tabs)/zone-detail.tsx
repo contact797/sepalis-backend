@@ -28,6 +28,14 @@ export default function ZoneDetail() {
   const [showSuggestionsModal, setShowSuggestionsModal] = useState(false);
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [showFiltersModal, setShowFiltersModal] = useState(false);
+  
+  // Filtres utilisateur
+  const [filters, setFilters] = useState({
+    height: '',
+    color: '',
+    bloomingSeason: '',
+  });
 
   // Gérer les deux formats d'ID (id ou _id)
   const zoneId = zone?.id || zone?._id;
