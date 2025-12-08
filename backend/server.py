@@ -1535,8 +1535,9 @@ Réponds UNIQUEMENT au format JSON suivant (sans markdown):
                 "Raison 3"
             ],
             "mofAdvice": "Conseil d'expert MOF pour la plantation et l'entretien",
-            "bloomingSeason": "Période de floraison",
-            "height": "Hauteur adulte",
+            "bloomingSeason": "Période de floraison (ex: Printemps, Été, Automne)",
+            "bloomingColor": "Couleur principale de floraison (ex: Rose, Blanc, Bleu)",
+            "height": "Hauteur adulte (ex: 30-50cm, 1-2m)",
             "maintenance": "Facile/Moyen/Exigeant"
         }}
     ]
