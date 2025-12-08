@@ -191,8 +191,9 @@ L'utilisation continue de l'application après modification constitue votre acce
 Pour toute question concernant cette politique ou vos données personnelles :
 
 **Email** : contact@sepalis.com  
-**Adresse** : [VOTRE ADRESSE POSTALE]  
-**DPO (Délégué à la Protection des Données)** : [NOM ET CONTACT SI APPLICABLE]
+**Adresse** : rue de la princesse Sophie, 14800 Deauville  
+**Téléphone** : 06 40 39 71 38  
+**DPO (Délégué à la Protection des Données)** : Non applicable (entreprise < 250 employés)
 
 ## 15. Loi applicable
 
