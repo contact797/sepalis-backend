@@ -114,4 +114,26 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: 4,
   },
+  iconContainer: {
+    position: 'relative',
+    width: 24,
+    height: 24,
+  },
+  badge: {
+    position: 'absolute',
+    top: -6,
+    right: -10,
+    backgroundColor: '#E74C3C',
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    paddingHorizontal: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  badgeText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
 });
