@@ -44,6 +44,7 @@ export default function CustomTabBar({ state, descriptors, navigation }: CustomT
         const iconName = getIconName(route.name);
         const label = options.title || route.name;
         const color = isFocused ? Colors.accent : Colors.textSecondary;
+        const badge = options.tabBarBadge;
 
         return (
           <TouchableOpacity
@@ -56,7 +57,14 @@ export default function CustomTabBar({ state, descriptors, navigation }: CustomT
             onLongPress={onLongPress}
             style={styles.tabItem}
           >
-            <Ionicons name={iconName as any} size={24} color={color} />
+            <View style={styles.iconContainer}>
+              <Ionicons name={iconName as any} size={24} color={color} />
+              {badge !== null && badge !== undefined && (
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>{badge}</Text>
+                </View>
+              )}
+            </View>
             <Text style={[styles.tabLabel, { color }]}>{label}</Text>
           </TouchableOpacity>
         );
