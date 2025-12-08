@@ -191,6 +191,54 @@ export default function Profile() {
         ))}
       </View>
 
+      {/* Section Informations légales */}
+      <View style={styles.legalSection}>
+        <Text style={styles.sectionTitle}>Informations légales</Text>
+        
+        <TouchableOpacity
+          style={styles.legalItem}
+          onPress={() => handleOpenURL('https://votresite.com/privacy', 'Politique de confidentialité')}
+        >
+          <View style={styles.legalItemLeft}>
+            <View style={styles.legalIcon}>
+              <Ionicons name="shield-checkmark-outline" size={22} color={Colors.primary} />
+            </View>
+            <Text style={styles.legalItemText}>Politique de confidentialité</Text>
+          </View>
+          <Ionicons name="open-outline" size={20} color={Colors.mediumGray} />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.legalItem}
+          onPress={() => handleOpenURL('https://votresite.com/terms', 'Conditions d\'utilisation')}
+        >
+          <View style={styles.legalItemLeft}>
+            <View style={styles.legalIcon}>
+              <Ionicons name="document-text-outline" size={22} color={Colors.primary} />
+            </View>
+            <Text style={styles.legalItemText}>Conditions d'utilisation</Text>
+          </View>
+          <Ionicons name="open-outline" size={20} color={Colors.mediumGray} />
+        </TouchableOpacity>
+
+        <View style={styles.legalInfo}>
+          <Ionicons name="business-outline" size={16} color={Colors.mediumGray} />
+          <Text style={styles.legalInfoText}>SEPALIS - Deauville, France</Text>
+        </View>
+        <View style={styles.legalInfo}>
+          <Ionicons name="document-outline" size={16} color={Colors.mediumGray} />
+          <Text style={styles.legalInfoText}>SIRET: 478 499 767 00067</Text>
+        </View>
+        <View style={styles.legalInfo}>
+          <Ionicons name="call-outline" size={16} color={Colors.mediumGray} />
+          <Text style={styles.legalInfoText}>06 40 39 71 38</Text>
+        </View>
+        <View style={styles.legalInfo}>
+          <Ionicons name="mail-outline" size={16} color={Colors.mediumGray} />
+          <Text style={styles.legalInfoText}>contact@sepalis.com</Text>
+        </View>
+      </View>
+
       {/* Logout Button */}
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Ionicons name="log-out-outline" size={24} color={Colors.error} />
@@ -199,6 +247,7 @@ export default function Profile() {
 
       <View style={styles.footer}>
         <Text style={styles.footerText}>Sepalis v1.0.0</Text>
+        <Text style={styles.footerSubtext}>Validé par un MOF Paysagiste 🏆</Text>
       </View>
     </ScrollView>
   );
