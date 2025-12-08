@@ -66,7 +66,13 @@ export default function ZoneDetail() {
     }
   };
 
-  const handleGetSuggestions = async () => {
+  const handleGetSuggestions = () => {
+    // Ouvrir d'abord le modal de filtres
+    setShowFiltersModal(true);
+  };
+
+  const handleApplyFilters = async () => {
+    setShowFiltersModal(false);
     setShowSuggestionsModal(true);
     setLoadingSuggestions(true);
     setSuggestions([]);
@@ -77,6 +83,7 @@ export default function ZoneDetail() {
       
       console.log('🌿 Appel suggestions URL:', url);
       console.log('🌿 Zone ID:', zoneId);
+      console.log('🎨 Filtres:', filters);
       
       const response = await fetch(url, {
         method: 'POST',
@@ -84,6 +91,7 @@ export default function ZoneDetail() {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({ filters }),
       });
 
       console.log('📡 Réponse status:', response.status);
