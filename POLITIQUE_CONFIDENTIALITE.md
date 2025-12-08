@@ -1,6 +1,6 @@
 # Politique de Confidentialité - Sepalis
 
-**Dernière mise à jour : [DATE]**
+**Dernière mise à jour : 8 décembre 2024**
 
 ## 1. Introduction
 
@@ -8,10 +8,10 @@ Sepalis ("nous", "notre", "l'Application") s'engage à protéger la vie privée 
 
 ## 2. Responsable du traitement
 
-**Nom de l'entreprise** : [VOTRE ENTREPRISE]  
-**Adresse** : [VOTRE ADRESSE]  
+**Nom de l'entreprise** : SEPALIS  
+**Adresse** : rue de la princesse Sophie, 14800 Deauville  
 **Email** : contact@sepalis.com  
-**SIRET** : [VOTRE SIRET]
+**SIRET** : 478 499 767 00067
 
 ## 3. Données collectées
 
