@@ -1470,8 +1470,8 @@ async def delete_zone(zone_id: str, credentials: HTTPAuthorizationCredentials = 
 
 
 @api_router.post("/user/zones/{zone_id}/plant-suggestions")
-async def get_plant_suggestions(zone_id: str, credentials: HTTPAuthorizationCredentials = Depends(security)):
-    """Générer des suggestions de plantes adaptées à une zone spécifique"""
+async def get_plant_suggestions(zone_id: str, request: dict, credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Générer des suggestions de plantes adaptées à une zone spécifique avec filtres utilisateur"""
     from emergentintegrations.llm.chat import LlmChat, UserMessage
     import json as json_lib
     
@@ -1484,6 +1484,25 @@ async def get_plant_suggestions(zone_id: str, credentials: HTTPAuthorizationCred
             raise HTTPException(status_code=404, detail="Zone non trouvée")
         
         print(f"🌿 Génération de suggestions pour la zone: {zone.get('name')}")
+        
+        # Récupérer les filtres utilisateur
+        filters = request.get('filters', {})
+        height_filter = filters.get('height', '')
+        color_filter = filters.get('color', '')
+        blooming_season = filters.get('bloomingSeason', '')
+        
+        print(f"🎨 Filtres: hauteur={height_filter}, couleur={color_filter}, floraison={blooming_season}")
+        
+        # Construire la section des préférences utilisateur
+        user_preferences = ""
+        if height_filter or color_filter or blooming_season:
+            user_preferences = "\nPréférences de l'utilisateur (PRIORITAIRES):"
+            if height_filter:
+                user_preferences += f"\n- Hauteur souhaitée: {height_filter}"
+            if color_filter:
+                user_preferences += f"\n- Couleur de floraison: {color_filter}"
+            if blooming_season:
+                user_preferences += f"\n- Époque de floraison: {blooming_season}"
         
         # Créer un prompt détaillé avec les caractéristiques de la zone
         prompt = f"""En tant qu'expert MOF (Meilleur Ouvrier de France) en paysagisme, suggère 8 plantes idéales pour cette zone de jardin.
@@ -1500,6 +1519,7 @@ Caractéristiques de la zone:
 - Zone climatique: {zone.get('climateZone', 'Non spécifié')}
 - Protection contre le vent: {zone.get('windProtection', 'Non spécifié')}
 - Système d'arrosage: {zone.get('wateringSystem', 'Non spécifié')}
+{user_preferences}
 
 Réponds UNIQUEMENT au format JSON suivant (sans markdown):
 {{
