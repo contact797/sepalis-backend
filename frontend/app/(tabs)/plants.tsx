@@ -256,11 +256,30 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
   },
+  plantHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 4,
+  },
   plantName: {
     fontSize: 18,
     fontWeight: 'bold',
     color: Colors.dark,
-    marginBottom: 4,
+  },
+  favoriteBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: Colors.accent + '20',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+  },
+  favoriteBadgeText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: Colors.accent,
   },
   plantScientific: {
     fontSize: 14,
