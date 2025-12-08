@@ -101,6 +101,7 @@ class PlantBase(BaseModel):
     description: Optional[str] = None
     zoneId: Optional[str] = None
     careInstructions: Optional[CareInstructions] = None
+    isFavorite: Optional[bool] = False  # True pour les suggestions enregistrées, False pour les plantes scannées
 
 class PlantCreate(PlantBase):
     pass
