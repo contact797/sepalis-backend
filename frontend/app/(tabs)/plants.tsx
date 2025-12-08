@@ -120,7 +120,15 @@ export default function Plants() {
                     <Ionicons name="leaf" size={40} color={Colors.primary} />
                   </View>
                   <View style={styles.plantInfo}>
-                    <Text style={styles.plantName}>{plant.name}</Text>
+                    <View style={styles.plantHeader}>
+                      <Text style={styles.plantName}>{plant.name}</Text>
+                      {plant.isFavorite && (
+                        <View style={styles.favoriteBadge}>
+                          <Ionicons name="star" size={12} color={Colors.accent} />
+                          <Text style={styles.favoriteBadgeText}>Favori</Text>
+                        </View>
+                      )}
+                    </View>
                     {plant.scientificName && (
                       <Text style={styles.plantScientific}>{plant.scientificName}</Text>
                     )}
