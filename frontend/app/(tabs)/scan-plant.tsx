@@ -377,6 +377,51 @@ export default function ScanPlant() {
           ) : null}
         </ScrollView>
       )}
+      {/* Modal de succès */}
+      <Modal
+        visible={showSuccessModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowSuccessModal(false)}
+      >
+        <View style={styles.successModalOverlay}>
+          <View style={styles.successModalContent}>
+            <View style={styles.successIconContainer}>
+              <Ionicons name="checkmark-circle" size={80} color={Colors.success} />
+            </View>
+            <Text style={styles.successTitle}>✅ Plante enregistrée !</Text>
+            <Text style={styles.successMessage}>
+              {successMessage.plantName} a été ajoutée avec succès
+              {successMessage.zoneName ? ` dans la zone "${successMessage.zoneName}"` : ' à votre jardin'} 🌱
+            </Text>
+            <View style={styles.successButtonsContainer}>
+              <TouchableOpacity
+                style={styles.successButton}
+                onPress={() => {
+                  setShowSuccessModal(false);
+                  setPhoto(null);
+                  setResult(null);
+                  router.push('/(tabs)/plants');
+                }}
+              >
+                <Ionicons name="leaf" size={20} color={Colors.white} />
+                <Text style={styles.successButtonText}>Voir mes plantes</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.successButton, styles.successButtonSecondary]}
+                onPress={() => {
+                  setShowSuccessModal(false);
+                  setPhoto(null);
+                  setResult(null);
+                }}
+              >
+                <Ionicons name="camera" size={20} color={Colors.accent} />
+                <Text style={[styles.successButtonText, styles.successButtonTextSecondary]}>Scanner une autre</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
