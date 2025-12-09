@@ -197,6 +197,22 @@ export default function CheckCompatibility() {
               Identification de la plante et analyse de compatibilité avec vos zones
             </Text>
           </View>
+        ) : error ? (
+          <View style={styles.errorContainer}>
+            <Ionicons name="alert-circle" size={80} color={Colors.error} />
+            <Text style={styles.errorTitle}>Erreur d'analyse</Text>
+            <Text style={styles.errorText}>{error}</Text>
+            <TouchableOpacity
+              style={styles.retryButton}
+              onPress={() => {
+                setError(null);
+                setPhoto(null);
+              }}
+            >
+              <Ionicons name="refresh" size={20} color={Colors.white} />
+              <Text style={styles.retryButtonText}>Réessayer</Text>
+            </TouchableOpacity>
+          </View>
         ) : result ? (
           <View style={styles.resultsContainer}>
             {/* Info plante */}
