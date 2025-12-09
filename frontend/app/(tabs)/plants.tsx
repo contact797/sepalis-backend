@@ -406,4 +406,23 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 4,
   },
+  fabWrapper: {
+    alignItems: 'center',
+    gap: 6,
+  },
+  fabLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: Colors.text,
+    textAlign: 'center',
+    backgroundColor: Colors.card,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
 });
