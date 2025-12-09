@@ -3491,6 +3491,220 @@ async def get_user_behavior(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ============ ADMIN - MESSAGES BROADCAST ============
+
+class BroadcastMessage(BaseModel):
+    title: str
+    body: str
+    scheduledDate: Optional[str] = None  # ISO format date or null for immediate
+    isRecurring: bool = False
+    recurringDays: Optional[List[str]] = None  # ["monday", "wednesday", "friday"]
+
+class BroadcastMessageResponse(BaseModel):
+    id: str
+    title: str
+    body: str
+    scheduledDate: Optional[str]
+    isRecurring: bool
+    recurringDays: Optional[List[str]]
+    sentAt: Optional[str]
+    status: str  # "scheduled", "sent", "failed"
+    recipientsCount: int
+    createdAt: str
+
+@api_router.post("/admin/messages/broadcast")
+async def create_broadcast_message(
+    message: BroadcastMessage,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Créer et envoyer (ou programmer) un message broadcast à tous les utilisateurs"""
+    try:
+        user = await get_current_user(credentials)
+        
+        # Créer le message dans la DB
+        message_doc = {
+            "title": message.title,
+            "body": message.body,
+            "scheduledDate": message.scheduledDate,
+            "isRecurring": message.isRecurring,
+            "recurringDays": message.recurringDays or [],
+            "status": "scheduled" if message.scheduledDate else "sending",
+            "recipientsCount": 0,
+            "sentAt": None,
+            "createdAt": datetime.utcnow().isoformat(),
+            "createdBy": str(user["_id"])
+        }
+        
+        result = await db.broadcast_messages.insert_one(message_doc)
+        message_id = str(result.inserted_id)
+        
+        # Si pas de date programmée, envoyer immédiatement
+        if not message.scheduledDate:
+            # Récupérer tous les utilisateurs avec push tokens
+            push_tokens = await db.push_tokens.find({}).to_list(length=10000)
+            
+            sent_count = 0
+            for token_doc in push_tokens:
+                success = await send_push_notification(
+                    token_doc["userId"],
+                    message.title,
+                    message.body
+                )
+                if success:
+                    sent_count += 1
+            
+            # Mettre à jour le statut
+            await db.broadcast_messages.update_one(
+                {"_id": result.inserted_id},
+                {
+                    "$set": {
+                        "status": "sent",
+                        "sentAt": datetime.utcnow().isoformat(),
+                        "recipientsCount": sent_count
+                    }
+                }
+            )
+            
+            print(f"✅ Message broadcast envoyé à {sent_count} utilisateurs")
+            
+            return {
+                "id": message_id,
+                "title": message.title,
+                "body": message.body,
+                "status": "sent",
+                "recipientsCount": sent_count,
+                "sentAt": datetime.utcnow().isoformat()
+            }
+        else:
+            # Message programmé
+            print(f"📅 Message programmé pour {message.scheduledDate}")
+            return {
+                "id": message_id,
+                "title": message.title,
+                "body": message.body,
+                "status": "scheduled",
+                "scheduledDate": message.scheduledDate,
+                "recipientsCount": 0
+            }
+            
+    except Exception as e:
+        print(f"❌ Erreur broadcast: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/admin/messages/broadcast")
+async def get_broadcast_messages(
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Récupérer l'historique des messages broadcast"""
+    try:
+        user = await get_current_user(credentials)
+        
+        messages = await db.broadcast_messages.find().sort("createdAt", -1).limit(50).to_list(length=50)
+        
+        return [{
+            "id": str(msg["_id"]),
+            "title": msg.get("title", ""),
+            "body": msg.get("body", ""),
+            "scheduledDate": msg.get("scheduledDate"),
+            "isRecurring": msg.get("isRecurring", False),
+            "recurringDays": msg.get("recurringDays", []),
+            "status": msg.get("status", "unknown"),
+            "recipientsCount": msg.get("recipientsCount", 0),
+            "sentAt": msg.get("sentAt"),
+            "createdAt": msg.get("createdAt", "")
+        } for msg in messages]
+        
+    except Exception as e:
+        print(f"❌ Erreur récupération messages: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/admin/messages/templates")
+async def get_message_templates(
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Récupérer les templates de messages pré-faits"""
+    try:
+        user = await get_current_user(credentials)
+        
+        templates = [
+            {
+                "id": "tip_monday",
+                "category": "tips",
+                "title": "Astuce jardinage du lundi",
+                "body": "🌱 Astuce MOF : Paillez votre sol pour garder l'humidité et réduire les arrosages de 50%"
+            },
+            {
+                "id": "quiz_reminder",
+                "category": "quiz",
+                "title": "Quiz quotidien disponible !",
+                "body": "🧠 Nouveau quiz disponible aujourd'hui ! Testez vos connaissances et gagnez +10 XP 🌿"
+            },
+            {
+                "id": "motivation",
+                "category": "motivation",
+                "title": "Continuez comme ça !",
+                "body": "💪 Vous avez scanné 5 plantes cette semaine ! Continuez, vous devenez un expert 🏆"
+            },
+            {
+                "id": "seasonal",
+                "category": "seasonal",
+                "title": "C'est le moment !",
+                "body": "☀️ En mai, c'est le moment parfait pour planter vos tomates. Besoin de conseils ? Ouvrez Sepalis 🍅"
+            },
+            {
+                "id": "funfact",
+                "category": "funfact",
+                "title": "Le saviez-vous ?",
+                "body": "🤯 Le saviez-vous ? Les tournesols suivent le soleil toute la journée ! Ouvrez le quiz pour en apprendre plus ☀️"
+            },
+            {
+                "id": "community",
+                "category": "community",
+                "title": "Partagez votre jardin",
+                "body": "🌟 Partagez une photo de votre plus belle plante ! Tag #Sepalis sur Instagram"
+            },
+            {
+                "id": "premium",
+                "category": "premium",
+                "title": "Découvrez Premium",
+                "body": "🎁 Envie d'aller plus loin ? Débloquez les suggestions MOF personnalisées avec Sepalis Premium"
+            }
+        ]
+        
+        return templates
+        
+    except Exception as e:
+        print(f"❌ Erreur templates: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.delete("/admin/messages/broadcast/{message_id}")
+async def delete_broadcast_message(
+    message_id: str,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Supprimer un message programmé (seulement si pas encore envoyé)"""
+    try:
+        user = await get_current_user(credentials)
+        
+        message = await db.broadcast_messages.find_one({"_id": ObjectId(message_id)})
+        
+        if not message:
+            raise HTTPException(status_code=404, detail="Message non trouvé")
+        
+        if message.get("status") == "sent":
+            raise HTTPException(status_code=400, detail="Impossible de supprimer un message déjà envoyé")
+        
+        await db.broadcast_messages.delete_one({"_id": ObjectId(message_id)})
+        
+        return {"message": "Message supprimé avec succès"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Erreur suppression message: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ============ ROOT ROUTE ============
 @api_router.get("/")
 async def root():
