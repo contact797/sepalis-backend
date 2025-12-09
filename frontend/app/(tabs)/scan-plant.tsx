@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Image,
   ScrollView,
+  Modal,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Camera } from 'expo-camera';
