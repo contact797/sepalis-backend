@@ -269,7 +269,10 @@ export default function Zones() {
               placeholderTextColor={Colors.textSecondary}
               keyboardType="decimal-pad"
               value={newZone.width}
-              onChangeText={(text) => setNewZone({ ...newZone, width: text })}
+              onChangeText={(text) => {
+                setNewZone({ ...newZone, width: text });
+                if (errorMessage) setErrorMessage(''); // Effacer l'erreur quand l'utilisateur tape
+              }}
             />
           </View>
         </View>
