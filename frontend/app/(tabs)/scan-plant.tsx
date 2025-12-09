@@ -9,7 +9,7 @@ import {
   Image,
   ScrollView,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Camera } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { Colors } from '../../constants/Colors';
@@ -18,12 +18,15 @@ import { plantsAPI } from '../../services/api';
 
 export default function ScanPlant() {
   const router = useRouter();
+  const params = useLocalSearchParams();
+  const preSelectedZoneId = params.preSelectedZoneId as string;
+  
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [photo, setPhoto] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [zones, setZones] = useState<any[]>([]);
-  const [selectedZoneId, setSelectedZoneId] = useState<string>('');
+  const [selectedZoneId, setSelectedZoneId] = useState<string>(preSelectedZoneId || '');
 
   useEffect(() => {
     (async () => {
@@ -32,6 +35,13 @@ export default function ScanPlant() {
       await loadZones();
     })();
   }, []);
+  
+  // Pré-sélectionner la zone si fournie en paramètre
+  useEffect(() => {
+    if (preSelectedZoneId) {
+      setSelectedZoneId(preSelectedZoneId);
+    }
+  }, [preSelectedZoneId]);
 
   const loadZones = async () => {
     try {
