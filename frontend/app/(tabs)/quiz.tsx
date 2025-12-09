@@ -481,7 +481,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 16,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.card,
     padding: 16,
     borderRadius: 12,
     borderWidth: 2,
@@ -489,7 +489,8 @@ const styles = StyleSheet.create({
   },
   selectedAnswer: {
     borderColor: Colors.accent,
-    backgroundColor: Colors.accent + '10',
+    backgroundColor: Colors.accent + '20',
+    borderWidth: 3,
   },
   answerLetter: {
     width: 36,
@@ -502,12 +503,13 @@ const styles = StyleSheet.create({
   answerLetterText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: Colors.text,
+    color: Colors.white,
   },
   answerText: {
     flex: 1,
     fontSize: 16,
-    color: Colors.text,
+    color: Colors.white,
+    lineHeight: 22,
   },
   submitButton: {
     flexDirection: 'row',
