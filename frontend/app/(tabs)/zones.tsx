@@ -42,6 +42,7 @@ export default function Zones() {
   const [modalVisible, setModalVisible] = useState(false);
   const [showSoilTypeHelp, setShowSoilTypeHelp] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [errorMessage, setErrorMessage] = useState('');
   const [newZone, setNewZone] = useState({
     name: '',
     type: 'massif',
