@@ -64,7 +64,10 @@ export default function CheckCompatibility() {
     try {
       setAnalyzing(true);
       setResult(null);
+      setError(null);
 
+      console.log('🔍 Début analyse compatibilité...');
+      
       const token = await AsyncStorage.getItem('authToken');
       const response = await fetch(
         `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/ai/check-plant-compatibility`,
@@ -75,20 +78,26 @@ export default function CheckCompatibility() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            image: `data:image/jpeg;base64,${base64}`,
+            image: base64,  // Enlever le préfixe car il sera ajouté côté backend si nécessaire
           }),
         }
       );
 
+      console.log('📡 Réponse reçue:', response.status);
+
       if (response.ok) {
         const data = await response.json();
+        console.log('✅ Données reçues:', data);
         setResult(data);
       } else {
-        Alert.alert('Erreur', 'Impossible d\'analyser la plante');
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.detail || 'Impossible d\'analyser la plante';
+        console.error('❌ Erreur API:', errorMessage);
+        setError(errorMessage);
       }
-    } catch (error) {
-      console.error('Erreur analyse:', error);
-      Alert.alert('Erreur', 'Erreur réseau');
+    } catch (error: any) {
+      console.error('❌ Erreur analyse:', error);
+      setError(error.message || 'Erreur de connexion. Veuillez réessayer.');
     } finally {
       setAnalyzing(false);
     }
