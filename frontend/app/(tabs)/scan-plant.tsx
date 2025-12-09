@@ -153,17 +153,28 @@ export default function ScanPlant() {
       const response = await plantsAPI.addPlant(plantData);
       console.log('✅ Plante ajoutée avec succès:', response.data);
 
-      // Navigation immédiate vers la page Plantes
-      router.push('/(tabs)/plants');
-      
-      // Message de confirmation après navigation
-      setTimeout(() => {
-        Alert.alert(
-          '🌿 Succès !',
-          'Votre plante a été ajoutée à votre jardin.',
-          [{ text: 'OK' }]
-        );
-      }, 500);
+      // Trouver le nom de la zone sélectionnée
+      const selectedZone = zones.find(z => (z.id || z._id) === selectedZoneId);
+      const zoneMessage = selectedZone ? ` dans votre zone "${selectedZone.name}"` : ' à votre jardin';
+
+      // Message de confirmation immédiat
+      Alert.alert(
+        '✅ Plante enregistrée !',
+        `${result.name} a été ajoutée avec succès${zoneMessage}. 🌱`,
+        [
+          {
+            text: 'Voir mes plantes',
+            onPress: () => router.push('/(tabs)/plants')
+          },
+          {
+            text: 'Scanner une autre plante',
+            onPress: () => {
+              setPhoto(null);
+              setResult(null);
+            }
+          }
+        ]
+      );
     } catch (error: any) {
       console.error('❌ Erreur ajout plante:', error);
       console.error('Détails:', error.response?.data || error.message);
