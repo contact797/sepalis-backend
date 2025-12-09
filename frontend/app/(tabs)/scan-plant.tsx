@@ -27,6 +27,8 @@ export default function ScanPlant() {
   const [result, setResult] = useState<any>(null);
   const [zones, setZones] = useState<any[]>([]);
   const [selectedZoneId, setSelectedZoneId] = useState<string>(preSelectedZoneId || '');
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState({ plantName: '', zoneName: '' });
 
   useEffect(() => {
     (async () => {
