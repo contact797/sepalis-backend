@@ -237,7 +237,7 @@ Résultat :
 - URLs générées : `https://votrecompte.github.io/sepalis-legal/POLITIQUE_CONFIDENTIALITE`
 
 ### Pour les screenshots
-- Utilisez l'app actuelle en ligne : https://daily-garden-1.preview.emergentagent.com
+- Utilisez l'app actuelle en ligne : https://flora-tracker-8.preview.emergentagent.com
 - Outils : Responsively (simuler différentes tailles), Chrome DevTools
 - Ajoutez des annotations avec Figma ou Canva pour plus d'impact
 
