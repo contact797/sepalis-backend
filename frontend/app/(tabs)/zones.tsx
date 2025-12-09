@@ -214,8 +214,14 @@ export default function Zones() {
           placeholder="Ex: Potager principal"
           placeholderTextColor={Colors.textSecondary}
           value={newZone.name}
-          onChangeText={(text) => setNewZone({ ...newZone, name: text })}
+          onChangeText={(text) => {
+            setNewZone({ ...newZone, name: text });
+            if (errorMessage) setErrorMessage(''); // Effacer l'erreur quand l'utilisateur tape
+          }}
         />
+        {errorMessage && (
+          <Text style={styles.errorText}>{errorMessage}</Text>
+        )}
       </View>
 
       <View style={styles.inputGroup}>
