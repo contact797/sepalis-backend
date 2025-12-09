@@ -155,19 +155,29 @@ export default function ScanPlant() {
 
       // Trouver le nom de la zone sélectionnée
       const selectedZone = zones.find(z => (z.id || z._id) === selectedZoneId);
-      const zoneMessage = selectedZone ? ` dans votre zone "${selectedZone.name}"` : ' à votre jardin';
+      const plantName = result.name || 'Votre plante';
+      const zoneMessage = selectedZone ? ` dans la zone "${selectedZone.name}"` : ' à votre jardin';
 
-      // Message de confirmation immédiat
+      // Réinitialiser d'abord les états
+      const currentPhoto = photo;
+      const currentResult = result;
+      
+      // Message de confirmation
       Alert.alert(
         '✅ Plante enregistrée !',
-        `${result.name} a été ajoutée avec succès${zoneMessage}. 🌱`,
+        `${plantName} a été ajoutée avec succès${zoneMessage} 🌱`,
         [
           {
             text: 'Voir mes plantes',
-            onPress: () => router.push('/(tabs)/plants')
+            onPress: () => {
+              setPhoto(null);
+              setResult(null);
+              router.push('/(tabs)/plants');
+            }
           },
           {
-            text: 'Scanner une autre plante',
+            text: 'Scanner une autre',
+            style: 'cancel',
             onPress: () => {
               setPhoto(null);
               setResult(null);
