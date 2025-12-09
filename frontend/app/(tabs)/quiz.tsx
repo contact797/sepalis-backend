@@ -546,31 +546,36 @@ const styles = StyleSheet.create({
     padding: 32,
     borderRadius: 16,
     marginBottom: 24,
+    borderWidth: 2,
   },
   correctCard: {
     backgroundColor: Colors.accent + '20',
+    borderColor: Colors.accent,
   },
   incorrectCard: {
     backgroundColor: Colors.error + '20',
+    borderColor: Colors.error,
   },
   resultTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: Colors.text,
+    color: Colors.white,
     marginTop: 16,
     marginBottom: 8,
   },
   resultText: {
     fontSize: 16,
-    color: Colors.textSecondary,
+    color: Colors.white,
     textAlign: 'center',
   },
   xpCard: {
     marginTop: 20,
     padding: 16,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.card,
     borderRadius: 12,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   xpText: {
     fontSize: 28,
@@ -579,7 +584,7 @@ const styles = StyleSheet.create({
   },
   streakText: {
     fontSize: 16,
-    color: Colors.text,
+    color: Colors.white,
     marginTop: 8,
   },
   explanationCard: {
