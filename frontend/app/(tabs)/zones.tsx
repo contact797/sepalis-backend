@@ -411,7 +411,34 @@ export default function Zones() {
       </View>
 
       <View style={styles.inputGroup}>
-        <Text style={styles.label}>Zone climatique</Text>
+        <View style={styles.labelRow}>
+          <Text style={styles.label}>Zone climatique</Text>
+          <TouchableOpacity 
+            onPress={() => setShowClimateHelp(!showClimateHelp)}
+            style={styles.infoButtonLarge}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="information-circle" size={28} color={Colors.accent} />
+          </TouchableOpacity>
+        </View>
+        
+        {showClimateHelp && (
+          <View style={styles.helpBubble}>
+            <Text style={styles.helpBubbleTitle}>🌍 Zones Climatiques Françaises</Text>
+            <Text style={styles.helpBubbleText}>
+              <Text style={styles.helpBold}>• Méditerranéen :</Text> Étés chauds et secs, hivers doux. Sud de la France (Provence, Côte d'Azur).{'\n'}
+              {'\n'}
+              <Text style={styles.helpBold}>• Océanique :</Text> Températures douces, pluies régulières toute l'année. Ouest et Nord-Ouest (Bretagne, Normandie).{'\n'}
+              {'\n'}
+              <Text style={styles.helpBold}>• Continental :</Text> Étés chauds, hivers froids avec gel fréquent. Centre et Est (Bourgogne, Alsace).{'\n'}
+              {'\n'}
+              <Text style={styles.helpBold}>• Montagne :</Text> Hivers longs et rigoureux, étés courts et frais. Alpes, Pyrénées, Massif Central.{'\n'}
+              {'\n'}
+              <Text style={styles.helpBold}>• Tempéré :</Text> Climat modéré sans excès. Transition entre plusieurs zones (Île-de-France, Centre-Val de Loire).
+            </Text>
+          </View>
+        )}
+        
         <View style={styles.optionsRow}>
           {climateOptions.map((climate) => (
             <TouchableOpacity
