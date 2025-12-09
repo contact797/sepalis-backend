@@ -801,6 +801,22 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     color: Colors.textSecondary,
   },
+  scanButton: {
+    backgroundColor: Colors.accent,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginBottom: 12,
+    gap: 8,
+  },
+  scanButtonText: {
+    color: Colors.white,
+    fontSize: 14,
+    fontWeight: '600',
+  },
   suggestionsButton: {
     backgroundColor: Colors.primary,
     flexDirection: 'row',
