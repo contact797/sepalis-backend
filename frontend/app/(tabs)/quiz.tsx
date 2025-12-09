@@ -449,15 +449,17 @@ const styles = StyleSheet.create({
     color: Colors.white,
   },
   questionCard: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.card,
     padding: 20,
     borderRadius: 16,
     marginBottom: 24,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 3,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   questionNumber: {
     fontSize: 12,
@@ -468,7 +470,7 @@ const styles = StyleSheet.create({
   questionText: {
     fontSize: 20,
     fontWeight: '600',
-    color: Colors.text,
+    color: Colors.white,
     lineHeight: 28,
   },
   answersContainer: {
