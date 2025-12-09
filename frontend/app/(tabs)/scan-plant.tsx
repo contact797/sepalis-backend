@@ -158,35 +158,11 @@ export default function ScanPlant() {
       // Trouver le nom de la zone sélectionnée
       const selectedZone = zones.find(z => (z.id || z._id) === selectedZoneId);
       const plantName = result.name || 'Votre plante';
-      const zoneMessage = selectedZone ? ` dans la zone "${selectedZone.name}"` : ' à votre jardin';
+      const zoneName = selectedZone ? selectedZone.name : '';
 
-      // Réinitialiser d'abord les états
-      const currentPhoto = photo;
-      const currentResult = result;
-      
-      // Message de confirmation
-      Alert.alert(
-        '✅ Plante enregistrée !',
-        `${plantName} a été ajoutée avec succès${zoneMessage} 🌱`,
-        [
-          {
-            text: 'Voir mes plantes',
-            onPress: () => {
-              setPhoto(null);
-              setResult(null);
-              router.push('/(tabs)/plants');
-            }
-          },
-          {
-            text: 'Scanner une autre',
-            style: 'cancel',
-            onPress: () => {
-              setPhoto(null);
-              setResult(null);
-            }
-          }
-        ]
-      );
+      // Afficher le modal de succès
+      setSuccessMessage({ plantName, zoneName });
+      setShowSuccessModal(true);
     } catch (error: any) {
       console.error('❌ Erreur ajout plante:', error);
       console.error('Détails:', error.response?.data || error.message);
