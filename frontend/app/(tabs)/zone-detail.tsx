@@ -391,6 +391,18 @@ export default function ZoneDetail() {
             </TouchableOpacity>
           </View>
 
+          {/* Bouton Scanner une plante */}
+          <TouchableOpacity
+            style={styles.scanButton}
+            onPress={() => router.push({
+              pathname: '/(tabs)/scan-plant',
+              params: { preSelectedZoneId: zoneId }
+            })}
+          >
+            <Ionicons name="camera" size={20} color={Colors.white} />
+            <Text style={styles.scanButtonText}>Scanner une plante dans cette zone</Text>
+          </TouchableOpacity>
+
           {/* Bouton Suggestions MOF */}
           <TouchableOpacity
             style={styles.suggestionsButton}
