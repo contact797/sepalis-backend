@@ -557,7 +557,11 @@ export default function Zones() {
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Nouvelle zone</Text>
-              <TouchableOpacity onPress={() => { setModalVisible(false); setCurrentStep(1); }}>
+              <TouchableOpacity onPress={() => { 
+                setModalVisible(false); 
+                setCurrentStep(1); 
+                setErrorMessage(''); // Réinitialiser le message d'erreur
+              }}>
                 <Ionicons name="close" size={24} color={Colors.text} />
               </TouchableOpacity>
             </View>
