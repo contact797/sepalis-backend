@@ -573,14 +573,17 @@ export default function Zones() {
                   // Validation de l'étape 1
                   if (currentStep === 1) {
                     if (!newZone.name || newZone.name.trim() === '') {
+                      setErrorMessage('❌ Veuillez donner un nom à votre zone');
                       Alert.alert('Nom manquant', 'Veuillez donner un nom à votre zone');
                       return;
                     }
                     if (!newZone.length || newZone.length.trim() === '' || !newZone.width || newZone.width.trim() === '') {
+                      setErrorMessage('❌ Veuillez indiquer les dimensions (longueur et largeur) de votre zone');
                       Alert.alert('Dimensions manquantes', 'Veuillez indiquer les dimensions (longueur et largeur) de votre zone');
                       return;
                     }
                   }
+                  setErrorMessage(''); // Effacer les erreurs précédentes
                   setCurrentStep(currentStep + 1);
                 }}>
                   <Text style={styles.nextButtonText}>Suivant</Text>
