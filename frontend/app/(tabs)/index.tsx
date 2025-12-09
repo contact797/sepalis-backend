@@ -158,7 +158,7 @@ export default function Home() {
 
   const loadSeasonTip = async () => {
     try {
-      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/season-tips/current`);
+      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/season-tips/current`);
       if (response.ok) {
         const data = await response.json();
         setSeasonTip(data);
