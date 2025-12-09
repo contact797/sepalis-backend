@@ -161,21 +161,36 @@ export default function Plants() {
       </ScrollView>
 
       <View style={styles.fabContainer}>
-        <TouchableOpacity 
-          style={styles.fabQuaternary} 
-          onPress={() => router.push('/(tabs)/check-compatibility')}
-        >
-          <Ionicons name="checkmark-done" size={24} color={Colors.white} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.fabSecondary} onPress={() => router.push('/(tabs)/scan-plant')}>
-          <Ionicons name="camera" size={24} color={Colors.white} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.fabTertiary} onPress={() => router.push('/(tabs)/diagnostic')}>
-          <Ionicons name="medical" size={24} color={Colors.white} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.fab} onPress={handleAddPlant}>
-          <Ionicons name="add" size={28} color={Colors.white} />
-        </TouchableOpacity>
+        <View style={styles.fabWrapper}>
+          <TouchableOpacity 
+            style={styles.fabQuaternary} 
+            onPress={() => router.push('/(tabs)/check-compatibility')}
+          >
+            <Ionicons name="checkmark-done" size={24} color={Colors.white} />
+          </TouchableOpacity>
+          <Text style={styles.fabLabel}>Compatibilité</Text>
+        </View>
+        
+        <View style={styles.fabWrapper}>
+          <TouchableOpacity style={styles.fabSecondary} onPress={() => router.push('/(tabs)/scan-plant')}>
+            <Ionicons name="camera" size={24} color={Colors.white} />
+          </TouchableOpacity>
+          <Text style={styles.fabLabel}>Scanner</Text>
+        </View>
+        
+        <View style={styles.fabWrapper}>
+          <TouchableOpacity style={styles.fabTertiary} onPress={() => router.push('/(tabs)/diagnostic')}>
+            <Ionicons name="medical" size={24} color={Colors.white} />
+          </TouchableOpacity>
+          <Text style={styles.fabLabel}>Diagnostic</Text>
+        </View>
+        
+        <View style={styles.fabWrapper}>
+          <TouchableOpacity style={styles.fab} onPress={handleAddPlant}>
+            <Ionicons name="add" size={28} color={Colors.white} />
+          </TouchableOpacity>
+          <Text style={styles.fabLabel}>Ajouter</Text>
+        </View>
       </View>
     </View>
   );
