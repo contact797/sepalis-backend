@@ -549,6 +549,25 @@ const styles = StyleSheet.create({
     color: Colors.text,
     lineHeight: 18,
   },
+  errorContainer: {
+    padding: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  errorTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: Colors.text,
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  errorText: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 20,
+  },
   retryButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -556,6 +575,7 @@ const styles = StyleSheet.create({
     gap: 8,
     backgroundColor: Colors.primary,
     paddingVertical: 16,
+    paddingHorizontal: 24,
     borderRadius: 12,
     marginTop: 8,
   },
