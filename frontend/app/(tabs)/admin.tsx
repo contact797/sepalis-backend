@@ -60,6 +60,10 @@ export default function AdminPanel() {
   // Message state
   const [messageTitle, setMessageTitle] = useState('');
   const [messageContent, setMessageContent] = useState('');
+  const [broadcastMessages, setBroadcastMessages] = useState<any[]>([]);
+  const [messageTemplates, setMessageTemplates] = useState<any[]>([]);
+  const [showTemplatesModal, setShowTemplatesModal] = useState(false);
+  const [sendingMessage, setSendingMessage] = useState(false);
 
   useEffect(() => {
     loadSeasonTips();
