@@ -579,7 +579,10 @@ export default function Zones() {
 
             <View style={styles.modalFooter}>
               {currentStep > 1 && (
-                <TouchableOpacity style={styles.backButton} onPress={() => setCurrentStep(currentStep - 1)}>
+                <TouchableOpacity style={styles.backButton} onPress={() => {
+                  setCurrentStep(currentStep - 1);
+                  setErrorMessage(''); // Réinitialiser le message d'erreur
+                }}>
                   <Ionicons name="arrow-back" size={20} color={Colors.text} />
                   <Text style={styles.backButtonText}>Retour</Text>
                 </TouchableOpacity>
