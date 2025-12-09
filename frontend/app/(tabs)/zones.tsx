@@ -41,6 +41,7 @@ export default function Zones() {
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [showSoilTypeHelp, setShowSoilTypeHelp] = useState(false);
+  const [showClimateHelp, setShowClimateHelp] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [errorMessage, setErrorMessage] = useState('');
   const [newZone, setNewZone] = useState({
