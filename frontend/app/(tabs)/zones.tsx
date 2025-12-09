@@ -1037,4 +1037,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: Colors.white,
   },
+  errorText: {
+    marginTop: 8,
+    fontSize: 14,
+    color: '#FF3B30',
+    fontWeight: '600',
+    paddingLeft: 4,
+  },
 });
