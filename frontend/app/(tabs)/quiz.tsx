@@ -588,20 +588,22 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   explanationCard: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.card,
     padding: 20,
     borderRadius: 16,
     marginBottom: 24,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   explanationTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: Colors.text,
+    color: Colors.white,
     marginBottom: 12,
   },
   explanationText: {
     fontSize: 16,
-    color: Colors.text,
+    color: Colors.white,
     lineHeight: 24,
   },
   newBadgesCard: {
