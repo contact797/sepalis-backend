@@ -1057,7 +1057,7 @@ export default function AdminPanel() {
         onRequestClose={() => setShowTemplatesModal(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Choisir un template</Text>
               <TouchableOpacity onPress={() => setShowTemplatesModal(false)}>
