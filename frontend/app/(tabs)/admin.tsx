@@ -1022,11 +1022,18 @@ export default function AdminPanel() {
               />
 
               <TouchableOpacity
-                style={styles.saveButton}
+                style={[styles.saveButton, sendingMessage && styles.disabledButton]}
                 onPress={handleSendMessage}
+                disabled={sendingMessage}
               >
-                <Ionicons name="send" size={20} color={Colors.white} />
-                <Text style={styles.saveButtonText}>Envoyer</Text>
+                {sendingMessage ? (
+                  <ActivityIndicator color={Colors.white} />
+                ) : (
+                  <>
+                    <Ionicons name="send" size={20} color={Colors.white} />
+                    <Text style={styles.saveButtonText}>Envoyer</Text>
+                  </>
+                )}
               </TouchableOpacity>
             </ScrollView>
           </View>
