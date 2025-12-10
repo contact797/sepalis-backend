@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Animated,
   Platform,
+  Alert,
 } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
