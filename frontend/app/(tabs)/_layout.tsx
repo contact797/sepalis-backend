@@ -257,6 +257,18 @@ export default function TabLayout() {
           tabBarButton: () => null,
         }}
       />
+      <Tabs.Screen
+        name="blog-list"
+        options={{
+          tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="blog-detail"
+        options={{
+          tabBarButton: () => null,
+        }}
+      />
     </Tabs>
     </>
   );
