@@ -70,6 +70,8 @@ export default function AdminPanel() {
     loadAnalytics();
     loadCalendarTasks();
     loadQuizQuestions();
+    loadBroadcastMessages();
+    loadMessageTemplates();
   }, []);
 
   const loadAnalytics = async () => {
