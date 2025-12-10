@@ -45,31 +45,43 @@ export default function QuizScreen() {
 
   const registerForPushNotifications = async () => {
     try {
+      console.log('🔔 Début enregistrement push notifications...');
+      
       // Vérifier si on est sur un vrai device (pas web/simulateur)
+      console.log('📱 Device check:', Device.isDevice);
       if (!Device.isDevice) {
         console.log('📱 Push notifications nécessitent un vrai device');
+        Alert.alert('Info', 'Les notifications push nécessitent un vrai appareil mobile (pas le simulateur)');
         return;
       }
 
       // Demander la permission
+      console.log('🔐 Demande de permission...');
       const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      console.log('🔐 Statut actuel:', existingStatus);
       let finalStatus = existingStatus;
 
       if (existingStatus !== 'granted') {
+        console.log('🔐 Demande de permission...');
         const { status } = await Notifications.requestPermissionsAsync();
         finalStatus = status;
+        console.log('🔐 Nouveau statut:', finalStatus);
       }
 
       if (finalStatus !== 'granted') {
         console.log('❌ Permission notifications refusée');
+        Alert.alert('Notifications désactivées', 'Veuillez activer les notifications dans les paramètres pour recevoir les messages.');
         return;
       }
 
       // Obtenir le push token
-      const token = (await Notifications.getExpoPushTokenAsync()).data;
+      console.log('🎫 Récupération du token...');
+      const tokenData = await Notifications.getExpoPushTokenAsync();
+      const token = tokenData.data;
       console.log('✅ Push token obtenu:', token.substring(0, 50) + '...');
 
       // Enregistrer le token sur le serveur
+      console.log('📤 Envoi du token au serveur...');
       const authToken = await AsyncStorage.getItem('authToken');
       const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/quiz/register-push-token`, {
         method: 'POST',
@@ -80,14 +92,21 @@ export default function QuizScreen() {
         body: JSON.stringify({ token }),
       });
 
+      console.log('📥 Réponse serveur:', response.status);
+      
       if (response.ok) {
         console.log('✅ Push token enregistré sur le serveur');
+        // Alert.alert('✅ Notifications activées !', 'Vous recevrez maintenant les messages de Sepalis.');
       } else {
-        console.error('❌ Erreur enregistrement push token');
+        const errorText = await response.text();
+        console.error('❌ Erreur enregistrement push token:', errorText);
+        Alert.alert('Erreur', 'Impossible d\'enregistrer les notifications');
       }
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Erreur push notifications:', error);
+      console.error('❌ Message:', error.message);
+      Alert.alert('Erreur', `Erreur notifications: ${error.message}`);
     }
   };
 
