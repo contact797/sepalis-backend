@@ -22,6 +22,23 @@ export default function Profile() {
   const { user, signOut } = useAuth();
   const { isPremium, isTrial, expiresAt } = useSubscription();
   const router = useRouter();
+  
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [registeringNotifications, setRegisteringNotifications] = useState(false);
+
+  // Vérifier le statut des notifications au chargement
+  useEffect(() => {
+    checkNotificationStatus();
+  }, []);
+
+  const checkNotificationStatus = async () => {
+    try {
+      const { status } = await Notifications.getPermissionsAsync();
+      setNotificationsEnabled(status === 'granted');
+    } catch (error) {
+      console.log('Erreur vérification notifications:', error);
+    }
+  };
 
   const handleOpenURL = async (url: string, title: string) => {
     try {
