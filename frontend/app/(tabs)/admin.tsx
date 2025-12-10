@@ -845,6 +845,11 @@ export default function AdminPanel() {
         )}
       </View>
 
+      {/* Section: Gestion du Blog */}
+      <View style={styles.section}>
+        <BlogManager />
+      </View>
+
       {/* Section: Quiz Quotidien MOF */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
