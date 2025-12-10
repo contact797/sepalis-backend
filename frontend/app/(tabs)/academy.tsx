@@ -21,7 +21,7 @@ export default function Academy() {
   const [workshops, setWorkshops] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'courses' | 'workshops'>('courses');
+  const [activeTab, setActiveTab] = useState<'courses' | 'workshops' | 'blog'>('courses');
 
   useEffect(() => {
     loadData();
