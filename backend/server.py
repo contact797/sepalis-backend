@@ -3705,6 +3705,226 @@ async def delete_broadcast_message(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ============ ACADÉMIE - BLOG ARTICLES ============
+
+class BlogArticle(BaseModel):
+    title: str
+    category: str  # "astuces-mof", "tutoriels", "fun-facts", "actualites"
+    content: str
+    excerpt: str
+    imageUrl: Optional[str] = None
+    tags: Optional[List[str]] = []
+    published: bool = True
+
+class BlogArticleResponse(BaseModel):
+    id: str
+    title: str
+    category: str
+    content: str
+    excerpt: str
+    imageUrl: Optional[str]
+    tags: List[str]
+    published: bool
+    createdAt: str
+    updatedAt: str
+    author: Optional[str]
+
+@api_router.get("/blog/articles")
+async def get_blog_articles(
+    category: Optional[str] = None,
+    published: bool = True
+):
+    """Récupérer tous les articles de blog (publics)"""
+    try:
+        query = {"published": published} if published else {}
+        
+        if category:
+            query["category"] = category
+        
+        articles = await db.blog_articles.find(query).sort("createdAt", -1).to_list(length=100)
+        
+        return [{
+            "id": str(article["_id"]),
+            "title": article.get("title", ""),
+            "category": article.get("category", ""),
+            "content": article.get("content", ""),
+            "excerpt": article.get("excerpt", ""),
+            "imageUrl": article.get("imageUrl"),
+            "tags": article.get("tags", []),
+            "published": article.get("published", True),
+            "createdAt": article.get("createdAt", ""),
+            "updatedAt": article.get("updatedAt", ""),
+            "author": article.get("author", "Équipe Sepalis")
+        } for article in articles]
+        
+    except Exception as e:
+        print(f"❌ Erreur récupération articles: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/blog/articles/{article_id}")
+async def get_blog_article(article_id: str):
+    """Récupérer un article spécifique"""
+    try:
+        article = await db.blog_articles.find_one({"_id": ObjectId(article_id)})
+        
+        if not article:
+            raise HTTPException(status_code=404, detail="Article non trouvé")
+        
+        return {
+            "id": str(article["_id"]),
+            "title": article.get("title", ""),
+            "category": article.get("category", ""),
+            "content": article.get("content", ""),
+            "excerpt": article.get("excerpt", ""),
+            "imageUrl": article.get("imageUrl"),
+            "tags": article.get("tags", []),
+            "published": article.get("published", True),
+            "createdAt": article.get("createdAt", ""),
+            "updatedAt": article.get("updatedAt", ""),
+            "author": article.get("author", "Équipe Sepalis")
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Erreur récupération article: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/admin/blog/articles")
+async def create_blog_article(
+    article: BlogArticle,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Créer un nouvel article de blog (Admin)"""
+    try:
+        user = await get_current_user(credentials)
+        
+        article_doc = {
+            "title": article.title,
+            "category": article.category,
+            "content": article.content,
+            "excerpt": article.excerpt,
+            "imageUrl": article.imageUrl,
+            "tags": article.tags or [],
+            "published": article.published,
+            "createdAt": datetime.utcnow().isoformat(),
+            "updatedAt": datetime.utcnow().isoformat(),
+            "author": user.get("name", "Admin"),
+            "authorId": str(user["_id"])
+        }
+        
+        result = await db.blog_articles.insert_one(article_doc)
+        article_id = str(result.inserted_id)
+        
+        print(f"✅ Article créé: {article.title}")
+        
+        return {
+            "id": article_id,
+            "title": article.title,
+            "category": article.category,
+            "published": article.published
+        }
+        
+    except Exception as e:
+        print(f"❌ Erreur création article: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.put("/admin/blog/articles/{article_id}")
+async def update_blog_article(
+    article_id: str,
+    article: BlogArticle,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Mettre à jour un article (Admin)"""
+    try:
+        user = await get_current_user(credentials)
+        
+        update_doc = {
+            "$set": {
+                "title": article.title,
+                "category": article.category,
+                "content": article.content,
+                "excerpt": article.excerpt,
+                "imageUrl": article.imageUrl,
+                "tags": article.tags or [],
+                "published": article.published,
+                "updatedAt": datetime.utcnow().isoformat()
+            }
+        }
+        
+        result = await db.blog_articles.update_one(
+            {"_id": ObjectId(article_id)},
+            update_doc
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=404, detail="Article non trouvé")
+        
+        print(f"✅ Article mis à jour: {article.title}")
+        
+        return {"message": "Article mis à jour avec succès"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Erreur mise à jour article: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.delete("/admin/blog/articles/{article_id}")
+async def delete_blog_article(
+    article_id: str,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Supprimer un article (Admin)"""
+    try:
+        user = await get_current_user(credentials)
+        
+        result = await db.blog_articles.delete_one({"_id": ObjectId(article_id)})
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Article non trouvé")
+        
+        print(f"✅ Article supprimé")
+        
+        return {"message": "Article supprimé avec succès"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Erreur suppression article: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/blog/categories")
+async def get_blog_categories():
+    """Récupérer les catégories disponibles"""
+    return [
+        {
+            "id": "astuces-mof",
+            "name": "Astuces MOF",
+            "icon": "🌱",
+            "description": "Conseils d'experts Meilleurs Ouvriers de France"
+        },
+        {
+            "id": "tutoriels",
+            "name": "Tutoriels",
+            "icon": "📚",
+            "description": "Guides pas à pas pour réussir votre jardin"
+        },
+        {
+            "id": "fun-facts",
+            "name": "Fun Facts",
+            "icon": "🤯",
+            "description": "Le saviez-vous ? Découvrez le monde fascinant des plantes"
+        },
+        {
+            "id": "actualites",
+            "name": "Actualités",
+            "icon": "📰",
+            "description": "Les dernières nouvelles du monde du jardinage"
+        }
+    ]
+
+
 # ============ ROOT ROUTE ============
 @api_router.get("/")
 async def root():
