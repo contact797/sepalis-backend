@@ -1003,6 +1003,15 @@ export default function AdminPanel() {
             </View>
 
             <ScrollView style={styles.modalBody}>
+              {/* Bouton Templates */}
+              <TouchableOpacity
+                style={styles.templateButton}
+                onPress={() => setShowTemplatesModal(true)}
+              >
+                <Ionicons name="apps" size={20} color={Colors.accent} />
+                <Text style={styles.templateButtonText}>Utiliser un template</Text>
+              </TouchableOpacity>
+
               <Text style={styles.label}>Titre du message</Text>
               <TextInput
                 style={styles.input}
