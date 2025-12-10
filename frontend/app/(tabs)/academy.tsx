@@ -103,7 +103,7 @@ export default function Academy() {
             color={activeTab === 'courses' ? Colors.dark : Colors.textSecondary} 
           />
           <Text style={[styles.tabText, activeTab === 'courses' && styles.tabTextActive]}>
-            Formations ({courses.length})
+            Formations
           </Text>
         </TouchableOpacity>
 
@@ -117,7 +117,21 @@ export default function Academy() {
             color={activeTab === 'workshops' ? Colors.dark : Colors.textSecondary} 
           />
           <Text style={[styles.tabText, activeTab === 'workshops' && styles.tabTextActive]}>
-            Ateliers ({workshops.length})
+            Ateliers
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'blog' && styles.tabActive]}
+          onPress={() => setActiveTab('blog')}
+        >
+          <Ionicons 
+            name="book-outline" 
+            size={20} 
+            color={activeTab === 'blog' ? Colors.dark : Colors.textSecondary} 
+          />
+          <Text style={[styles.tabText, activeTab === 'blog' && styles.tabTextActive]}>
+            Blog
           </Text>
         </TouchableOpacity>
       </View>
