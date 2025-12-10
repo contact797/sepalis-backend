@@ -138,7 +138,25 @@ export default function Academy() {
 
       {/* Content */}
       <View style={styles.content}>
-        {activeTab === 'courses' ? (
+        {activeTab === 'blog' ? (
+          // Blog - redirect to blog list
+          <View style={styles.blogContainer}>
+            <TouchableOpacity
+              style={styles.blogButton}
+              onPress={() => router.push('/(tabs)/blog-list')}
+            >
+              <Ionicons name="book" size={60} color={Colors.accent} />
+              <Text style={styles.blogButtonTitle}>Accéder au Blog</Text>
+              <Text style={styles.blogButtonSubtitle}>
+                Découvrez nos articles, conseils et astuces de jardinage
+              </Text>
+              <View style={styles.blogButtonAction}>
+                <Text style={styles.blogButtonActionText}>Voir tous les articles</Text>
+                <Ionicons name="arrow-forward" size={20} color={Colors.white} />
+              </View>
+            </TouchableOpacity>
+          </View>
+        ) : activeTab === 'courses' ? (
           // Formations
           courses.length === 0 ? (
             <View style={styles.emptyContainer}>
