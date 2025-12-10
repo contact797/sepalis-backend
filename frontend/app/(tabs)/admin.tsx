@@ -225,13 +225,90 @@ export default function AdminPanel() {
       return;
     }
 
-    Alert.alert(
-      'Fonctionnalité à venir',
-      'L\'envoi de messages aux utilisateurs sera bientôt disponible.',
-      [{ text: 'OK' }]
-    );
-    
-    // TODO: Implémenter l'envoi de push notifications ou emails
+    // Fonction d'envoi réelle via l'API
+    try {
+      setSendingMessage(true);
+      const token = await AsyncStorage.getItem('authToken');
+      
+      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/admin/messages/broadcast`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: messageTitle,
+          body: messageContent,
+          scheduledDate: null, // Envoi immédiat
+          isRecurring: false
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        Alert.alert(
+          '✅ Message envoyé !',
+          `Votre message a été envoyé à ${data.recipientsCount} utilisateurs.`,
+          [{ text: 'OK' }]
+        );
+        setMessageTitle('');
+        setMessageContent('');
+        setMessageModalVisible(false);
+        loadBroadcastMessages(); // Recharger l'historique
+      } else {
+        Alert.alert('Erreur', 'Impossible d\'envoyer le message');
+      }
+    } catch (error) {
+      console.error('Erreur envoi message:', error);
+      Alert.alert('Erreur', 'Une erreur est survenue');
+    } finally {
+      setSendingMessage(false);
+    }
+  };
+
+  // ============ BROADCAST MESSAGES FUNCTIONS ============
+  const loadBroadcastMessages = async () => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/admin/messages/broadcast`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setBroadcastMessages(data);
+        console.log('✅ Messages broadcast chargés:', data.length);
+      }
+    } catch (error) {
+      console.error('Erreur chargement messages:', error);
+    }
+  };
+
+  const loadMessageTemplates = async () => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/admin/messages/templates`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setMessageTemplates(data);
+        console.log('✅ Templates chargés:', data.length);
+      }
+    } catch (error) {
+      console.error('Erreur chargement templates:', error);
+    }
+  };
+
+  const handleUseTemplate = (template: any) => {
+    setMessageTitle(template.title);
+    setMessageContent(template.body);
+    setShowTemplatesModal(false);
   };
 
   // ============ CALENDAR TASKS FUNCTIONS ============
