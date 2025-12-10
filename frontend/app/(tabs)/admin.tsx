@@ -255,7 +255,7 @@ export default function AdminPanel() {
         );
         setMessageTitle('');
         setMessageContent('');
-        setMessageModalVisible(false);
+        setShowMessageModal(false);
         loadBroadcastMessages(); // Recharger l'historique
       } else {
         Alert.alert('Erreur', 'Impossible d\'envoyer le message');
