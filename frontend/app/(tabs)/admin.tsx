@@ -1049,6 +1049,41 @@ export default function AdminPanel() {
         </View>
       </Modal>
 
+      {/* Modal Templates */}
+      <Modal
+        visible={showTemplatesModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowTemplatesModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Choisir un template</Text>
+              <TouchableOpacity onPress={() => setShowTemplatesModal(false)}>
+                <Ionicons name="close" size={28} color={Colors.text} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.modalBody}>
+              {messageTemplates.map((template) => (
+                <TouchableOpacity
+                  key={template.id}
+                  style={styles.templateCard}
+                  onPress={() => handleUseTemplate(template)}
+                >
+                  <View style={styles.templateHeader}>
+                    <Text style={styles.templateCategory}>{template.category}</Text>
+                  </View>
+                  <Text style={styles.templateTitle}>{template.title}</Text>
+                  <Text style={styles.templateBody} numberOfLines={2}>{template.body}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
       {/* Modal: Exporter emails */}
       <Modal
         visible={showEmailsModal}
