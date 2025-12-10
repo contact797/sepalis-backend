@@ -11,7 +11,7 @@ from datetime import datetime, date
 import time
 
 # Configuration
-BASE_URL = "https://flora-tracker-8.preview.emergentagent.com/api"
+BASE_URL = "https://garden-academy.preview.emergentagent.com/api"
 HEADERS = {"Content-Type": "application/json"}
 
 class QuizBadgeTests:

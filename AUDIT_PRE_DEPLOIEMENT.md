@@ -81,7 +81,7 @@
 **Problème** : `.env` contient l'URL de preview Emergent
 **Impact** : L'app pointera vers l'environnement de dev en production
 **Fichier** : `/app/frontend/.env`
-**Actuel** : `EXPO_PUBLIC_BACKEND_URL=https://flora-tracker-8.preview.emergentagent.com`
+**Actuel** : `EXPO_PUBLIC_BACKEND_URL=https://garden-academy.preview.emergentagent.com`
 **Solution** : Remplacer par l'URL de production de votre backend
 **Priorité** : 🔴 CRITIQUE
 

@@ -80,7 +80,7 @@ export default function WorkshopBooking() {
     try {
       const originUrl = Constants.expoConfig?.extra?.backendUrl || 
                        process.env.EXPO_PUBLIC_BACKEND_URL || 
-                       'https://flora-tracker-8.preview.emergentagent.com';
+                       'https://garden-academy.preview.emergentagent.com';
 
       const bookingData = {
         workshopSlug: workshop.slug,

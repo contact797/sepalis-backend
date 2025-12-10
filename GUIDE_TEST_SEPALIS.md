@@ -9,7 +9,7 @@
 ### Étape 1 : Ouvrir l'application
 👉 **Cliquez sur ce lien :**
 ```
-https://flora-tracker-8.preview.emergentagent.com
+https://garden-academy.preview.emergentagent.com
 ```
 
 ### Étape 2 : Créer un compte
@@ -133,4 +133,4 @@ Je peux ensuite développer :
 
 ---
 
-**Testez maintenant : https://flora-tracker-8.preview.emergentagent.com** 🌱
+**Testez maintenant : https://garden-academy.preview.emergentagent.com** 🌱
