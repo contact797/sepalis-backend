@@ -35,7 +35,7 @@ export default function BlogDetail() {
     try {
       const token = await AsyncStorage.getItem('authToken');
       const response = await fetch(
-        `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/blog/posts/${postId}`,
+        `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/blog/articles/${postId}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
