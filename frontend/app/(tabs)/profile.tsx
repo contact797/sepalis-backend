@@ -33,10 +33,128 @@ export default function Profile() {
 
   const checkNotificationStatus = async () => {
     try {
-      const { status } = await Notifications.getPermissionsAsync();
-      setNotificationsEnabled(status === 'granted');
+      // Vérifier si l'utilisateur a un token enregistré
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/user/notification-status`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setNotificationsEnabled(data.hasToken);
+      } else {
+        // Sinon, vérifier les permissions locales
+        const { status } = await Notifications.getPermissionsAsync();
+        setNotificationsEnabled(status === 'granted');
+      }
     } catch (error) {
       console.log('Erreur vérification notifications:', error);
+    }
+  };
+
+  const toggleNotifications = async (value: boolean) => {
+    if (value) {
+      // Activer les notifications
+      await enableNotifications();
+    } else {
+      // Désactiver les notifications
+      await disableNotifications();
+    }
+  };
+
+  const enableNotifications = async () => {
+    try {
+      setRegisteringNotifications(true);
+      
+      // Vérifier si on est sur un vrai device
+      if (!Device.isDevice) {
+        Alert.alert(
+          'Appareil requis',
+          'Les notifications push nécessitent un appareil mobile réel (pas le simulateur).'
+        );
+        return;
+      }
+
+      // Demander la permission
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+
+      if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+
+      if (finalStatus !== 'granted') {
+        Alert.alert(
+          'Permission refusée',
+          'Veuillez activer les notifications dans les paramètres de votre appareil.'
+        );
+        return;
+      }
+
+      // Obtenir le push token
+      const tokenData = await Notifications.getExpoPushTokenAsync();
+      const pushToken = tokenData.data;
+
+      // Enregistrer le token sur le serveur
+      const authToken = await AsyncStorage.getItem('authToken');
+      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/quiz/register-push-token`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token: pushToken }),
+      });
+
+      if (response.ok) {
+        setNotificationsEnabled(true);
+        Alert.alert(
+          '✅ Notifications activées',
+          'Vous recevrez maintenant les messages et conseils de Sepalis.'
+        );
+      } else {
+        const errorText = await response.text();
+        console.error('Erreur enregistrement token:', errorText);
+        Alert.alert('Erreur', 'Impossible d\'activer les notifications');
+      }
+
+    } catch (error: any) {
+      console.error('Erreur activation notifications:', error);
+      Alert.alert('Erreur', `Impossible d'activer les notifications: ${error.message}`);
+    } finally {
+      setRegisteringNotifications(false);
+    }
+  };
+
+  const disableNotifications = async () => {
+    try {
+      setRegisteringNotifications(true);
+      
+      const authToken = await AsyncStorage.getItem('authToken');
+      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/quiz/unregister-push-token`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        setNotificationsEnabled(false);
+        Alert.alert(
+          'Notifications désactivées',
+          'Vous ne recevrez plus de notifications de Sepalis.'
+        );
+      } else {
+        Alert.alert('Erreur', 'Impossible de désactiver les notifications');
+      }
+
+    } catch (error: any) {
+      console.error('Erreur désactivation notifications:', error);
+      Alert.alert('Erreur', `Impossible de désactiver les notifications: ${error.message}`);
+    } finally {
+      setRegisteringNotifications(false);
     }
   };
 
