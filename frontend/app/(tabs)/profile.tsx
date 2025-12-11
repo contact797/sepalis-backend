@@ -305,6 +305,33 @@ export default function Profile() {
         </View>
       </View>
 
+      {/* Section Notifications */}
+      <View style={styles.notificationSection}>
+        <View style={styles.notificationHeader}>
+          <View style={styles.notificationHeaderLeft}>
+            <Ionicons name="notifications" size={24} color={Colors.primary} />
+            <View style={styles.notificationTexts}>
+              <Text style={styles.notificationTitle}>Notifications</Text>
+              <Text style={styles.notificationSubtitle}>
+                {notificationsEnabled 
+                  ? 'Recevez des conseils et messages de Sepalis' 
+                  : 'Activez pour recevoir des conseils'}
+              </Text>
+            </View>
+          </View>
+          {registeringNotifications ? (
+            <ActivityIndicator size="small" color={Colors.primary} />
+          ) : (
+            <Switch
+              value={notificationsEnabled}
+              onValueChange={toggleNotifications}
+              trackColor={{ false: Colors.border, true: Colors.primary + '80' }}
+              thumbColor={notificationsEnabled ? Colors.primary : Colors.textSecondary}
+            />
+          )}
+        </View>
+      </View>
+
       {/* Menu Items */}
       <View style={styles.menuContainer}>
         {menuItems.map((item, index) => (
