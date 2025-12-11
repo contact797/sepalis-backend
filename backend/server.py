@@ -3138,6 +3138,46 @@ async def register_quiz_push_token(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@api_router.post("/quiz/unregister-push-token")
+async def unregister_quiz_push_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Désactiver les notifications push pour un utilisateur"""
+    try:
+        user = await get_current_user(credentials)
+        
+        # Supprimer le token
+        await db.push_tokens.delete_one({"userId": user["_id"]})
+        
+        print(f"✅ Token push supprimé pour {user['_id']}")
+        return {"message": "Notifications désactivées avec succès"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Erreur suppression token push: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/user/notification-status")
+async def get_notification_status(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Vérifier si l'utilisateur a un token push enregistré"""
+    try:
+        user = await get_current_user(credentials)
+        
+        token_doc = await db.push_tokens.find_one({"userId": user["_id"]})
+        has_token = token_doc is not None
+        
+        return {
+            "hasToken": has_token,
+            "updatedAt": token_doc.get("updatedAt") if token_doc else None
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Erreur vérification token push: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ============ ADMIN - DAILY QUIZ ROUTES ============
 @api_router.get("/admin/quiz/questions", response_model=List[DailyQuizQuestionResponse])
 async def get_all_quiz_questions(credentials: HTTPAuthorizationCredentials = Depends(security)):
