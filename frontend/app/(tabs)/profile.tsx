@@ -150,13 +150,13 @@ export default function Profile() {
       });
 
       if (response.ok) {
-        setNotificationsEnabled(false);
         Alert.alert(
           'Notifications désactivées',
           'Vous ne recevrez plus de notifications de Sepalis.'
         );
       } else {
         Alert.alert('Erreur', 'Impossible de désactiver les notifications');
+        throw new Error('Échec désactivation');
       }
 
     } catch (error: any) {
