@@ -45,7 +45,7 @@ export default function BlogManager() {
     try {
       setLoading(true);
       const token = await AsyncStorage.getItem('authToken');
-      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/blog/posts`, {
+      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/blog/articles`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
