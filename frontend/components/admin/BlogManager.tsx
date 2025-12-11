@@ -102,8 +102,8 @@ export default function BlogManager() {
       };
 
       const url = currentPost
-        ? `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/blog/posts/${currentPost._id}`
-        : `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/blog/posts`;
+        ? `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/admin/blog/articles/${currentPost._id}`
+        : `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/admin/blog/articles`;
 
       const method = currentPost ? 'PUT' : 'POST';
 
