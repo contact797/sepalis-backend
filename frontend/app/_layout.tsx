@@ -4,6 +4,16 @@ import { SubscriptionProvider } from '../contexts/SubscriptionContext';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Onboarding } from '../components/Onboarding';
 import React from 'react';
+import * as Notifications from 'expo-notifications';
+
+// Configuration des notifications
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+  }),
+});
 
 function RootNavigator() {
   const { showOnboarding, completeOnboarding } = useAuth();
