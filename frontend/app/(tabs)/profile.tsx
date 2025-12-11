@@ -54,12 +54,20 @@ export default function Profile() {
   };
 
   const toggleNotifications = async (value: boolean) => {
-    if (value) {
-      // Activer les notifications
-      await enableNotifications();
-    } else {
-      // Désactiver les notifications
-      await disableNotifications();
+    // Mettre à jour l'état immédiatement pour donner un feedback visuel
+    setNotificationsEnabled(value);
+    
+    try {
+      if (value) {
+        // Activer les notifications
+        await enableNotifications();
+      } else {
+        // Désactiver les notifications
+        await disableNotifications();
+      }
+    } catch (error) {
+      // En cas d'erreur, revenir à l'état précédent
+      setNotificationsEnabled(!value);
     }
   };
 
