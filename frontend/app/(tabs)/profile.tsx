@@ -117,7 +117,6 @@ export default function Profile() {
       });
 
       if (response.ok) {
-        setNotificationsEnabled(true);
         Alert.alert(
           '✅ Notifications activées',
           'Vous recevrez maintenant les messages et conseils de Sepalis.'
@@ -126,6 +125,7 @@ export default function Profile() {
         const errorText = await response.text();
         console.error('Erreur enregistrement token:', errorText);
         Alert.alert('Erreur', 'Impossible d\'activer les notifications');
+        throw new Error('Échec activation');
       }
 
     } catch (error: any) {
