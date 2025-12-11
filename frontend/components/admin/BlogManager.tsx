@@ -148,7 +148,7 @@ export default function BlogManager() {
               setLoading(true);
               const token = await AsyncStorage.getItem('authToken');
               const response = await fetch(
-                `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/blog/posts/${postId}`,
+                `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/admin/blog/articles/${postId}`,
                 {
                   method: 'DELETE',
                   headers: {
