@@ -18,13 +18,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 interface BroadcastMessage {
-  _id: string;
+  id: string;
   title: string;
   body: string;
-  scheduledAt?: string;
+  scheduledDate?: string;
   sentAt?: string;
-  status: 'pending' | 'sent' | 'failed';
+  status: 'scheduled' | 'sent' | 'failed';
   recipientsCount?: number;
+  createdAt: string;
 }
 
 interface MessageTemplate {
