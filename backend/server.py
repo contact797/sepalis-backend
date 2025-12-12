@@ -3648,8 +3648,7 @@ async def get_broadcast_messages(
     user: dict = Depends(verify_admin)
 ):
     """Récupérer l'historique des messages broadcast"""
-    try
-        
+    try:
         messages = await db.broadcast_messages.find().sort("createdAt", -1).limit(50).to_list(length=50)
         
         return [{
