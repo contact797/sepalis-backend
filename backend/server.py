@@ -3842,7 +3842,7 @@ async def get_blog_article(article_id: str):
 @api_router.post("/admin/blog/articles")
 async def create_blog_article(
     article: BlogArticle,
-    credentials: HTTPAuthorizationCredentials = Depends(security)
+    user: dict = Depends(verify_admin)
 ):
     """Créer un nouvel article de blog (Admin)"""
     try:
