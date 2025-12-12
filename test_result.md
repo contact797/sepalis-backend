@@ -411,6 +411,18 @@ backend:
         agent: "testing"
         comment: "Tests du système de conseils de soins automatiques effectués. PROBLÈME CRITIQUE IDENTIFIÉ ❌: L'endpoint POST /api/ai/identify-plant échoue avec une erreur d'image non supportée (Status: 500, litellm.BadRequestError: You uploaded an unsupported image). TESTS RÉUSSIS ✅: Création et récupération de plantes avec careInstructions fonctionnent parfaitement - les 6 champs (sunExposure, plantingPeriod, pruning, temperature, soilType, commonIssues) sont correctement persistés et récupérés. ZONES AVEC HUMIDITY ✅: Le fix du champ humidity fonctionne correctement (pas de drainage). RECOMMANDATION: L'endpoint IA nécessite une correction du format d'image ou de la configuration LiteLLM pour fonctionner avec GPT-4 Vision."
 
+  - task: "SÉCURITÉ CRITIQUE - Protection routes admin"
+    implemented: false
+    working: false
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "🚨 PROBLÈME SÉCURITÉ CRITIQUE IDENTIFIÉ lors des tests avant lancement Play Store: Les routes admin (/api/admin/messages/broadcast, /api/admin/blog/articles, etc.) sont accessibles par tous les utilisateurs authentifiés, pas seulement les admins. Un utilisateur normal peut accéder aux fonctions d'administration. CORRECTION URGENTE REQUISE: Ajouter une vérification des permissions admin (ex: vérifier si user['email'] == 'contact@nicolasblot.com' ou ajouter un champ 'isAdmin' dans la base de données) avant d'autoriser l'accès aux routes /api/admin/*. Ceci est un risque de sécurité majeur qui doit être corrigé avant le lancement."
+
 frontend:
   - task: "Amélioration page Scanner - Conseils MOF + Sélecteur de zone + Confirmation"
     implemented: true
