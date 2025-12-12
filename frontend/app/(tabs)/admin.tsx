@@ -15,6 +15,7 @@ import { Colors } from '../../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BlogManager from '../../components/admin/BlogManager';
+import BroadcastMessagesManager from '../../components/admin/BroadcastMessagesManager';
 
 export default function AdminPanel() {
   const router = useRouter();
