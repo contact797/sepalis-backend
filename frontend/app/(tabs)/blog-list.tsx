@@ -15,12 +15,13 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface BlogPost {
-  _id: string;
+  id: string;
   title: string;
   content: string;
   author: string;
   category: string;
-  coverImageUrl?: string;
+  imageUrl?: string;
+  excerpt?: string;
   createdAt: string;
 }
 
