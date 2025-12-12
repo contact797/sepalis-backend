@@ -381,8 +381,8 @@ export default function BroadcastMessagesManager() {
                 <Text style={styles.messageDate}>
                   {message.sentAt
                     ? new Date(message.sentAt).toLocaleDateString('fr-FR')
-                    : message.scheduledAt
-                    ? new Date(message.scheduledAt).toLocaleDateString('fr-FR')
+                    : message.scheduledDate
+                    ? new Date(message.scheduledDate).toLocaleDateString('fr-FR')
                     : ''}
                 </Text>
               </View>
