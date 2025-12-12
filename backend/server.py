@@ -3670,11 +3670,10 @@ async def get_broadcast_messages(
 
 @api_router.get("/admin/messages/templates")
 async def get_message_templates(
-    credentials: HTTPAuthorizationCredentials = Depends(security)
+    user: dict = Depends(verify_admin)
 ):
     """Récupérer les templates de messages pré-faits"""
     try:
-        user = await get_current_user(credentials)
         
         templates = [
             {
