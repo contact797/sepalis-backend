@@ -3569,11 +3569,10 @@ class BroadcastMessageResponse(BaseModel):
 @api_router.post("/admin/messages/broadcast")
 async def create_broadcast_message(
     message: BroadcastMessage,
-    credentials: HTTPAuthorizationCredentials = Depends(security)
+    user: dict = Depends(verify_admin)
 ):
     """Créer et envoyer (ou programmer) un message broadcast à tous les utilisateurs"""
-    try:
-        user = await get_current_user(credentials)
+    try
         
         # Créer le message dans la DB
         message_doc = {
