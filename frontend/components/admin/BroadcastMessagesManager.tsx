@@ -224,29 +224,74 @@ export default function BroadcastMessagesManager() {
 
       {isScheduled && (
         <View style={styles.dateTimeContainer}>
-          <TouchableOpacity
-            style={styles.dateTimeButton}
-            onPress={() => setShowDatePicker(true)}
-          >
-            <Ionicons name="calendar-outline" size={20} color={Colors.primary} />
-            <Text style={styles.dateTimeText}>
-              {scheduledDate.toLocaleDateString('fr-FR')}
-            </Text>
-          </TouchableOpacity>
+          {Platform.OS === 'web' ? (
+            <>
+              <View style={styles.dateTimeButton}>
+                <Ionicons name="calendar-outline" size={20} color={Colors.primary} />
+                <TextInput
+                  style={styles.dateTimeInput}
+                  value={scheduledDate.toISOString().split('T')[0]}
+                  onChangeText={(text) => {
+                    const [year, month, day] = text.split('-').map(Number);
+                    if (year && month && day) {
+                      const newDate = new Date(scheduledDate);
+                      newDate.setFullYear(year);
+                      newDate.setMonth(month - 1);
+                      newDate.setDate(day);
+                      setScheduledDate(newDate);
+                    }
+                  }}
+                  placeholder="YYYY-MM-DD"
+                  placeholderTextColor={Colors.textSecondary}
+                />
+              </View>
 
-          <TouchableOpacity
-            style={styles.dateTimeButton}
-            onPress={() => setShowTimePicker(true)}
-          >
-            <Ionicons name="time-outline" size={20} color={Colors.primary} />
-            <Text style={styles.dateTimeText}>
-              {scheduledDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-            </Text>
-          </TouchableOpacity>
+              <View style={styles.dateTimeButton}>
+                <Ionicons name="time-outline" size={20} color={Colors.primary} />
+                <TextInput
+                  style={styles.dateTimeInput}
+                  value={scheduledDate.toTimeString().split(' ')[0].substring(0, 5)}
+                  onChangeText={(text) => {
+                    const [hours, minutes] = text.split(':').map(Number);
+                    if (!isNaN(hours) && !isNaN(minutes)) {
+                      const newDate = new Date(scheduledDate);
+                      newDate.setHours(hours);
+                      newDate.setMinutes(minutes);
+                      setScheduledDate(newDate);
+                    }
+                  }}
+                  placeholder="HH:MM"
+                  placeholderTextColor={Colors.textSecondary}
+                />
+              </View>
+            </>
+          ) : (
+            <>
+              <TouchableOpacity
+                style={styles.dateTimeButton}
+                onPress={() => setShowDatePicker(true)}
+              >
+                <Ionicons name="calendar-outline" size={20} color={Colors.primary} />
+                <Text style={styles.dateTimeText}>
+                  {scheduledDate.toLocaleDateString('fr-FR')}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.dateTimeButton}
+                onPress={() => setShowTimePicker(true)}
+              >
+                <Ionicons name="time-outline" size={20} color={Colors.primary} />
+                <Text style={styles.dateTimeText}>
+                  {scheduledDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                </Text>
+              </TouchableOpacity>
+            </>
+          )}
         </View>
       )}
 
-      {showDatePicker && (
+      {Platform.OS !== 'web' && showDatePicker && (
         <DateTimePicker
           value={scheduledDate}
           mode="date"
@@ -256,7 +301,7 @@ export default function BroadcastMessagesManager() {
         />
       )}
 
-      {showTimePicker && (
+      {Platform.OS !== 'web' && showTimePicker && (
         <DateTimePicker
           value={scheduledDate}
           mode="time"
