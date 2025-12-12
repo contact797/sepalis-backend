@@ -3846,7 +3846,6 @@ async def create_blog_article(
 ):
     """Créer un nouvel article de blog (Admin)"""
     try:
-        user = await get_current_user(credentials)
         
         article_doc = {
             "title": article.title,

@@ -3,6 +3,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
+from bson import ObjectId
 import os
 import logging
 from pathlib import Path
@@ -101,6 +102,7 @@ class PlantBase(BaseModel):
     description: Optional[str] = None
     zoneId: Optional[str] = None
     careInstructions: Optional[CareInstructions] = None
+    isFavorite: Optional[bool] = False  # True pour les suggestions enregistrées, False pour les plantes scannées
 
 class PlantCreate(PlantBase):
     pass
@@ -434,6 +436,19 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = security)
     user = await db.users.find_one({"_id": user_id})
     if user is None:
         raise HTTPException(status_code=401, detail="User not found")
+    return user
+
+
+async def verify_admin(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Vérifier que l'utilisateur est admin"""
+    user = await get_current_user(credentials)
+    
+    if not user.get("isAdmin", False):
+        raise HTTPException(
+            status_code=403, 
+            detail="Access forbidden: Admin privileges required"
+        )
+    
     return user
 
 
@@ -1469,8 +1484,8 @@ async def delete_zone(zone_id: str, credentials: HTTPAuthorizationCredentials = 
 
 
 @api_router.post("/user/zones/{zone_id}/plant-suggestions")
-async def get_plant_suggestions(zone_id: str, credentials: HTTPAuthorizationCredentials = Depends(security)):
-    """Générer des suggestions de plantes adaptées à une zone spécifique"""
+async def get_plant_suggestions(zone_id: str, request: dict, credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Générer des suggestions de plantes adaptées à une zone spécifique avec filtres utilisateur"""
     from emergentintegrations.llm.chat import LlmChat, UserMessage
     import json as json_lib
     
@@ -1483,6 +1498,25 @@ async def get_plant_suggestions(zone_id: str, credentials: HTTPAuthorizationCred
             raise HTTPException(status_code=404, detail="Zone non trouvée")
         
         print(f"🌿 Génération de suggestions pour la zone: {zone.get('name')}")
+        
+        # Récupérer les filtres utilisateur
+        filters = request.get('filters', {})
+        height_filter = filters.get('height', '')
+        color_filter = filters.get('color', '')
+        blooming_season = filters.get('bloomingSeason', '')
+        
+        print(f"🎨 Filtres: hauteur={height_filter}, couleur={color_filter}, floraison={blooming_season}")
+        
+        # Construire la section des préférences utilisateur
+        user_preferences = ""
+        if height_filter or color_filter or blooming_season:
+            user_preferences = "\nPréférences de l'utilisateur (PRIORITAIRES):"
+            if height_filter:
+                user_preferences += f"\n- Hauteur souhaitée: {height_filter}"
+            if color_filter:
+                user_preferences += f"\n- Couleur de floraison: {color_filter}"
+            if blooming_season:
+                user_preferences += f"\n- Époque de floraison: {blooming_season}"
         
         # Créer un prompt détaillé avec les caractéristiques de la zone
         prompt = f"""En tant qu'expert MOF (Meilleur Ouvrier de France) en paysagisme, suggère 8 plantes idéales pour cette zone de jardin.
@@ -1499,6 +1533,7 @@ Caractéristiques de la zone:
 - Zone climatique: {zone.get('climateZone', 'Non spécifié')}
 - Protection contre le vent: {zone.get('windProtection', 'Non spécifié')}
 - Système d'arrosage: {zone.get('wateringSystem', 'Non spécifié')}
+{user_preferences}
 
 Réponds UNIQUEMENT au format JSON suivant (sans markdown):
 {{
@@ -1514,8 +1549,9 @@ Réponds UNIQUEMENT au format JSON suivant (sans markdown):
                 "Raison 3"
             ],
             "mofAdvice": "Conseil d'expert MOF pour la plantation et l'entretien",
-            "bloomingSeason": "Période de floraison",
-            "height": "Hauteur adulte",
+            "bloomingSeason": "Période de floraison (ex: Printemps, Été, Automne)",
+            "bloomingColor": "Couleur principale de floraison (ex: Rose, Blanc, Bleu)",
+            "height": "Hauteur adulte (ex: 30-50cm, 1-2m)",
             "maintenance": "Facile/Moyen/Exigeant"
         }}
     ]
@@ -3077,6 +3113,85 @@ async def get_quiz_stats(credentials: HTTPAuthorizationCredentials = Depends(sec
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@api_router.post("/quiz/register-push-token")
+async def register_quiz_push_token(
+    token_data: dict,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Enregistrer le token push d'un utilisateur pour les notifications quiz"""
+    try:
+        user = await get_current_user(credentials)
+        push_token = token_data.get("token")
+        
+        if not push_token:
+            raise HTTPException(status_code=400, detail="Token push requis")
+        
+        # Mettre à jour ou créer le token
+        await db.push_tokens.update_one(
+            {"userId": user["_id"]},
+            {
+                "$set": {
+                    "token": push_token,
+                    "updatedAt": datetime.utcnow()
+                },
+                "$setOnInsert": {
+                    "userId": user["_id"],
+                    "createdAt": datetime.utcnow()
+                }
+            },
+            upsert=True
+        )
+        
+        print(f"✅ Token push enregistré pour {user['_id']}")
+        return {"message": "Token push enregistré avec succès"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Erreur enregistrement token push: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/quiz/unregister-push-token")
+async def unregister_quiz_push_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Désactiver les notifications push pour un utilisateur"""
+    try:
+        user = await get_current_user(credentials)
+        
+        # Supprimer le token
+        await db.push_tokens.delete_one({"userId": user["_id"]})
+        
+        print(f"✅ Token push supprimé pour {user['_id']}")
+        return {"message": "Notifications désactivées avec succès"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Erreur suppression token push: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/user/notification-status")
+async def get_notification_status(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Vérifier si l'utilisateur a un token push enregistré"""
+    try:
+        user = await get_current_user(credentials)
+        
+        token_doc = await db.push_tokens.find_one({"userId": user["_id"]})
+        has_token = token_doc is not None
+        
+        return {
+            "hasToken": has_token,
+            "updatedAt": token_doc.get("updatedAt") if token_doc else None
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Erreur vérification token push: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ============ ADMIN - DAILY QUIZ ROUTES ============
 @api_router.get("/admin/quiz/questions", response_model=List[DailyQuizQuestionResponse])
 async def get_all_quiz_questions(credentials: HTTPAuthorizationCredentials = Depends(security)):
@@ -3430,6 +3545,435 @@ async def get_user_behavior(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ============ ADMIN - MESSAGES BROADCAST ============
+
+class BroadcastMessage(BaseModel):
+    title: str
+    body: str
+    scheduledDate: Optional[str] = None  # ISO format date or null for immediate
+    isRecurring: bool = False
+    recurringDays: Optional[List[str]] = None  # ["monday", "wednesday", "friday"]
+
+class BroadcastMessageResponse(BaseModel):
+    id: str
+    title: str
+    body: str
+    scheduledDate: Optional[str]
+    isRecurring: bool
+    recurringDays: Optional[List[str]]
+    sentAt: Optional[str]
+    status: str  # "scheduled", "sent", "failed"
+    recipientsCount: int
+    createdAt: str
+
+@api_router.post("/admin/messages/broadcast")
+async def create_broadcast_message(
+    message: BroadcastMessage,
+    user: dict = Depends(verify_admin)
+):
+    """Créer et envoyer (ou programmer) un message broadcast à tous les utilisateurs"""
+    try:
+        # Créer le message dans la DB
+        message_doc = {
+            "title": message.title,
+            "body": message.body,
+            "scheduledDate": message.scheduledDate,
+            "isRecurring": message.isRecurring,
+            "recurringDays": message.recurringDays or [],
+            "status": "scheduled" if message.scheduledDate else "sending",
+            "recipientsCount": 0,
+            "sentAt": None,
+            "createdAt": datetime.utcnow().isoformat(),
+            "createdBy": str(user["_id"])
+        }
+        
+        result = await db.broadcast_messages.insert_one(message_doc)
+        message_id = str(result.inserted_id)
+        
+        # Si pas de date programmée, envoyer immédiatement
+        if not message.scheduledDate:
+            # Récupérer tous les utilisateurs avec push tokens
+            push_tokens = await db.push_tokens.find({}).to_list(length=10000)
+            
+            sent_count = 0
+            for token_doc in push_tokens:
+                success = await send_push_notification(
+                    token_doc["userId"],
+                    message.title,
+                    message.body
+                )
+                if success:
+                    sent_count += 1
+            
+            # Mettre à jour le statut
+            await db.broadcast_messages.update_one(
+                {"_id": result.inserted_id},
+                {
+                    "$set": {
+                        "status": "sent",
+                        "sentAt": datetime.utcnow().isoformat(),
+                        "recipientsCount": sent_count
+                    }
+                }
+            )
+            
+            print(f"✅ Message broadcast envoyé à {sent_count} utilisateurs")
+            
+            return {
+                "id": message_id,
+                "title": message.title,
+                "body": message.body,
+                "status": "sent",
+                "recipientsCount": sent_count,
+                "sentAt": datetime.utcnow().isoformat()
+            }
+        else:
+            # Message programmé
+            print(f"📅 Message programmé pour {message.scheduledDate}")
+            return {
+                "id": message_id,
+                "title": message.title,
+                "body": message.body,
+                "status": "scheduled",
+                "scheduledDate": message.scheduledDate,
+                "recipientsCount": 0
+            }
+            
+    except Exception as e:
+        print(f"❌ Erreur broadcast: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/admin/messages/broadcast")
+async def get_broadcast_messages(
+    user: dict = Depends(verify_admin)
+):
+    """Récupérer l'historique des messages broadcast"""
+    try:
+        messages = await db.broadcast_messages.find().sort("createdAt", -1).limit(50).to_list(length=50)
+        
+        return [{
+            "id": str(msg["_id"]),
+            "title": msg.get("title", ""),
+            "body": msg.get("body", ""),
+            "scheduledDate": msg.get("scheduledDate"),
+            "isRecurring": msg.get("isRecurring", False),
+            "recurringDays": msg.get("recurringDays", []),
+            "status": msg.get("status", "unknown"),
+            "recipientsCount": msg.get("recipientsCount", 0),
+            "sentAt": msg.get("sentAt"),
+            "createdAt": msg.get("createdAt", "")
+        } for msg in messages]
+        
+    except Exception as e:
+        print(f"❌ Erreur récupération messages: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/admin/messages/templates")
+async def get_message_templates(
+    user: dict = Depends(verify_admin)
+):
+    """Récupérer les templates de messages pré-faits"""
+    try:
+        
+        templates = [
+            {
+                "id": "tip_monday",
+                "category": "tips",
+                "title": "Astuce jardinage du lundi",
+                "body": "🌱 Astuce MOF : Paillez votre sol pour garder l'humidité et réduire les arrosages de 50%"
+            },
+            {
+                "id": "quiz_reminder",
+                "category": "quiz",
+                "title": "Quiz quotidien disponible !",
+                "body": "🧠 Nouveau quiz disponible aujourd'hui ! Testez vos connaissances et gagnez +10 XP 🌿"
+            },
+            {
+                "id": "motivation",
+                "category": "motivation",
+                "title": "Continuez comme ça !",
+                "body": "💪 Vous avez scanné 5 plantes cette semaine ! Continuez, vous devenez un expert 🏆"
+            },
+            {
+                "id": "seasonal",
+                "category": "seasonal",
+                "title": "C'est le moment !",
+                "body": "☀️ En mai, c'est le moment parfait pour planter vos tomates. Besoin de conseils ? Ouvrez Sepalis 🍅"
+            },
+            {
+                "id": "funfact",
+                "category": "funfact",
+                "title": "Le saviez-vous ?",
+                "body": "🤯 Le saviez-vous ? Les tournesols suivent le soleil toute la journée ! Ouvrez le quiz pour en apprendre plus ☀️"
+            },
+            {
+                "id": "community",
+                "category": "community",
+                "title": "Partagez votre jardin",
+                "body": "🌟 Partagez une photo de votre plus belle plante ! Tag #Sepalis sur Instagram"
+            },
+            {
+                "id": "premium",
+                "category": "premium",
+                "title": "Découvrez Premium",
+                "body": "🎁 Envie d'aller plus loin ? Débloquez les suggestions MOF personnalisées avec Sepalis Premium"
+            }
+        ]
+        
+        return templates
+        
+    except Exception as e:
+        print(f"❌ Erreur templates: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.delete("/admin/messages/broadcast/{message_id}")
+async def delete_broadcast_message(
+    message_id: str,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Supprimer un message programmé (seulement si pas encore envoyé)"""
+    try:
+        user = await get_current_user(credentials)
+        
+        message = await db.broadcast_messages.find_one({"_id": ObjectId(message_id)})
+        
+        if not message:
+            raise HTTPException(status_code=404, detail="Message non trouvé")
+        
+        if message.get("status") == "sent":
+            raise HTTPException(status_code=400, detail="Impossible de supprimer un message déjà envoyé")
+        
+        await db.broadcast_messages.delete_one({"_id": ObjectId(message_id)})
+        
+        return {"message": "Message supprimé avec succès"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Erreur suppression message: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============ ACADÉMIE - BLOG ARTICLES ============
+
+class BlogArticle(BaseModel):
+    title: str
+    category: str  # "astuces-mof", "tutoriels", "fun-facts", "actualites"
+    content: str
+    excerpt: str
+    imageUrl: Optional[str] = None
+    tags: Optional[List[str]] = []
+    published: bool = True
+
+class BlogArticleResponse(BaseModel):
+    id: str
+    title: str
+    category: str
+    content: str
+    excerpt: str
+    imageUrl: Optional[str]
+    tags: List[str]
+    published: bool
+    createdAt: str
+    updatedAt: str
+    author: Optional[str]
+
+@api_router.get("/blog/articles")
+async def get_blog_articles(
+    category: Optional[str] = None,
+    published: bool = True
+):
+    """Récupérer tous les articles de blog (publics)"""
+    try:
+        query = {"published": published} if published else {}
+        
+        if category:
+            query["category"] = category
+        
+        articles = await db.blog_articles.find(query).sort("createdAt", -1).to_list(length=100)
+        
+        return [{
+            "id": str(article["_id"]),
+            "title": article.get("title", ""),
+            "category": article.get("category", ""),
+            "content": article.get("content", ""),
+            "excerpt": article.get("excerpt", ""),
+            "imageUrl": article.get("imageUrl"),
+            "tags": article.get("tags", []),
+            "published": article.get("published", True),
+            "createdAt": article.get("createdAt", ""),
+            "updatedAt": article.get("updatedAt", ""),
+            "author": article.get("author", "Équipe Sepalis")
+        } for article in articles]
+        
+    except Exception as e:
+        print(f"❌ Erreur récupération articles: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/blog/articles/{article_id}")
+async def get_blog_article(article_id: str):
+    """Récupérer un article spécifique"""
+    try:
+        article = await db.blog_articles.find_one({"_id": ObjectId(article_id)})
+        
+        if not article:
+            raise HTTPException(status_code=404, detail="Article non trouvé")
+        
+        return {
+            "id": str(article["_id"]),
+            "title": article.get("title", ""),
+            "category": article.get("category", ""),
+            "content": article.get("content", ""),
+            "excerpt": article.get("excerpt", ""),
+            "imageUrl": article.get("imageUrl"),
+            "tags": article.get("tags", []),
+            "published": article.get("published", True),
+            "createdAt": article.get("createdAt", ""),
+            "updatedAt": article.get("updatedAt", ""),
+            "author": article.get("author", "Équipe Sepalis")
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Erreur récupération article: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/admin/blog/articles")
+async def create_blog_article(
+    article: BlogArticle,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Créer un nouvel article de blog (Admin)"""
+    try:
+        user = await get_current_user(credentials)
+        
+        article_doc = {
+            "title": article.title,
+            "category": article.category,
+            "content": article.content,
+            "excerpt": article.excerpt,
+            "imageUrl": article.imageUrl,
+            "tags": article.tags or [],
+            "published": article.published,
+            "createdAt": datetime.utcnow().isoformat(),
+            "updatedAt": datetime.utcnow().isoformat(),
+            "author": user.get("name", "Admin"),
+            "authorId": str(user["_id"])
+        }
+        
+        result = await db.blog_articles.insert_one(article_doc)
+        article_id = str(result.inserted_id)
+        
+        print(f"✅ Article créé: {article.title}")
+        
+        return {
+            "id": article_id,
+            "title": article.title,
+            "category": article.category,
+            "published": article.published
+        }
+        
+    except Exception as e:
+        print(f"❌ Erreur création article: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.put("/admin/blog/articles/{article_id}")
+async def update_blog_article(
+    article_id: str,
+    article: BlogArticle,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Mettre à jour un article (Admin)"""
+    try:
+        user = await get_current_user(credentials)
+        
+        update_doc = {
+            "$set": {
+                "title": article.title,
+                "category": article.category,
+                "content": article.content,
+                "excerpt": article.excerpt,
+                "imageUrl": article.imageUrl,
+                "tags": article.tags or [],
+                "published": article.published,
+                "updatedAt": datetime.utcnow().isoformat()
+            }
+        }
+        
+        result = await db.blog_articles.update_one(
+            {"_id": ObjectId(article_id)},
+            update_doc
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=404, detail="Article non trouvé")
+        
+        print(f"✅ Article mis à jour: {article.title}")
+        
+        return {"message": "Article mis à jour avec succès"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Erreur mise à jour article: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.delete("/admin/blog/articles/{article_id}")
+async def delete_blog_article(
+    article_id: str,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Supprimer un article (Admin)"""
+    try:
+        user = await get_current_user(credentials)
+        
+        result = await db.blog_articles.delete_one({"_id": ObjectId(article_id)})
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Article non trouvé")
+        
+        print(f"✅ Article supprimé")
+        
+        return {"message": "Article supprimé avec succès"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Erreur suppression article: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/blog/categories")
+async def get_blog_categories():
+    """Récupérer les catégories disponibles"""
+    return [
+        {
+            "id": "astuces-mof",
+            "name": "Astuces MOF",
+            "icon": "🌱",
+            "description": "Conseils d'experts Meilleurs Ouvriers de France"
+        },
+        {
+            "id": "tutoriels",
+            "name": "Tutoriels",
+            "icon": "📚",
+            "description": "Guides pas à pas pour réussir votre jardin"
+        },
+        {
+            "id": "fun-facts",
+            "name": "Fun Facts",
+            "icon": "🤯",
+            "description": "Le saviez-vous ? Découvrez le monde fascinant des plantes"
+        },
+        {
+            "id": "actualites",
+            "name": "Actualités",
+            "icon": "📰",
+            "description": "Les dernières nouvelles du monde du jardinage"
+        }
+    ]
+
+
 # ============ ROOT ROUTE ============
 @api_router.get("/")
 async def root():
@@ -3453,402 +3997,54 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-async def auto_distribute_weekly_tasks():
-        "name": "Premier Pas",
-        "description": "Répondre à votre première question",
-        "icon": "🌱"
-    },
-    "streak_7": {
-        "name": "Jardinier Assidu",
-        "description": "Série de 7 jours consécutifs",
-        "icon": "🔥"
-    },
-    "streak_30": {
-        "name": "Main Verte",
-        "description": "Série de 30 jours consécutifs",
-        "icon": "🌿"
-    },
-    "correct_50": {
-        "name": "Expert en Herbe",
-        "description": "50 bonnes réponses",
-        "icon": "⭐"
-    },
-    "correct_100": {
-        "name": "Maître Jardinier",
-        "description": "100 bonnes réponses",
-        "icon": "🏆"
-    }
-}
+# ============ SCHEDULER CONFIGURATION ============
+scheduler = AsyncIOScheduler()
 
-async def check_and_award_badges(user_id: str, stats: dict) -> List[str]:
-    """Vérifier et attribuer les badges gagnés"""
-    new_badges = []
-    current_badges = stats.get("badges", [])
-    
-    # Badge première réponse
-    if "first_answer" not in current_badges and stats["totalAnswered"] >= 1:
-        new_badges.append("first_answer")
-    
-    # Badge streak 7 jours
-    if "streak_7" not in current_badges and stats["currentStreak"] >= 7:
-        new_badges.append("streak_7")
-    
-    # Badge streak 30 jours
-    if "streak_30" not in current_badges and stats["currentStreak"] >= 30:
-        new_badges.append("streak_30")
-    
-    # Badge 50 bonnes réponses
-    if "correct_50" not in current_badges and stats["totalCorrect"] >= 50:
-        new_badges.append("correct_50")
-    
-    # Badge 100 bonnes réponses
-    if "correct_100" not in current_badges and stats["totalCorrect"] >= 100:
-        new_badges.append("correct_100")
-    
-    # Mettre à jour les badges dans la base
-    if new_badges:
-        await db.user_quiz_stats.update_one(
-            {"userId": user_id},
-            {"$addToSet": {"badges": {"$each": new_badges}}}
-        )
-    
-    return new_badges
-
-
-# ============ DAILY QUIZ ROUTES ============
-@api_router.get("/quiz/today")
-async def get_today_quiz(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    """Obtenir la question du jour"""
+async def send_daily_quiz_notifications():
+    """Envoyer les notifications push pour la question du jour"""
     try:
-        user = await get_current_user(credentials)
         today = date.today()
+        print(f"📬 [AUTO] Envoi notifications quiz pour {today}")
         
-        # Récupérer la question du jour
+        # Vérifier qu'il y a une question programmée pour aujourd'hui
         question = await db.daily_quiz_questions.find_one({"scheduledDate": today.isoformat()})
         
         if not question:
-            raise HTTPException(status_code=404, detail="Pas de question pour aujourd'hui")
+            print(f"ℹ️ [AUTO] Pas de question programmée pour {today}")
+            return
         
-        # Vérifier si l'utilisateur a déjà répondu aujourd'hui
-        stats = await db.user_quiz_stats.find_one({"userId": user["_id"]})
+        # Récupérer tous les utilisateurs
+        all_users = await db.users.find({}).to_list(length=10000)
         
-        if stats and stats.get("lastAnsweredDate") == today.isoformat():
-            # Déjà répondu aujourd'hui
-            return {
-                "alreadyAnswered": True,
-                "message": "Vous avez déjà répondu à la question du jour !",
-                "nextQuestionIn": "Nouvelle question demain à 7h00"
-            }
+        notifications_sent = 0
         
-        # Retourner la question sans la bonne réponse
-        return {
-            "alreadyAnswered": False,
-            "question": {
-                "id": question["_id"],
-                "question": question["question"],
-                "answers": question["answers"],
-                "imageUrl": question.get("imageUrl"),
-                "difficulty": question.get("difficulty", "medium"),
-                "category": question.get("category", "general")
-            }
-        }
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        print(f"Erreur récupération question du jour: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@api_router.post("/quiz/answer", response_model=DailyQuizAnswerResponse)
-async def submit_quiz_answer(
-    answer_data: DailyQuizAnswerRequest,
-    credentials: HTTPAuthorizationCredentials = Depends(security)
-):
-    """Soumettre une réponse au quiz quotidien"""
-    try:
-        user = await get_current_user(credentials)
-        today = date.today()
-        
-        # Récupérer la question
-        question = await db.daily_quiz_questions.find_one({"_id": answer_data.questionId})
-        if not question:
-            raise HTTPException(status_code=404, detail="Question non trouvée")
-        
-        # Vérifier si c'est la question du jour
-        if question["scheduledDate"] != today.isoformat():
-            raise HTTPException(status_code=400, detail="Cette question n'est pas pour aujourd'hui")
-        
-        # Vérifier la réponse
-        is_correct = answer_data.selectedAnswer == question["correctAnswer"]
-        
-        # Calculer les XP
-        xp_earned = 50 if is_correct else 10  # 50 XP correct, 10 XP participation
-        
-        # Récupérer ou créer les stats utilisateur
-        stats = await db.user_quiz_stats.find_one({"userId": user["_id"]})
-        
-        if not stats:
-            # Créer les stats
-            stats = {
-                "userId": user["_id"],
-                "currentStreak": 1,
-                "longestStreak": 1,
-                "totalXP": xp_earned,
-                "totalAnswered": 1,
-                "totalCorrect": 1 if is_correct else 0,
-                "lastAnsweredDate": today.isoformat(),
-                "badges": [],
-                "answersHistory": []
-            }
-            await db.user_quiz_stats.insert_one(stats)
-        else:
-            # Mettre à jour les stats
-            last_answered = stats.get("lastAnsweredDate")
+        for user_obj in all_users:
+            # Vérifier si l'utilisateur a déjà répondu aujourd'hui
+            stats = await db.user_quiz_stats.find_one({"userId": user_obj["_id"]})
             
-            # Calcul du streak
-            if last_answered:
-                last_date = date.fromisoformat(last_answered)
-                days_diff = (today - last_date).days
-                
-                if days_diff == 1:
-                    # Jour consécutif
-                    new_streak = stats["currentStreak"] + 1
-                elif days_diff == 0:
-                    raise HTTPException(status_code=400, detail="Vous avez déjà répondu aujourd'hui")
-                else:
-                    # Streak cassé
-                    new_streak = 1
-            else:
-                new_streak = 1
+            already_answered = stats and stats.get("lastAnsweredDate") == today.isoformat()
             
-            longest_streak = max(stats.get("longestStreak", 0), new_streak)
-            
-            await db.user_quiz_stats.update_one(
-                {"userId": user["_id"]},
-                {
-                    "$set": {
-                        "currentStreak": new_streak,
-                        "longestStreak": longest_streak,
-                        "lastAnsweredDate": today.isoformat()
-                    },
-                    "$inc": {
-                        "totalXP": xp_earned,
-                        "totalAnswered": 1,
-                        "totalCorrect": 1 if is_correct else 0
-                    },
-                    "$push": {
-                        "answersHistory": {
-                            "date": today.isoformat(),
-                            "questionId": answer_data.questionId,
-                            "correct": is_correct,
-                            "timeSpent": answer_data.timeSpent,
-                            "xpEarned": xp_earned
-                        }
+            if not already_answered:
+                # Envoyer la notification
+                sent = await send_push_notification(
+                    user_id=user_obj["_id"],
+                    title="☕ Nouvelle question du MOF",
+                    body="Testez vos connaissances avec la question du jour ! 🌱",
+                    data={
+                        "type": "daily_quiz",
+                        "questionId": question["_id"],
+                        "date": today.isoformat()
                     }
-                }
-            )
-            
-            # Recharger les stats
-            stats = await db.user_quiz_stats.find_one({"userId": user["_id"]})
+                )
+                
+                if sent:
+                    notifications_sent += 1
         
-        # Vérifier les badges
-        new_badges = await check_and_award_badges(user["_id"], stats)
-        
-        return DailyQuizAnswerResponse(
-            correct=is_correct,
-            correctAnswer=question["correctAnswer"],
-            explanation=question["explanation"],
-            xpEarned=xp_earned,
-            newStreak=stats["currentStreak"],
-            newTotalXP=stats["totalXP"],
-            badgesEarned=new_badges
-        )
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        print(f"Erreur soumission réponse quiz: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@api_router.get("/quiz/stats", response_model=UserQuizStatsResponse)
-async def get_quiz_stats(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    """Obtenir les statistiques quiz de l'utilisateur"""
-    try:
-        user = await get_current_user(credentials)
-        today = date.today()
-        
-        # Récupérer les stats
-        stats = await db.user_quiz_stats.find_one({"userId": user["_id"]})
-        
-        if not stats:
-            # Pas encore de stats
-            return UserQuizStatsResponse(
-                currentStreak=0,
-                longestStreak=0,
-                totalXP=0,
-                totalAnswered=0,
-                totalCorrect=0,
-                lastAnsweredDate=None,
-                badges=[],
-                canAnswerToday=True,
-                todayAnswered=False
-            )
-        
-        # Vérifier si déjà répondu aujourd'hui
-        today_answered = stats.get("lastAnsweredDate") == today.isoformat()
-        
-        # Formater les badges
-        badges_formatted = []
-        for badge_id in stats.get("badges", []):
-            if badge_id in QUIZ_BADGES:
-                badge_info = QUIZ_BADGES[badge_id]
-                badges_formatted.append({
-                    "id": badge_id,
-                    "name": badge_info["name"],
-                    "description": badge_info["description"],
-                    "icon": badge_info["icon"]
-                })
-        
-        return UserQuizStatsResponse(
-            currentStreak=stats.get("currentStreak", 0),
-            longestStreak=stats.get("longestStreak", 0),
-            totalXP=stats.get("totalXP", 0),
-            totalAnswered=stats.get("totalAnswered", 0),
-            totalCorrect=stats.get("totalCorrect", 0),
-            lastAnsweredDate=date.fromisoformat(stats["lastAnsweredDate"]) if stats.get("lastAnsweredDate") else None,
-            badges=badges_formatted,
-            canAnswerToday=not today_answered,
-            todayAnswered=today_answered
-        )
+        print(f"✅ [AUTO] {notifications_sent} notifications quiz envoyées")
         
     except Exception as e:
-        print(f"Erreur récupération stats quiz: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"❌ [AUTO] Erreur envoi notifications quiz: {str(e)}")
 
-
-# ============ ADMIN - DAILY QUIZ ROUTES ============
-@api_router.get("/admin/quiz/questions", response_model=List[DailyQuizQuestionResponse])
-async def get_all_quiz_questions(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    """Obtenir toutes les questions (admin uniquement)"""
-    try:
-        user = await get_current_user(credentials)
-        
-        questions = await db.daily_quiz_questions.find({}).sort("scheduledDate", -1).to_list(length=200)
-        return [DailyQuizQuestionResponse(**q) for q in questions]
-        
-    except Exception as e:
-        print(f"Erreur récupération questions admin: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@api_router.post("/admin/quiz/questions", response_model=DailyQuizQuestionResponse)
-async def create_quiz_question(
-    question_data: DailyQuizQuestionCreate,
-    credentials: HTTPAuthorizationCredentials = Depends(security)
-):
-    """Créer une nouvelle question (admin uniquement)"""
-    try:
-        user = await get_current_user(credentials)
-        
-        # Vérifier qu'il y a bien 4 réponses
-        if len(question_data.answers) != 4:
-            raise HTTPException(status_code=400, detail="Il faut exactement 4 réponses")
-        
-        # Vérifier que l'index de la bonne réponse est valide
-        if question_data.correctAnswer < 0 or question_data.correctAnswer > 3:
-            raise HTTPException(status_code=400, detail="L'index de la bonne réponse doit être entre 0 et 3")
-        
-        question_id = str(uuid.uuid4())
-        now = datetime.utcnow()
-        
-        new_question = {
-            "_id": question_id,
-            **question_data.model_dump(),
-            "scheduledDate": question_data.scheduledDate.isoformat(),
-            "createdAt": now
-        }
-        
-        await db.daily_quiz_questions.insert_one(new_question)
-        
-        return DailyQuizQuestionResponse(**new_question)
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        print(f"Erreur création question quiz: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@api_router.put("/admin/quiz/questions/{question_id}", response_model=DailyQuizQuestionResponse)
-async def update_quiz_question(
-    question_id: str,
-    question_data: DailyQuizQuestionUpdate,
-    credentials: HTTPAuthorizationCredentials = Depends(security)
-):
-    """Mettre à jour une question (admin uniquement)"""
-    try:
-        user = await get_current_user(credentials)
-        
-        # Vérifier que la question existe
-        existing = await db.daily_quiz_questions.find_one({"_id": question_id})
-        if not existing:
-            raise HTTPException(status_code=404, detail="Question non trouvée")
-        
-        # Préparer les données à mettre à jour
-        update_data = {k: v for k, v in question_data.model_dump(exclude_unset=True).items() if v is not None}
-        
-        if "scheduledDate" in update_data:
-            update_data["scheduledDate"] = update_data["scheduledDate"].isoformat()
-        
-        if "answers" in update_data and len(update_data["answers"]) != 4:
-            raise HTTPException(status_code=400, detail="Il faut exactement 4 réponses")
-        
-        if "correctAnswer" in update_data:
-            if update_data["correctAnswer"] < 0 or update_data["correctAnswer"] > 3:
-                raise HTTPException(status_code=400, detail="L'index de la bonne réponse doit être entre 0 et 3")
-        
-        await db.daily_quiz_questions.update_one(
-            {"_id": question_id},
-            {"$set": update_data}
-        )
-        
-        updated = await db.daily_quiz_questions.find_one({"_id": question_id})
-        return DailyQuizQuestionResponse(**updated)
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        print(f"Erreur mise à jour question quiz: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@api_router.delete("/admin/quiz/questions/{question_id}")
-async def delete_quiz_question(
-    question_id: str,
-    credentials: HTTPAuthorizationCredentials = Depends(security)
-):
-    """Supprimer une question (admin uniquement)"""
-    try:
-        user = await get_current_user(credentials)
-        
-        result = await db.daily_quiz_questions.delete_one({"_id": question_id})
-        
-        if result.deleted_count == 0:
-            raise HTTPException(status_code=404, detail="Question non trouvée")
-        
-        return {"message": "Question supprimée avec succès"}
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        print(f"Erreur suppression question quiz: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-# ============ SCHEDULER CONFIGURATION ============
-scheduler = AsyncIOScheduler()
 
 async def auto_distribute_weekly_tasks():
     """Fonction automatique pour distribuer les tâches de la semaine"""
@@ -3930,8 +4126,19 @@ async def startup_scheduler():
         replace_existing=True
     )
     
+    # Planifier les notifications quiz chaque jour à 7h00 du matin (UTC)
+    scheduler.add_job(
+        send_daily_quiz_notifications,
+        CronTrigger(hour=7, minute=0),
+        id='daily_quiz_notifications',
+        name='Notifications quiz quotidien',
+        replace_existing=True
+    )
+    
     scheduler.start()
-    print("✅ Scheduler démarré : Distribution automatique chaque lundi à 6h00")
+    print("✅ Scheduler démarré :")
+    print("   - Distribution tâches : Chaque lundi à 6h00")
+    print("   - Notifications quiz : Chaque jour à 7h00")
 
 @app.on_event("shutdown")
 async def shutdown_scheduler():
