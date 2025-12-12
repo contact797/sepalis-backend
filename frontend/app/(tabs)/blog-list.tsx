@@ -64,7 +64,7 @@ export default function BlogList() {
   const handlePostPress = (post: BlogPost) => {
     router.push({
       pathname: '/(tabs)/blog-detail',
-      params: { postId: post._id },
+      params: { postId: post.id },
     });
   };
 
