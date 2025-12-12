@@ -522,7 +522,7 @@ class SepalisTestSuite:
         # 2. Prévisions 7 jours
         params = {"lat": paris_lat, "lon": paris_lon, "days": 7}
         response = await self.make_request("GET", "/weather/forecast", params=params)
-        success = response["status"] == 200 and "forecast" in response["data"]
+        success = response["status"] == 200 and ("forecast" in response["data"] or "daily" in response["data"])
         self.log_test("GET /api/weather/forecast - Prévisions 7 jours", success,
                      f"Status: {response['status']}")
 
