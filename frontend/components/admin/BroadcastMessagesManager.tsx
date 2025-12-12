@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Modal,
   Switch,
+  Platform,
 } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
