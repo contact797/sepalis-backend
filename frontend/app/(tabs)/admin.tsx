@@ -751,23 +751,9 @@ export default function AdminPanel() {
         )}
       </View>
 
-      {/* Section: Messages */}
+      {/* Section: Messages Broadcast */}
       <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Ionicons name="megaphone" size={24} color={Colors.accent} />
-          <Text style={styles.sectionTitle}>Messages utilisateurs</Text>
-        </View>
-        <Text style={styles.sectionDesc}>
-          Envoyez des messages hebdomadaires à tous les utilisateurs
-        </Text>
-
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={() => setShowMessageModal(true)}
-        >
-          <Ionicons name="send" size={20} color={Colors.white} />
-          <Text style={styles.addButtonText}>Envoyer un message</Text>
-        </TouchableOpacity>
+        <BroadcastMessagesManager />
       </View>
 
       {/* Section: Calendrier annuel MOF */}
