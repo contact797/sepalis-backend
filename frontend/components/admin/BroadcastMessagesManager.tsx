@@ -352,7 +352,7 @@ export default function BroadcastMessagesManager() {
                       backgroundColor:
                         message.status === 'sent'
                           ? Colors.primary + '20'
-                          : message.status === 'pending'
+                          : message.status === 'scheduled'
                           ? '#FFA500' + '20'
                           : Colors.error + '20',
                     },
@@ -365,7 +365,7 @@ export default function BroadcastMessagesManager() {
                         color:
                           message.status === 'sent'
                             ? Colors.primary
-                            : message.status === 'pending'
+                            : message.status === 'scheduled'
                             ? '#FFA500'
                             : Colors.error,
                       },
@@ -373,7 +373,7 @@ export default function BroadcastMessagesManager() {
                   >
                     {message.status === 'sent'
                       ? 'Envoyé'
-                      : message.status === 'pending'
+                      : message.status === 'scheduled'
                       ? 'Planifié'
                       : 'Échec'}
                   </Text>
