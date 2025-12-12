@@ -73,8 +73,8 @@ export default function BlogDetail() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
-      {post.coverImageUrl && (
-        <Image source={{ uri: post.coverImageUrl }} style={styles.coverImage} resizeMode="cover" />
+      {post.imageUrl && (
+        <Image source={{ uri: post.imageUrl }} style={styles.coverImage} resizeMode="cover" />
       )}
 
       <View style={styles.content}>
