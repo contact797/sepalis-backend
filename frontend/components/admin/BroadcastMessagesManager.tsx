@@ -739,6 +739,13 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: Colors.text,
   },
+  dateTimeInput: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '500',
+    color: Colors.text,
+    padding: 0,
+  },
   sendButton: {
     flexDirection: 'row',
     alignItems: 'center',
