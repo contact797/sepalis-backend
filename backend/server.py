@@ -3881,11 +3881,10 @@ async def create_blog_article(
 async def update_blog_article(
     article_id: str,
     article: BlogArticle,
-    credentials: HTTPAuthorizationCredentials = Depends(security)
+    user: dict = Depends(verify_admin)
 ):
     """Mettre à jour un article (Admin)"""
     try:
-        user = await get_current_user(credentials)
         
         update_doc = {
             "$set": {
