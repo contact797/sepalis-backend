@@ -112,10 +112,11 @@ export default function BroadcastMessagesManager() {
       const payload: any = {
         title: messageTitle,
         body: messageBody,
+        isRecurring: false,
       };
 
       if (isScheduled) {
-        payload.scheduledAt = scheduledDate.toISOString();
+        payload.scheduledDate = scheduledDate.toISOString();
       }
 
       const response = await fetch(
