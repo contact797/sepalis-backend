@@ -92,9 +92,9 @@ export default function BlogList() {
         </View>
       ) : (
         posts.map((post) => (
-          <TouchableOpacity key={post._id} style={styles.card} onPress={() => handlePostPress(post)}>
-            {post.coverImageUrl ? (
-              <Image source={{ uri: post.coverImageUrl }} style={styles.cardImage} resizeMode="cover" />
+          <TouchableOpacity key={post.id} style={styles.card} onPress={() => handlePostPress(post)}>
+            {post.imageUrl ? (
+              <Image source={{ uri: post.imageUrl }} style={styles.cardImage} resizeMode="cover" />
             ) : (
               <View style={styles.cardImagePlaceholder}>
                 <Ionicons name="image-outline" size={40} color={Colors.textSecondary} />
