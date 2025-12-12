@@ -3992,6 +3992,216 @@ async def get_blog_categories():
     ]
 
 
+
+
+# ============ REFERRAL SYSTEM ============
+
+def calculate_rewards_tier(total_referrals: int) -> dict:
+    """Calculer les récompenses selon le nombre de parrainages"""
+    tiers = [
+        {"min": 1, "premiumDays": 30, "description": "1 mois Premium"},
+        {"min": 3, "premiumDays": 90, "description": "3 mois Premium + Badge Ambassadeur"},
+        {"min": 5, "premiumDays": 180, "description": "6 mois Premium + Badge Super Ambassadeur"},
+        {"min": 10, "premiumDays": 36500, "description": "Premium À VIE + Badge Légende"}
+    ]
+    
+    current_tier = 0
+    total_premium_days = 0
+    next_tier_description = "Premium à vie !"
+    progress = 1.0
+    
+    for i, tier in enumerate(tiers):
+        if total_referrals >= tier["min"]:
+            current_tier = i
+            total_premium_days = tier["premiumDays"]
+        else:
+            if i > 0:
+                prev_min = tiers[i-1]["min"]
+                progress = (total_referrals - prev_min) / (tier["min"] - prev_min)
+            else:
+                progress = total_referrals / tier["min"]
+            next_tier_description = f"{tier['min']} amis : {tier['description']}"
+            break
+    
+    return {
+        "currentTier": current_tier,
+        "totalPremiumDays": total_premium_days,
+        "nextTier": next_tier_description,
+        "progress": min(progress, 1.0)
+    }
+
+async def calculate_referrer_rewards(referrer_id: str):
+    """Calculer et attribuer les récompenses au parrain"""
+    try:
+        total_referrals = await db.referrals.count_documents({"referrerId": referrer_id})
+        rewards = calculate_rewards_tier(total_referrals)
+        user = await db.users.find_one({"_id": referrer_id})
+        if not user:
+            return
+        
+        current_premium_days = user.get("referralPremiumDays", 0)
+        new_premium_days = rewards["totalPremiumDays"]
+        
+        if new_premium_days > current_premium_days:
+            days_to_add = new_premium_days - current_premium_days
+            current_expires = user.get("subscription", {}).get("expiresAt")
+            if current_expires:
+                expires_dt = datetime.fromisoformat(current_expires.replace('Z', '+00:00'))
+            else:
+                expires_dt = datetime.utcnow()
+            
+            new_expires = expires_dt + timedelta(days=days_to_add)
+            
+            await db.users.update_one(
+                {"_id": referrer_id},
+                {"$set": {
+                    "referralPremiumDays": new_premium_days,
+                    "subscription.isActive": True,
+                    "subscription.expiresAt": new_expires.isoformat(),
+                    "subscription.type": "referral_earned" if total_referrals < 10 else "lifetime"
+                }}
+            )
+            print(f"✅ Parrain {referrer_id} : +{days_to_add} jours Premium")
+    except Exception as e:
+        print(f"Erreur calculate rewards: {str(e)}")
+
+@api_router.get("/user/referral/code")
+async def get_my_referral_code(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Obtenir mon code de parrainage unique"""
+    try:
+        user = await get_current_user(credentials)
+        
+        if not user.get("referralCode"):
+            first_name = user.get("firstName", "USER").upper()[:10]
+            random_digits = str(uuid.uuid4().int)[:4]
+            referral_code = f"SEPALIS-{first_name}-{random_digits}"
+            
+            await db.users.update_one(
+                {"_id": user["_id"]},
+                {"$set": {"referralCode": referral_code}}
+            )
+            user["referralCode"] = referral_code
+        
+        return {
+            "code": user["referralCode"],
+            "shareUrl": f"https://sepalis.app/invite/{user['referralCode']}",
+            "shareMessage": f"Hey ! 🌱\n\nJe viens de découvrir Sepalis, une super app pour identifier les plantes et gérer son jardin.\n\nTu devrais la tester, elle est gratuite !\n\nAvec mon code {user['referralCode']}, tu gagnes 2 semaines Premium gratuites 🎁\n\n📱 Télécharge ici : https://sepalis.app\n\nBon jardinage ! 🌿"
+        }
+    except Exception as e:
+        print(f"Erreur get referral code: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/user/referral/apply")
+async def apply_referral_code(
+    request: ReferralCodeRequest,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Appliquer un code de parrainage (filleul)"""
+    try:
+        user = await get_current_user(credentials)
+        
+        if user.get("referredBy"):
+            raise HTTPException(status_code=400, detail="Vous avez déjà utilisé un code de parrainage")
+        
+        if user.get("referralCode") == request.code:
+            raise HTTPException(status_code=400, detail="Vous ne pouvez pas utiliser votre propre code")
+        
+        referrer = await db.users.find_one({"referralCode": request.code})
+        if not referrer:
+            raise HTTPException(status_code=404, detail="Code de parrainage invalide")
+        
+        referral_doc = {
+            "referrerId": referrer["_id"],
+            "referredId": user["_id"],
+            "referredEmail": user["email"],
+            "referredName": f"{user.get('firstName', '')} {user.get('lastName', '')}".strip(),
+            "status": "active",
+            "createdAt": datetime.utcnow().isoformat(),
+            "rewardsEarned": {
+                "referrer": {"premiumDays": 0, "tier": 0},
+                "referred": {"premiumDays": 14}
+            }
+        }
+        
+        await db.referrals.insert_one(referral_doc)
+        
+        expires_at = datetime.utcnow() + timedelta(days=14)
+        await db.users.update_one(
+            {"_id": user["_id"]},
+            {"$set": {
+                "referredBy": referrer["_id"],
+                "referredByCode": request.code,
+                "subscription.isActive": True,
+                "subscription.isTrial": False,
+                "subscription.type": "referral_bonus",
+                "subscription.expiresAt": expires_at.isoformat()
+            }}
+        )
+        
+        await calculate_referrer_rewards(referrer["_id"])
+        
+        return {
+            "success": True,
+            "message": "Code appliqué avec succès ! Vous avez gagné 2 semaines Premium 🎁",
+            "premiumDays": 14,
+            "expiresAt": expires_at.isoformat()
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Erreur apply referral: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/user/referral/stats")
+async def get_referral_stats(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Obtenir les statistiques de parrainage"""
+    try:
+        user = await get_current_user(credentials)
+        
+        total_referrals = await db.referrals.count_documents({"referrerId": user["_id"]})
+        active_referrals = await db.referrals.count_documents({
+            "referrerId": user["_id"],
+            "status": "active"
+        })
+        
+        referrals_cursor = db.referrals.find({"referrerId": user["_id"]}).sort("createdAt", -1)
+        referrals_list = await referrals_cursor.to_list(length=100)
+        
+        referrals_data = []
+        for ref in referrals_list:
+            referrals_data.append({
+                "id": str(ref["_id"]),
+                "name": ref.get("referredName", "Utilisateur"),
+                "email": ref.get("referredEmail", ""),
+                "status": ref.get("status", "active"),
+                "createdAt": ref.get("createdAt"),
+                "rewardEarned": ref.get("rewardsEarned", {}).get("referrer", {}).get("premiumDays", 0)
+            })
+        
+        rewards_data = calculate_rewards_tier(total_referrals)
+        
+        badge = None
+        if total_referrals >= 10:
+            badge = "legendary"
+        elif total_referrals >= 5:
+            badge = "super_ambassador"
+        elif total_referrals >= 3:
+            badge = "ambassador"
+        
+        return {
+            "totalReferrals": total_referrals,
+            "activeReferrals": active_referrals,
+            "pendingReferrals": 0,
+            "premiumEarned": user.get("referralPremiumDays", 0),
+            "nextReward": rewards_data["nextTier"],
+            "progressToNext": rewards_data["progress"],
+            "badge": badge,
+            "referrals": referrals_data
+        }
+    except Exception as e:
+        print(f"Erreur get referral stats: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # ============ ROOT ROUTE ============
 @api_router.get("/")
 async def root():
