@@ -3920,11 +3920,10 @@ async def update_blog_article(
 @api_router.delete("/admin/blog/articles/{article_id}")
 async def delete_blog_article(
     article_id: str,
-    credentials: HTTPAuthorizationCredentials = Depends(security)
+    user: dict = Depends(verify_admin)
 ):
     """Supprimer un article (Admin)"""
     try:
-        user = await get_current_user(credentials)
         
         result = await db.blog_articles.delete_one({"_id": ObjectId(article_id)})
         
