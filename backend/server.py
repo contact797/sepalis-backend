@@ -3566,6 +3566,27 @@ class BroadcastMessageResponse(BaseModel):
     recipientsCount: int
     createdAt: str
 
+
+# ============ REFERRAL MODELS ============
+class ReferralCodeRequest(BaseModel):
+    code: str
+
+class ReferralStats(BaseModel):
+    totalReferrals: int
+    activeReferrals: int
+    pendingReferrals: int
+    premiumEarned: int  # en jours
+    nextReward: str
+    progressToNext: float  # 0-1
+    badge: Optional[str]
+    referrals: List[Dict]
+    
+class ReferralReward(BaseModel):
+    tier: int  # 1, 3, 5, 10
+    premiumDays: int
+    badge: Optional[str]
+    description: str
+
 @api_router.post("/admin/messages/broadcast")
 async def create_broadcast_message(
     message: BroadcastMessage,
