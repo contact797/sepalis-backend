@@ -474,7 +474,7 @@ export default function BroadcastMessagesManager() {
         <View style={styles.statCard}>
           <Ionicons name="time" size={24} color="#FFA500" />
           <Text style={styles.statNumber}>
-            {messages.filter((m) => m.status === 'pending').length}
+            {messages.filter((m) => m.status === 'scheduled').length}
           </Text>
           <Text style={styles.statLabel}>Planifiés</Text>
         </View>
