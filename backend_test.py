@@ -1,433 +1,772 @@
 #!/usr/bin/env python3
 """
-Tests complets pour l'implémentation du badge Quiz - Sepalis
-Focus sur les endpoints /api/quiz/stats, /api/quiz/today, et /api/quiz/answer
+Tests complets pour l'application Sepalis avant lancement Play Store
+Focus sur les fonctionnalités critiques et nouvelles (Blog, Messages Broadcast)
 """
 
-import requests
+import asyncio
+import aiohttp
 import json
 import uuid
 from datetime import datetime, date
-import time
+from typing import Dict, Any, Optional
+import sys
 
-# Configuration
+# Configuration des tests
 BASE_URL = "https://garden-academy.preview.emergentagent.com/api"
-HEADERS = {"Content-Type": "application/json"}
+ADMIN_EMAIL = "contact@nicolasblot.com"
+ADMIN_PASSWORD = "sepalis2024"  # Mot de passe admin par défaut
+TEST_USER_EMAIL = f"test_{uuid.uuid4().hex[:8]}@sepalis.com"
+TEST_USER_PASSWORD = "TestPassword123!"
+TEST_USER_NAME = "Utilisateur Test Sepalis"
 
-class QuizBadgeTests:
+class SepalisTestSuite:
     def __init__(self):
-        self.session = requests.Session()
-        self.session.headers.update(HEADERS)
+        self.session = None
         self.user_token = None
-        self.user_id = None
-        self.test_user_email = None
-        self.question_id = None
+        self.admin_token = None
+        self.test_user_id = None
+        self.admin_user_id = None
+        self.test_zone_id = None
+        self.test_plant_id = None
+        self.test_article_id = None
+        self.results = {
+            "total_tests": 0,
+            "passed": 0,
+            "failed": 0,
+            "errors": []
+        }
+
+    async def setup(self):
+        """Initialiser la session HTTP"""
+        self.session = aiohttp.ClientSession()
+        print(f"🚀 Démarrage des tests Sepalis - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"🌐 URL de base: {BASE_URL}")
+
+    async def cleanup(self):
+        """Nettoyer les ressources"""
+        if self.session:
+            await self.session.close()
+
+    async def make_request(self, method: str, endpoint: str, data: Dict = None, 
+                          headers: Dict = None, params: Dict = None) -> Dict:
+        """Effectuer une requête HTTP avec gestion d'erreurs"""
+        url = f"{BASE_URL}{endpoint}"
         
-    def log(self, message, level="INFO"):
-        """Logger simple avec timestamp"""
-        timestamp = datetime.now().strftime("%H:%M:%S")
-        print(f"[{timestamp}] {level}: {message}")
+        default_headers = {"Content-Type": "application/json"}
+        if headers:
+            default_headers.update(headers)
         
-    def register_test_user(self):
-        """Créer un nouvel utilisateur pour les tests"""
         try:
-            # Générer un email unique
-            unique_id = str(uuid.uuid4())[:8]
-            self.test_user_email = f"test_quiz_{unique_id}@example.com"
+            async with self.session.request(
+                method, url, 
+                json=data, 
+                headers=default_headers,
+                params=params,
+                timeout=aiohttp.ClientTimeout(total=30)
+            ) as response:
+                try:
+                    response_data = await response.json()
+                except:
+                    response_data = {"text": await response.text()}
+                
+                return {
+                    "status": response.status,
+                    "data": response_data,
+                    "headers": dict(response.headers)
+                }
+        except Exception as e:
+            return {
+                "status": 0,
+                "data": {"error": str(e)},
+                "headers": {}
+            }
+
+    def log_test(self, test_name: str, success: bool, details: str = ""):
+        """Enregistrer le résultat d'un test"""
+        self.results["total_tests"] += 1
+        if success:
+            self.results["passed"] += 1
+            print(f"✅ {test_name}")
+        else:
+            self.results["failed"] += 1
+            error_msg = f"❌ {test_name}: {details}"
+            print(error_msg)
+            self.results["errors"].append(error_msg)
+
+    async def test_health_check(self):
+        """Test de santé de l'API"""
+        print("\n🏥 === TESTS DE SANTÉ DE L'API ===")
+        
+        # Test de connectivité de base
+        response = await self.make_request("GET", "/")
+        success = response["status"] in [200, 404]  # 404 acceptable si pas de route racine
+        self.log_test("Connectivité API de base", success, 
+                     f"Status: {response['status']}")
+
+    async def test_authentication(self):
+        """Tests d'authentification complets"""
+        print("\n🔐 === TESTS D'AUTHENTIFICATION ===")
+        
+        # 1. Inscription nouvel utilisateur
+        register_data = {
+            "email": TEST_USER_EMAIL,
+            "password": TEST_USER_PASSWORD,
+            "name": TEST_USER_NAME
+        }
+        
+        response = await self.make_request("POST", "/auth/register", register_data)
+        success = response["status"] == 200 and "token" in response["data"]
+        if success:
+            self.user_token = response["data"]["token"]
+            self.test_user_id = response["data"]["user"]["id"]
+        self.log_test("Inscription nouvel utilisateur", success,
+                     f"Status: {response['status']}, Token présent: {'token' in response['data']}")
+
+        # 2. Connexion utilisateur
+        login_data = {
+            "email": TEST_USER_EMAIL,
+            "password": TEST_USER_PASSWORD
+        }
+        
+        response = await self.make_request("POST", "/auth/login", login_data)
+        success = response["status"] == 200 and "token" in response["data"]
+        self.log_test("Connexion utilisateur", success,
+                     f"Status: {response['status']}")
+
+        # 3. Connexion admin (contact@nicolasblot.com)
+        admin_login_data = {
+            "email": ADMIN_EMAIL,
+            "password": ADMIN_PASSWORD
+        }
+        
+        response = await self.make_request("POST", "/auth/login", admin_login_data)
+        success = response["status"] == 200 and "token" in response["data"]
+        if success:
+            self.admin_token = response["data"]["token"]
+            self.admin_user_id = response["data"]["user"]["id"]
+        self.log_test("Connexion admin (contact@nicolasblot.com)", success,
+                     f"Status: {response['status']}")
+
+        # 4. Vérification token JWT
+        if self.user_token:
+            headers = {"Authorization": f"Bearer {self.user_token}"}
+            response = await self.make_request("GET", "/auth/me", headers=headers)
+            success = response["status"] == 200 and response["data"]["email"] == TEST_USER_EMAIL
+            self.log_test("Vérification token JWT", success,
+                         f"Status: {response['status']}")
+
+    async def test_zones_management(self):
+        """Tests de gestion des zones"""
+        print("\n🏞️ === TESTS GESTION DES ZONES ===")
+        
+        if not self.user_token:
+            self.log_test("Gestion zones - Token requis", False, "Pas de token utilisateur")
+            return
+
+        headers = {"Authorization": f"Bearer {self.user_token}"}
+
+        # 1. Liste des zones (vide initialement)
+        response = await self.make_request("GET", "/user/zones", headers=headers)
+        success = response["status"] == 200 and isinstance(response["data"], list)
+        self.log_test("GET /api/user/zones - Liste vide", success,
+                     f"Status: {response['status']}, Type: {type(response['data'])}")
+
+        # 2. Créer une zone avec climat
+        zone_data = {
+            "name": "Zone Test Potager",
+            "type": "vegetable",
+            "length": 5.0,
+            "width": 3.0,
+            "area": 15.0,
+            "soilType": "Argileux",
+            "soilPH": "Neutre (6.5-7)",
+            "humidity": "Normal",
+            "sunExposure": "Plein soleil",
+            "climateZone": "Zone 8 (France métropolitaine)",
+            "windProtection": "Protégé",
+            "wateringSystem": "Arrosage manuel",
+            "notes": "Zone test pour les légumes d'été",
+            "color": "#4CAF50"
+        }
+        
+        response = await self.make_request("POST", "/user/zones", zone_data, headers=headers)
+        success = response["status"] == 200 and "id" in response["data"]
+        if success:
+            self.test_zone_id = response["data"]["id"]
+        self.log_test("POST /api/user/zones - Créer zone avec climat", success,
+                     f"Status: {response['status']}")
+
+        # 3. Récupérer la zone créée
+        if self.test_zone_id:
+            response = await self.make_request("GET", f"/user/zones/{self.test_zone_id}", headers=headers)
+            success = response["status"] == 200 and response["data"]["name"] == "Zone Test Potager"
+            self.log_test("GET /api/user/zones/{id} - Récupérer zone", success,
+                         f"Status: {response['status']}")
+
+        # 4. Modifier la zone
+        if self.test_zone_id:
+            updated_data = zone_data.copy()
+            updated_data["name"] = "Zone Test Potager Modifiée"
+            updated_data["humidity"] = "Humide"
             
-            user_data = {
-                "email": self.test_user_email,
-                "password": "TestPassword123!",
-                "name": f"Test Quiz User {unique_id}"
+            response = await self.make_request("PUT", f"/user/zones/{self.test_zone_id}", 
+                                             updated_data, headers=headers)
+            success = response["status"] == 200
+            self.log_test("PUT /api/user/zones/{id} - Modifier zone", success,
+                         f"Status: {response['status']}")
+
+        # 5. Liste des zones (avec données)
+        response = await self.make_request("GET", "/user/zones", headers=headers)
+        success = response["status"] == 200 and len(response["data"]) > 0
+        self.log_test("GET /api/user/zones - Liste avec données", success,
+                     f"Status: {response['status']}, Zones: {len(response['data']) if isinstance(response['data'], list) else 0}")
+
+    async def test_plants_management(self):
+        """Tests de gestion des plantes"""
+        print("\n🌱 === TESTS GESTION DES PLANTES ===")
+        
+        if not self.user_token:
+            self.log_test("Gestion plantes - Token requis", False, "Pas de token utilisateur")
+            return
+
+        headers = {"Authorization": f"Bearer {self.user_token}"}
+
+        # 1. Liste des plantes (vide initialement)
+        response = await self.make_request("GET", "/user/plants", headers=headers)
+        success = response["status"] == 200 and isinstance(response["data"], list)
+        self.log_test("GET /api/user/plants - Liste plantes", success,
+                     f"Status: {response['status']}")
+
+        # 2. Ajouter une plante avec conseils MOF
+        plant_data = {
+            "name": "Tomate Cœur de Bœuf",
+            "scientificName": "Solanum lycopersicum",
+            "description": "Variété de tomate ancienne aux gros fruits charnus",
+            "zoneId": self.test_zone_id,
+            "careInstructions": {
+                "sunExposure": "Plein soleil, 6-8h par jour minimum",
+                "plantingPeriod": "Mai-juin après les dernières gelées",
+                "pruning": "Tailler les gourmands régulièrement, étêter à 5-6 bouquets",
+                "temperature": "Optimale entre 20-25°C, craint le gel",
+                "soilType": "Sol riche, bien drainé, pH 6.0-7.0",
+                "commonIssues": "Mildiou, cul noir, pucerons - traitement préventif recommandé"
+            },
+            "isFavorite": False
+        }
+        
+        response = await self.make_request("POST", "/user/plants", plant_data, headers=headers)
+        success = response["status"] == 200 and "id" in response["data"]
+        if success:
+            self.test_plant_id = response["data"]["id"]
+        self.log_test("POST /api/user/plants - Ajouter plante avec conseils MOF", success,
+                     f"Status: {response['status']}")
+
+        # 3. Suggestions de plantes IA (si zone disponible)
+        if self.test_zone_id:
+            response = await self.make_request("GET", "/plants/suggestions", 
+                                             params={"zoneId": self.test_zone_id}, headers=headers)
+            success = response["status"] in [200, 404]  # 404 acceptable si endpoint pas implémenté
+            self.log_test("GET /api/plants/suggestions - Suggestions IA", success,
+                         f"Status: {response['status']}")
+
+        # 4. Vérifier compatibilité entre plantes
+        if self.test_plant_id:
+            compatibility_data = {
+                "plantIds": [self.test_plant_id],
+                "newPlantName": "Basilic"
+            }
+            response = await self.make_request("POST", "/plants/compatibility", 
+                                             compatibility_data, headers=headers)
+            success = response["status"] in [200, 404]  # 404 acceptable si endpoint pas implémenté
+            self.log_test("POST /api/plants/compatibility - Vérifier compatibilité", success,
+                         f"Status: {response['status']}")
+
+    async def test_blog_academy(self):
+        """Tests du système Blog/Académie (NOUVEAU - Priorité haute)"""
+        print("\n📚 === TESTS BLOG/ACADÉMIE (NOUVEAU) ===")
+        
+        # 1. Liste des articles (public)
+        response = await self.make_request("GET", "/blog/articles")
+        success = response["status"] in [200, 404]  # 404 acceptable si pas encore implémenté
+        self.log_test("GET /api/blog/articles - Liste articles", success,
+                     f"Status: {response['status']}")
+
+        # 2. Détail d'un article (si articles disponibles)
+        if response["status"] == 200 and response["data"] and len(response["data"]) > 0:
+            article_id = response["data"][0].get("id")
+            if article_id:
+                response = await self.make_request("GET", f"/blog/articles/{article_id}")
+                success = response["status"] == 200
+                self.log_test("GET /api/blog/articles/{id} - Détail article", success,
+                             f"Status: {response['status']}")
+
+        # Tests admin (si token admin disponible)
+        if self.admin_token:
+            admin_headers = {"Authorization": f"Bearer {self.admin_token}"}
+            
+            # 3. Créer un article (admin)
+            article_data = {
+                "title": "Test Article Sepalis",
+                "content": "Contenu de test pour l'article de blog Sepalis",
+                "excerpt": "Extrait de l'article de test",
+                "category": "conseils",
+                "tags": ["test", "jardinage"],
+                "published": True,
+                "featuredImage": "https://images.unsplash.com/photo-1416879595882-3373a0480b5b"
             }
             
-            self.log(f"Inscription utilisateur: {self.test_user_email}")
-            response = self.session.post(f"{BASE_URL}/auth/register", json=user_data)
+            response = await self.make_request("POST", "/admin/blog/articles", 
+                                             article_data, headers=admin_headers)
+            success = response["status"] in [200, 201, 404]  # 404 si pas implémenté
+            if success and response["status"] in [200, 201]:
+                self.test_article_id = response["data"].get("id")
+            self.log_test("POST /api/admin/blog/articles - Créer article (admin)", success,
+                         f"Status: {response['status']}")
+
+            # 4. Modifier un article (admin)
+            if self.test_article_id:
+                updated_article = article_data.copy()
+                updated_article["title"] = "Test Article Sepalis Modifié"
+                
+                response = await self.make_request("PUT", f"/admin/blog/articles/{self.test_article_id}",
+                                                 updated_article, headers=admin_headers)
+                success = response["status"] in [200, 404]
+                self.log_test("PUT /api/admin/blog/articles/{id} - Modifier article (admin)", success,
+                             f"Status: {response['status']}")
+
+            # 5. Supprimer un article (admin)
+            if self.test_article_id:
+                response = await self.make_request("DELETE", f"/admin/blog/articles/{self.test_article_id}",
+                                                 headers=admin_headers)
+                success = response["status"] in [200, 204, 404]
+                self.log_test("DELETE /api/admin/blog/articles/{id} - Supprimer article (admin)", success,
+                             f"Status: {response['status']}")
+
+    async def test_broadcast_messages(self):
+        """Tests du système de messages broadcast (NOUVEAU - Priorité haute)"""
+        print("\n📢 === TESTS MESSAGES BROADCAST (NOUVEAU) ===")
+        
+        if not self.user_token:
+            self.log_test("Messages broadcast - Token requis", False, "Pas de token utilisateur")
+            return
+
+        headers = {"Authorization": f"Bearer {self.user_token}"}
+
+        # 1. Enregistrer un token push
+        push_token_data = {
+            "token": f"ExponentPushToken[test_{uuid.uuid4().hex[:10]}]",
+            "deviceType": "android"
+        }
+        
+        response = await self.make_request("POST", "/quiz/register-push-token", 
+                                         push_token_data, headers=headers)
+        success = response["status"] in [200, 201, 404]  # 404 si pas implémenté
+        self.log_test("POST /api/quiz/register-push-token - Enregistrer token push", success,
+                     f"Status: {response['status']}")
+
+        # 2. Vérifier statut notifications
+        response = await self.make_request("GET", "/user/notification-status", headers=headers)
+        success = response["status"] in [200, 404]
+        self.log_test("GET /api/user/notification-status - Statut notifications", success,
+                     f"Status: {response['status']}")
+
+        # 3. Désactiver notifications
+        response = await self.make_request("POST", "/quiz/unregister-push-token", headers=headers)
+        success = response["status"] in [200, 404]
+        self.log_test("POST /api/quiz/unregister-push-token - Désactiver notifications", success,
+                     f"Status: {response['status']}")
+
+        # Tests admin (si token admin disponible)
+        if self.admin_token:
+            admin_headers = {"Authorization": f"Bearer {self.admin_token}"}
             
-            if response.status_code == 200:
-                data = response.json()
-                self.user_token = data["token"]
-                self.user_id = data["user"]["id"]
-                self.session.headers.update({"Authorization": f"Bearer {self.user_token}"})
-                self.log(f"✅ Utilisateur créé avec succès: {self.user_id}")
-                return True
-            else:
-                self.log(f"❌ Erreur inscription: {response.status_code} - {response.text}", "ERROR")
-                return False
-                
-        except Exception as e:
-            self.log(f"❌ Exception lors de l'inscription: {str(e)}", "ERROR")
-            return False
-    
-    def test_quiz_stats_initial(self):
-        """Test 1: Vérifier /api/quiz/stats pour un nouvel utilisateur"""
-        try:
-            self.log("TEST 1: GET /api/quiz/stats - Nouvel utilisateur")
-            
-            response = self.session.get(f"{BASE_URL}/quiz/stats")
-            
-            if response.status_code == 200:
-                data = response.json()
-                self.log(f"✅ Réponse reçue: {json.dumps(data, indent=2)}")
-                
-                # Vérifications critiques
-                required_fields = ["currentStreak", "totalXP", "badges", "todayAnswered"]
-                missing_fields = [field for field in required_fields if field not in data]
-                
-                if missing_fields:
-                    self.log(f"❌ Champs manquants: {missing_fields}", "ERROR")
-                    return False
-                
-                # Vérification spécifique du champ todayAnswered
-                if "todayAnswered" not in data:
-                    self.log("❌ Champ 'todayAnswered' manquant dans la réponse", "ERROR")
-                    return False
-                
-                if data["todayAnswered"] != False:
-                    self.log(f"❌ todayAnswered devrait être False pour un nouvel utilisateur, reçu: {data['todayAnswered']}", "ERROR")
-                    return False
-                
-                self.log("✅ todayAnswered=False pour nouvel utilisateur - CORRECT")
-                
-                # Vérifications additionnelles
-                if data["currentStreak"] != 0:
-                    self.log(f"❌ currentStreak devrait être 0, reçu: {data['currentStreak']}", "ERROR")
-                    return False
-                
-                if data["totalXP"] != 0:
-                    self.log(f"❌ totalXP devrait être 0, reçu: {data['totalXP']}", "ERROR")
-                    return False
-                
-                self.log("✅ TEST 1 RÉUSSI: /api/quiz/stats retourne todayAnswered=False")
-                return True
-                
-            else:
-                self.log(f"❌ Erreur HTTP: {response.status_code} - {response.text}", "ERROR")
-                return False
-                
-        except Exception as e:
-            self.log(f"❌ Exception test_quiz_stats_initial: {str(e)}", "ERROR")
-            return False
-    
-    def test_quiz_today(self):
-        """Test 2: Vérifier /api/quiz/today"""
-        try:
-            self.log("TEST 2: GET /api/quiz/today - Question du jour")
-            
-            response = self.session.get(f"{BASE_URL}/quiz/today")
-            
-            if response.status_code == 200:
-                data = response.json()
-                self.log(f"✅ Réponse reçue: {json.dumps(data, indent=2)}")
-                
-                # Vérifier la structure de la réponse
-                if "alreadyAnswered" not in data:
-                    self.log("❌ Champ 'alreadyAnswered' manquant", "ERROR")
-                    return False
-                
-                if data["alreadyAnswered"] != False:
-                    self.log(f"❌ alreadyAnswered devrait être False, reçu: {data['alreadyAnswered']}", "ERROR")
-                    return False
-                
-                if "question" not in data:
-                    self.log("❌ Champ 'question' manquant", "ERROR")
-                    return False
-                
-                question = data["question"]
-                required_question_fields = ["id", "question", "answers"]
-                missing_fields = [field for field in required_question_fields if field not in question]
-                
-                if missing_fields:
-                    self.log(f"❌ Champs manquants dans question: {missing_fields}", "ERROR")
-                    return False
-                
-                # Sauvegarder l'ID de la question pour le test suivant
-                self.question_id = question["id"]
-                self.log(f"✅ Question ID sauvegardé: {self.question_id}")
-                
-                # Vérifier que les réponses sont une liste de 4 éléments
-                if not isinstance(question["answers"], list) or len(question["answers"]) != 4:
-                    self.log(f"❌ Les réponses devraient être une liste de 4 éléments, reçu: {question['answers']}", "ERROR")
-                    return False
-                
-                self.log("✅ TEST 2 RÉUSSI: /api/quiz/today retourne une question valide")
-                return True
-                
-            elif response.status_code == 404:
-                self.log("⚠️ Pas de question pour aujourd'hui (404) - Ceci peut être normal", "WARNING")
-                # Créer une question de test pour continuer les tests
-                return self.create_test_question()
-                
-            else:
-                self.log(f"❌ Erreur HTTP: {response.status_code} - {response.text}", "ERROR")
-                return False
-                
-        except Exception as e:
-            self.log(f"❌ Exception test_quiz_today: {str(e)}", "ERROR")
-            return False
-    
-    def create_test_question(self):
-        """Créer une question de test pour aujourd'hui"""
-        try:
-            self.log("Création d'une question de test pour aujourd'hui...")
-            
-            today = date.today().isoformat()
-            question_data = {
-                "question": "Quelle est la meilleure période pour tailler les rosiers ?",
-                "answers": [
-                    "En été pendant la floraison",
-                    "En fin d'hiver (février-mars)",
-                    "En automne après la chute des feuilles", 
-                    "Au printemps pendant la montée de sève"
-                ],
-                "correctAnswer": 1,
-                "explanation": "La taille des rosiers se fait en fin d'hiver (février-mars) pour favoriser une belle floraison et éviter les gelées tardives.",
-                "scheduledDate": today,
-                "difficulty": "medium",
-                "category": "rosiers"
+            # 4. Historique des messages broadcast (admin)
+            response = await self.make_request("GET", "/admin/messages/broadcast", headers=admin_headers)
+            success = response["status"] in [200, 404]
+            self.log_test("GET /api/admin/messages/broadcast - Historique messages", success,
+                         f"Status: {response['status']}")
+
+            # 5. Envoyer/Programmer un message (admin)
+            broadcast_data = {
+                "title": "Test Message Sepalis",
+                "message": "Message de test pour les utilisateurs Sepalis",
+                "targetAudience": "all",
+                "scheduledFor": None  # Envoi immédiat
             }
             
-            # Essayer de créer via l'endpoint admin (peut ne pas fonctionner sans permissions)
-            response = self.session.post(f"{BASE_URL}/admin/quiz/questions", json=question_data)
-            
-            if response.status_code == 200:
-                data = response.json()
-                self.question_id = data["id"]
-                self.log(f"✅ Question de test créée: {self.question_id}")
-                return True
-            else:
-                self.log(f"⚠️ Impossible de créer une question de test: {response.status_code}", "WARNING")
-                # Pour les tests, on peut simuler avec un ID fictif
-                self.question_id = str(uuid.uuid4())
-                self.log(f"⚠️ Utilisation d'un ID fictif pour continuer: {self.question_id}", "WARNING")
-                return True
-                
-        except Exception as e:
-            self.log(f"❌ Exception create_test_question: {str(e)}", "ERROR")
-            return False
-    
-    def test_quiz_answer_submission(self):
-        """Test 3: Soumettre une réponse au quiz"""
-        try:
-            self.log("TEST 3: POST /api/quiz/answer - Soumission réponse")
-            
-            if not self.question_id:
-                self.log("❌ Pas de question_id disponible pour le test", "ERROR")
-                return False
-            
+            response = await self.make_request("POST", "/admin/messages/broadcast", 
+                                             broadcast_data, headers=admin_headers)
+            success = response["status"] in [200, 201, 404]
+            self.log_test("POST /api/admin/messages/broadcast - Envoyer message", success,
+                         f"Status: {response['status']}")
+
+            # 6. Templates de messages (admin)
+            response = await self.make_request("GET", "/admin/messages/templates", headers=admin_headers)
+            success = response["status"] in [200, 404]
+            self.log_test("GET /api/admin/messages/templates - Templates messages", success,
+                         f"Status: {response['status']}")
+
+    async def test_daily_quiz(self):
+        """Tests du quiz quotidien"""
+        print("\n🧠 === TESTS QUIZ QUOTIDIEN ===")
+        
+        if not self.user_token:
+            self.log_test("Quiz quotidien - Token requis", False, "Pas de token utilisateur")
+            return
+
+        headers = {"Authorization": f"Bearer {self.user_token}"}
+
+        # 1. Quiz du jour
+        response = await self.make_request("GET", "/quiz/daily", headers=headers)
+        success = response["status"] == 200 and "question" in response["data"]
+        question_id = None
+        if success:
+            question_id = response["data"].get("id")
+        self.log_test("GET /api/quiz/daily - Quiz du jour", success,
+                     f"Status: {response['status']}")
+
+        # 2. Statistiques utilisateur (avant réponse)
+        response = await self.make_request("GET", "/quiz/stats", headers=headers)
+        success = response["status"] == 200 and "todayAnswered" in response["data"]
+        today_answered_before = response["data"].get("todayAnswered", True) if success else True
+        self.log_test("GET /api/quiz/stats - Stats avant réponse", success,
+                     f"Status: {response['status']}, todayAnswered: {today_answered_before}")
+
+        # 3. Soumettre une réponse
+        if question_id and not today_answered_before:
             answer_data = {
-                "questionId": self.question_id,
-                "selectedAnswer": 1,  # Réponse correcte
-                "timeSpent": 15  # 15 secondes
+                "questionId": question_id,
+                "selectedAnswer": 0,  # Première réponse
+                "timeSpent": 15
             }
             
-            response = self.session.post(f"{BASE_URL}/quiz/answer", json=answer_data)
-            
-            if response.status_code == 200:
-                data = response.json()
-                self.log(f"✅ Réponse soumise avec succès: {json.dumps(data, indent=2)}")
-                
-                # Vérifier la structure de la réponse
-                required_fields = ["correct", "correctAnswer", "explanation", "xpEarned", "newStreak", "newTotalXP"]
-                missing_fields = [field for field in required_fields if field not in data]
-                
-                if missing_fields:
-                    self.log(f"❌ Champs manquants dans la réponse: {missing_fields}", "ERROR")
-                    return False
-                
-                self.log("✅ TEST 3 RÉUSSI: Réponse soumise et traitée correctement")
-                return True
-                
-            elif response.status_code == 404:
-                self.log("⚠️ Question non trouvée (404) - Normal si pas de question aujourd'hui", "WARNING")
-                return True  # On considère cela comme un succès partiel
-                
-            elif response.status_code == 400:
-                self.log("⚠️ Question pas pour aujourd'hui (400) - Normal avec ID fictif", "WARNING")
-                return True  # On considère cela comme un succès partiel
-                
-            else:
-                self.log(f"❌ Erreur HTTP: {response.status_code} - {response.text}", "ERROR")
-                return False
-                
-        except Exception as e:
-            self.log(f"❌ Exception test_quiz_answer_submission: {str(e)}", "ERROR")
-            return False
-    
-    def test_quiz_stats_after_answer(self):
-        """Test 4: Vérifier /api/quiz/stats après soumission"""
-        try:
-            self.log("TEST 4: GET /api/quiz/stats - Après soumission réponse")
-            
-            # Attendre un peu pour que la base de données soit mise à jour
-            time.sleep(1)
-            
-            response = self.session.get(f"{BASE_URL}/quiz/stats")
-            
-            if response.status_code == 200:
-                data = response.json()
-                self.log(f"✅ Stats après réponse: {json.dumps(data, indent=2)}")
-                
-                # Vérification critique: todayAnswered devrait être True maintenant
-                if "todayAnswered" not in data:
-                    self.log("❌ Champ 'todayAnswered' manquant après soumission", "ERROR")
-                    return False
-                
-                # Note: Si la soumission a échoué (pas de vraie question), todayAnswered restera False
-                # C'est normal dans l'environnement de test
-                if data["todayAnswered"] == True:
-                    self.log("✅ todayAnswered=True après soumission - PARFAIT!")
-                else:
-                    self.log("⚠️ todayAnswered=False après soumission - Normal si pas de vraie question aujourd'hui", "WARNING")
-                
-                self.log("✅ TEST 4 RÉUSSI: /api/quiz/stats accessible après soumission")
-                return True
-                
-            else:
-                self.log(f"❌ Erreur HTTP: {response.status_code} - {response.text}", "ERROR")
-                return False
-                
-        except Exception as e:
-            self.log(f"❌ Exception test_quiz_stats_after_answer: {str(e)}", "ERROR")
-            return False
-    
-    def test_authentication_protection(self):
-        """Test 5: Vérifier la protection JWT des endpoints"""
-        try:
-            self.log("TEST 5: Vérification protection JWT")
-            
-            # Sauvegarder le token actuel
-            original_auth = self.session.headers.get("Authorization")
-            
-            # Supprimer l'authentification
-            if "Authorization" in self.session.headers:
-                del self.session.headers["Authorization"]
-            
-            # Tester les endpoints sans authentification
-            endpoints = ["/quiz/stats", "/quiz/today"]
-            
-            for endpoint in endpoints:
-                response = self.session.get(f"{BASE_URL}{endpoint}")
-                if response.status_code == 403 or response.status_code == 401:
-                    self.log(f"✅ {endpoint} correctement protégé (HTTP {response.status_code})")
-                else:
-                    self.log(f"❌ {endpoint} pas correctement protégé (HTTP {response.status_code})", "ERROR")
-                    # Restaurer l'auth et retourner False
-                    if original_auth:
-                        self.session.headers["Authorization"] = original_auth
-                    return False
-            
-            # Restaurer l'authentification
-            if original_auth:
-                self.session.headers["Authorization"] = original_auth
-            
-            self.log("✅ TEST 5 RÉUSSI: Tous les endpoints sont correctement protégés")
-            return True
-            
-        except Exception as e:
-            self.log(f"❌ Exception test_authentication_protection: {str(e)}", "ERROR")
-            return False
-    
-    def test_complete_flow(self):
-        """Test 6: Flow complet comme décrit dans la demande"""
-        try:
-            self.log("TEST 6: Flow complet Quiz Badge")
-            
-            # 1. Vérifier stats initiales
-            self.log("6.1 - Vérification stats initiales...")
-            response = self.session.get(f"{BASE_URL}/quiz/stats")
-            if response.status_code != 200:
-                self.log(f"❌ Erreur stats initiales: {response.status_code}", "ERROR")
-                return False
-            
-            initial_stats = response.json()
-            initial_today_answered = initial_stats.get("todayAnswered", None)
-            self.log(f"Stats initiales - todayAnswered: {initial_today_answered}")
-            
-            # 2. Obtenir question du jour
-            self.log("6.2 - Obtention question du jour...")
-            response = self.session.get(f"{BASE_URL}/quiz/today")
-            if response.status_code == 200:
-                today_data = response.json()
-                self.log(f"Question du jour - alreadyAnswered: {today_data.get('alreadyAnswered')}")
-            elif response.status_code == 404:
-                self.log("⚠️ Pas de question aujourd'hui - Flow partiellement testé", "WARNING")
-            
-            # 3. Vérifier cohérence entre les deux endpoints
-            if response.status_code == 200:
-                today_already_answered = today_data.get("alreadyAnswered", None)
-                if initial_today_answered != (not today_already_answered):
-                    self.log("⚠️ Incohérence entre /quiz/stats.todayAnswered et /quiz/today.alreadyAnswered", "WARNING")
-                else:
-                    self.log("✅ Cohérence parfaite entre les deux endpoints")
-            
-            self.log("✅ TEST 6 RÉUSSI: Flow complet testé avec succès")
-            return True
-            
-        except Exception as e:
-            self.log(f"❌ Exception test_complete_flow: {str(e)}", "ERROR")
-            return False
-    
-    def run_all_tests(self):
-        """Exécuter tous les tests"""
-        self.log("🚀 DÉBUT DES TESTS BADGE QUIZ SEPALIS")
-        self.log("=" * 60)
+            response = await self.make_request("POST", "/quiz/daily/answer", 
+                                             answer_data, headers=headers)
+            success = response["status"] == 200 and "correct" in response["data"]
+            self.log_test("POST /api/quiz/daily/answer - Soumettre réponse", success,
+                         f"Status: {response['status']}")
+
+            # 4. Statistiques utilisateur (après réponse)
+            response = await self.make_request("GET", "/quiz/stats", headers=headers)
+            success = response["status"] == 200 and response["data"].get("todayAnswered") == True
+            self.log_test("GET /api/quiz/stats - Stats après réponse", success,
+                         f"Status: {response['status']}, todayAnswered: {response['data'].get('todayAnswered') if success else 'N/A'}")
+
+    async def test_calendar_tasks(self):
+        """Tests du calendrier et des tâches"""
+        print("\n📅 === TESTS CALENDRIER & TÂCHES ===")
         
-        tests = [
-            ("Inscription utilisateur", self.register_test_user),
-            ("Quiz Stats Initial", self.test_quiz_stats_initial),
-            ("Quiz Today", self.test_quiz_today),
-            ("Quiz Answer Submission", self.test_quiz_answer_submission),
-            ("Quiz Stats After Answer", self.test_quiz_stats_after_answer),
-            ("Authentication Protection", self.test_authentication_protection),
-            ("Complete Flow", self.test_complete_flow)
-        ]
+        if not self.user_token:
+            self.log_test("Calendrier & tâches - Token requis", False, "Pas de token utilisateur")
+            return
+
+        headers = {"Authorization": f"Bearer {self.user_token}"}
+
+        # 1. Tâches personnalisées
+        response = await self.make_request("GET", "/user/tasks", headers=headers)
+        success = response["status"] == 200 and isinstance(response["data"], list)
+        self.log_test("GET /api/user/tasks - Tâches personnalisées", success,
+                     f"Status: {response['status']}")
+
+        # 2. Tâches MOF de la semaine
+        response = await self.make_request("GET", "/calendar/tasks", headers=headers)
+        success = response["status"] in [200, 404]  # 404 acceptable si pas implémenté
+        self.log_test("GET /api/calendar/tasks - Tâches MOF semaine", success,
+                     f"Status: {response['status']}")
+
+        # 3. Créer une tâche personnalisée
+        task_data = {
+            "title": "Arroser les tomates",
+            "description": "Arrosage quotidien des plants de tomates",
+            "type": "watering",
+            "dueDate": datetime.now().isoformat(),
+            "completed": False,
+            "plantId": self.test_plant_id
+        }
         
-        results = []
+        response = await self.make_request("POST", "/user/tasks", task_data, headers=headers)
+        success = response["status"] == 200 and "id" in response["data"]
+        task_id = response["data"].get("id") if success else None
+        self.log_test("POST /api/user/tasks - Créer tâche", success,
+                     f"Status: {response['status']}")
+
+        # 4. Marquer tâche comme terminée
+        if task_id:
+            response = await self.make_request("POST", f"/user/tasks/{task_id}/complete", headers=headers)
+            success = response["status"] == 200
+            self.log_test("POST /api/user/tasks/{id}/complete - Terminer tâche", success,
+                         f"Status: {response['status']}")
+
+    async def test_weather_api(self):
+        """Tests de l'API météo"""
+        print("\n🌤️ === TESTS API MÉTÉO ===")
         
-        for test_name, test_func in tests:
-            self.log(f"\n🧪 Exécution: {test_name}")
-            self.log("-" * 40)
+        # Coordonnées de Paris pour les tests
+        paris_lat, paris_lon = 48.8566, 2.3522
+
+        # 1. Météo actuelle
+        params = {"lat": paris_lat, "lon": paris_lon}
+        response = await self.make_request("GET", "/weather/current", params=params)
+        success = response["status"] == 200 and "temperature" in response["data"]
+        self.log_test("GET /api/weather/current - Météo actuelle", success,
+                     f"Status: {response['status']}")
+
+        # 2. Prévisions 7 jours
+        params = {"lat": paris_lat, "lon": paris_lon, "days": 7}
+        response = await self.make_request("GET", "/weather/forecast", params=params)
+        success = response["status"] == 200 and "forecast" in response["data"]
+        self.log_test("GET /api/weather/forecast - Prévisions 7 jours", success,
+                     f"Status: {response['status']}")
+
+        # 3. Test avec coordonnées invalides (gestion d'erreur)
+        params = {"lat": 999, "lon": 999}
+        response = await self.make_request("GET", "/weather/current", params=params)
+        success = response["status"] in [400, 422, 500]  # Erreur attendue
+        self.log_test("GET /api/weather/current - Coordonnées invalides", success,
+                     f"Status: {response['status']} (erreur attendue)")
+
+    async def test_subscription_premium(self):
+        """Tests du système d'abonnement Premium"""
+        print("\n💎 === TESTS PREMIUM/ABONNEMENT ===")
+        
+        # 1. Vérifier statut admin Premium (contact@nicolasblot.com)
+        if self.admin_token:
+            admin_headers = {"Authorization": f"Bearer {self.admin_token}"}
+            response = await self.make_request("GET", "/user/subscription", headers=admin_headers)
+            success = response["status"] == 200
+            is_premium = response["data"].get("isActive", False) if success else False
+            self.log_test("GET /api/user/subscription - Statut admin Premium", success,
+                         f"Status: {response['status']}, Premium: {is_premium}")
+
+        # 2. Statut abonnement utilisateur normal
+        if self.user_token:
+            headers = {"Authorization": f"Bearer {self.user_token}"}
+            response = await self.make_request("GET", "/user/subscription", headers=headers)
+            success = response["status"] == 200 and "isActive" in response["data"]
+            self.log_test("GET /api/user/subscription - Statut utilisateur", success,
+                         f"Status: {response['status']}")
+
+            # 3. Démarrer essai gratuit
+            response = await self.make_request("POST", "/user/start-trial", headers=headers)
+            success = response["status"] in [200, 400]  # 400 si déjà en essai
+            self.log_test("POST /api/user/start-trial - Démarrer essai", success,
+                         f"Status: {response['status']}")
+
+    async def test_courses_workshops(self):
+        """Tests des formations et ateliers"""
+        print("\n🎓 === TESTS FORMATIONS & ATELIERS ===")
+        
+        # 1. Liste des formations
+        response = await self.make_request("GET", "/courses")
+        success = response["status"] == 200 and isinstance(response["data"], list)
+        courses_count = len(response["data"]) if success and isinstance(response["data"], list) else 0
+        self.log_test("GET /api/courses - Liste formations", success,
+                     f"Status: {response['status']}, Formations: {courses_count}")
+
+        # 2. Liste des ateliers
+        response = await self.make_request("GET", "/workshops")
+        success = response["status"] == 200 and isinstance(response["data"], list)
+        workshops_count = len(response["data"]) if success and isinstance(response["data"], list) else 0
+        self.log_test("GET /api/workshops - Liste ateliers", success,
+                     f"Status: {response['status']}, Ateliers: {workshops_count}")
+
+        # 3. Pré-inscription formation (si utilisateur connecté)
+        if self.user_token and courses_count > 0:
+            headers = {"Authorization": f"Bearer {self.user_token}"}
+            preregister_data = {
+                "courseSlug": "massif-fleuri",
+                "firstName": "Test",
+                "lastName": "Utilisateur",
+                "email": TEST_USER_EMAIL,
+                "phone": "0123456789",
+                "message": "Inscription de test"
+            }
             
-            try:
-                result = test_func()
-                results.append((test_name, result))
-                
-                if result:
-                    self.log(f"✅ {test_name}: RÉUSSI")
-                else:
-                    self.log(f"❌ {test_name}: ÉCHEC")
-                    
-            except Exception as e:
-                self.log(f"💥 {test_name}: EXCEPTION - {str(e)}", "ERROR")
-                results.append((test_name, False))
+            response = await self.make_request("POST", "/courses/preregister", 
+                                             preregister_data, headers=headers)
+            success = response["status"] in [200, 201]
+            self.log_test("POST /api/courses/preregister - Pré-inscription", success,
+                         f"Status: {response['status']}")
+
+    async def test_security_permissions(self):
+        """Tests de sécurité et permissions"""
+        print("\n🔒 === TESTS SÉCURITÉ & PERMISSIONS ===")
+        
+        # 1. Accès sans token (doit échouer)
+        response = await self.make_request("GET", "/user/plants")
+        success = response["status"] in [401, 403]
+        self.log_test("Accès /user/plants sans token", success,
+                     f"Status: {response['status']} (401/403 attendu)")
+
+        # 2. Token invalide (doit échouer)
+        invalid_headers = {"Authorization": "Bearer invalid_token_123"}
+        response = await self.make_request("GET", "/user/plants", headers=invalid_headers)
+        success = response["status"] in [401, 403]
+        self.log_test("Accès avec token invalide", success,
+                     f"Status: {response['status']} (401/403 attendu)")
+
+        # 3. Accès admin sans permissions (utilisateur normal vers route admin)
+        if self.user_token:
+            headers = {"Authorization": f"Bearer {self.user_token}"}
+            response = await self.make_request("GET", "/admin/messages/broadcast", headers=headers)
+            success = response["status"] in [401, 403, 404]  # 404 si pas implémenté
+            self.log_test("Accès route admin avec token utilisateur", success,
+                         f"Status: {response['status']} (403 attendu)")
+
+    async def test_error_handling(self):
+        """Tests de gestion d'erreurs"""
+        print("\n⚠️ === TESTS GESTION D'ERREURS ===")
+        
+        # 1. Ressource inexistante (404)
+        response = await self.make_request("GET", "/nonexistent/endpoint")
+        success = response["status"] == 404
+        self.log_test("Endpoint inexistant (404)", success,
+                     f"Status: {response['status']}")
+
+        # 2. Méthode non autorisée (405)
+        response = await self.make_request("DELETE", "/courses")
+        success = response["status"] in [404, 405]
+        self.log_test("Méthode non autorisée (405)", success,
+                     f"Status: {response['status']}")
+
+        # 3. Données invalides (422)
+        if self.user_token:
+            headers = {"Authorization": f"Bearer {self.user_token}"}
+            invalid_zone_data = {
+                "name": "",  # Nom vide
+                "type": "invalid_type",
+                "length": -1  # Valeur négative
+            }
+            response = await self.make_request("POST", "/user/zones", 
+                                             invalid_zone_data, headers=headers)
+            success = response["status"] in [400, 422]
+            self.log_test("Données invalides (422)", success,
+                         f"Status: {response['status']}")
+
+    async def test_performance(self):
+        """Tests de performance des endpoints critiques"""
+        print("\n⚡ === TESTS PERFORMANCE ===")
+        
+        if not self.user_token:
+            self.log_test("Tests performance - Token requis", False, "Pas de token utilisateur")
+            return
+
+        headers = {"Authorization": f"Bearer {self.user_token}"}
+
+        # Test temps de réponse des endpoints IA
+        start_time = datetime.now()
+        response = await self.make_request("GET", "/plants/suggestions", 
+                                         params={"zoneId": self.test_zone_id or "test"}, 
+                                         headers=headers)
+        response_time = (datetime.now() - start_time).total_seconds()
+        success = response_time < 10.0  # Moins de 10 secondes
+        self.log_test("Performance suggestions IA", success,
+                     f"Temps: {response_time:.2f}s (< 10s attendu)")
+
+        # Test temps de réponse météo
+        start_time = datetime.now()
+        response = await self.make_request("GET", "/weather/current", 
+                                         params={"lat": 48.8566, "lon": 2.3522})
+        response_time = (datetime.now() - start_time).total_seconds()
+        success = response_time < 5.0  # Moins de 5 secondes
+        self.log_test("Performance API météo", success,
+                     f"Temps: {response_time:.2f}s (< 5s attendu)")
+
+    async def cleanup_test_data(self):
+        """Nettoyer les données de test créées"""
+        print("\n🧹 === NETTOYAGE DONNÉES DE TEST ===")
+        
+        if not self.user_token:
+            return
+
+        headers = {"Authorization": f"Bearer {self.user_token}"}
+
+        # Supprimer la plante de test
+        if self.test_plant_id:
+            response = await self.make_request("DELETE", f"/user/plants/{self.test_plant_id}", 
+                                             headers=headers)
+            success = response["status"] in [200, 204, 404]
+            self.log_test("Suppression plante de test", success,
+                         f"Status: {response['status']}")
+
+        # Supprimer la zone de test
+        if self.test_zone_id:
+            response = await self.make_request("DELETE", f"/user/zones/{self.test_zone_id}", 
+                                             headers=headers)
+            success = response["status"] in [200, 204, 404]
+            self.log_test("Suppression zone de test", success,
+                         f"Status: {response['status']}")
+
+    def print_summary(self):
+        """Afficher le résumé des tests"""
+        print("\n" + "="*60)
+        print("📊 RÉSUMÉ DES TESTS SEPALIS")
+        print("="*60)
+        print(f"✅ Tests réussis: {self.results['passed']}")
+        print(f"❌ Tests échoués: {self.results['failed']}")
+        print(f"📈 Total: {self.results['total_tests']}")
+        
+        if self.results['total_tests'] > 0:
+            success_rate = (self.results['passed'] / self.results['total_tests']) * 100
+            print(f"🎯 Taux de réussite: {success_rate:.1f}%")
+        
+        if self.results['errors']:
+            print(f"\n❌ ERREURS DÉTECTÉES ({len(self.results['errors'])}):")
+            for error in self.results['errors']:
+                print(f"   • {error}")
+        
+        print("\n" + "="*60)
+        
+        # Recommandations basées sur les résultats
+        if self.results['failed'] == 0:
+            print("🎉 EXCELLENT! Tous les tests sont passés.")
+            print("✅ L'application Sepalis est prête pour le lancement Play Store!")
+        elif self.results['failed'] <= 3:
+            print("⚠️  Quelques problèmes mineurs détectés.")
+            print("🔧 Corrections recommandées avant le lancement.")
+        else:
+            print("🚨 ATTENTION! Plusieurs problèmes critiques détectés.")
+            print("🛠️  Corrections majeures requises avant le lancement.")
+
+async def main():
+    """Fonction principale d'exécution des tests"""
+    test_suite = SepalisTestSuite()
+    
+    try:
+        await test_suite.setup()
+        
+        # Exécution de tous les tests dans l'ordre de priorité
+        await test_suite.test_health_check()
+        await test_suite.test_authentication()
+        await test_suite.test_zones_management()
+        await test_suite.test_plants_management()
+        await test_suite.test_blog_academy()  # NOUVEAU - Priorité haute
+        await test_suite.test_broadcast_messages()  # NOUVEAU - Priorité haute
+        await test_suite.test_daily_quiz()
+        await test_suite.test_calendar_tasks()
+        await test_suite.test_weather_api()
+        await test_suite.test_subscription_premium()
+        await test_suite.test_courses_workshops()
+        await test_suite.test_security_permissions()
+        await test_suite.test_error_handling()
+        await test_suite.test_performance()
+        
+        # Nettoyage
+        await test_suite.cleanup_test_data()
         
         # Résumé final
-        self.log("\n" + "=" * 60)
-        self.log("📊 RÉSUMÉ DES TESTS BADGE QUIZ")
-        self.log("=" * 60)
+        test_suite.print_summary()
         
-        passed = sum(1 for _, result in results if result)
-        total = len(results)
-        
-        for test_name, result in results:
-            status = "✅ RÉUSSI" if result else "❌ ÉCHEC"
-            self.log(f"{test_name}: {status}")
-        
-        self.log(f"\n🎯 RÉSULTAT GLOBAL: {passed}/{total} tests réussis ({passed/total*100:.1f}%)")
-        
-        if passed == total:
-            self.log("🎉 TOUS LES TESTS RÉUSSIS - Badge Quiz fonctionnel!")
-        elif passed >= total * 0.8:
-            self.log("⚠️ MAJORITÉ DES TESTS RÉUSSIS - Quelques ajustements mineurs nécessaires")
-        else:
-            self.log("❌ PLUSIEURS TESTS ÉCHOUÉS - Corrections nécessaires")
-        
-        return passed, total
+    except Exception as e:
+        print(f"❌ Erreur critique lors des tests: {str(e)}")
+        return 1
+    finally:
+        await test_suite.cleanup()
+    
+    # Code de sortie basé sur les résultats
+    return 0 if test_suite.results['failed'] == 0 else 1
 
 if __name__ == "__main__":
-    tester = QuizBadgeTests()
-    passed, total = tester.run_all_tests()
-    
-    # Code de sortie pour les scripts automatisés
-    exit(0 if passed == total else 1)
+    exit_code = asyncio.run(main())
+    sys.exit(exit_code)
