@@ -439,6 +439,19 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = security)
     return user
 
 
+async def verify_admin(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Vérifier que l'utilisateur est admin"""
+    user = await get_current_user(credentials)
+    
+    if not user.get("isAdmin", False):
+        raise HTTPException(
+            status_code=403, 
+            detail="Access forbidden: Admin privileges required"
+        )
+    
+    return user
+
+
 # ============ NOTIFICATION HELPERS ============
 async def send_push_notification(user_id: str, title: str, body: str, data: dict = None):
     """Envoyer une notification push à un utilisateur"""
