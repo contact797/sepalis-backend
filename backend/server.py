@@ -3572,8 +3572,7 @@ async def create_broadcast_message(
     user: dict = Depends(verify_admin)
 ):
     """Créer et envoyer (ou programmer) un message broadcast à tous les utilisateurs"""
-    try
-        
+    try:
         # Créer le message dans la DB
         message_doc = {
             "title": message.title,
