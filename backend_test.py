@@ -202,7 +202,7 @@ class SepalisTestSuite:
         if success:
             self.test_zone_id = response["data"]["id"]
         self.log_test("POST /api/user/zones - Créer zone avec climat", success,
-                     f"Status: {response['status']}")
+                     f"Status: {response['status']}, Response: {response['data'] if not success else 'OK'}")
 
         # 3. Récupérer la zone créée
         if self.test_zone_id:
