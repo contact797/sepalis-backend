@@ -411,6 +411,21 @@ backend:
         agent: "testing"
         comment: "Tests du système de conseils de soins automatiques effectués. PROBLÈME CRITIQUE IDENTIFIÉ ❌: L'endpoint POST /api/ai/identify-plant échoue avec une erreur d'image non supportée (Status: 500, litellm.BadRequestError: You uploaded an unsupported image). TESTS RÉUSSIS ✅: Création et récupération de plantes avec careInstructions fonctionnent parfaitement - les 6 champs (sunExposure, plantingPeriod, pruning, temperature, soilType, commonIssues) sont correctement persistés et récupérés. ZONES AVEC HUMIDITY ✅: Le fix du champ humidity fonctionne correctement (pas de drainage). RECOMMANDATION: L'endpoint IA nécessite une correction du format d'image ou de la configuration LiteLLM pour fonctionner avec GPT-4 Vision."
 
+  - task: "Système de parrainage complet"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Système de parrainage implémenté avec 3 endpoints: GET /api/user/referral/code (génération code format SEPALIS-PRENOM-1234), GET /api/user/referral/stats (statistiques complètes), POST /api/user/referral/apply (application code filleul). Système de récompenses automatique avec 4 paliers: 1 parrainage=30j Premium, 3=90j+badge ambassador, 5=180j+badge super_ambassador, 10=Premium à vie+badge legendary. Collection MongoDB 'referrals' pour persistance des données."
+      - working: true
+        agent: "testing"
+        comment: "🎉 TESTS COMPLETS DU SYSTÈME DE PARRAINAGE RÉUSSIS (20/20 tests passés, 100% de réussite). ✅ GÉNÉRATION CODE: Format SEPALIS-PRENOM-1234 correct, URL de partage https://sepalis.app/invite/{code}, message avec '2 semaines Premium gratuites'. ✅ STATISTIQUES: Endpoints retournent totalReferrals, activeReferrals, premiumEarned, nextReward, progressToNext, referrals avec structure complète. ✅ APPLICATION CODE: Filleul reçoit 2 semaines Premium, parrain reçoit récompenses automatiques selon paliers. ✅ CAS D'ERREUR: Code déjà utilisé (400), code invalide (404), utiliser son propre code (400) - toutes les validations fonctionnent. ✅ SYSTÈME RÉCOMPENSES: Paliers testés et validés - 1→30j, 3→90j+ambassador, 5→180j+super_ambassador, 10→36500j+legendary. ✅ PERSISTANCE DB: Codes persistés correctement, collection referrals opérationnelle. Le système de parrainage est ENTIÈREMENT FONCTIONNEL et prêt pour le lancement Play Store."
+
   - task: "SÉCURITÉ CRITIQUE - Protection routes admin"
     implemented: false
     working: false
