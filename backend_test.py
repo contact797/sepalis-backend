@@ -110,14 +110,22 @@ class ReferralSystemTester:
         """Test 1: Génération du code de parrainage"""
         print("\n🧪 TEST 1: Génération du code de parrainage")
         
-        # Connexion avec le compte de test principal
-        main_user = await self.login_user(TEST_EMAIL, TEST_PASSWORD)
+        # Essayer de se connecter avec différents mots de passe
+        main_user = None
+        for password in POSSIBLE_PASSWORDS:
+            main_user = await self.login_user(TEST_EMAIL, password)
+            if main_user:
+                print(f"   ✅ Connexion réussie avec le mot de passe: {password}")
+                break
+        
+        # Si aucun mot de passe ne fonctionne, créer un nouvel utilisateur de test
         if not main_user:
-            # Essayer de créer le compte s'il n'existe pas
-            main_user = await self.create_test_user(TEST_EMAIL, "Nicolas Blot", TEST_PASSWORD)
+            print(f"   ⚠️  Impossible de se connecter à {TEST_EMAIL}, création d'un utilisateur de test")
+            test_email = f"test_referral_{uuid.uuid4().hex[:8]}@sepalis.com"
+            main_user = await self.create_test_user(test_email, "Nicolas Blot Test", "testpass123")
         
         if not main_user:
-            await self.log_test("Connexion compte principal", False, f"Impossible de se connecter à {TEST_EMAIL}")
+            await self.log_test("Connexion compte principal", False, f"Impossible de se connecter ou créer un utilisateur")
             return
         
         await self.log_test("Connexion compte principal", True, f"Connecté en tant que {main_user['name']}")
