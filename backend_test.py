@@ -16,6 +16,9 @@ BASE_URL = "https://garden-academy.preview.emergentagent.com/api"
 TEST_EMAIL = "contact@nicolasblot.com"
 TEST_PASSWORD = "password123"  # Mot de passe par défaut pour les tests
 
+# Essayer plusieurs mots de passe possibles
+POSSIBLE_PASSWORDS = ["password123", "sepalis123", "admin123", "test123", "123456", "password"]
+
 class ReferralSystemTester:
     def __init__(self):
         self.base_url = BASE_URL
