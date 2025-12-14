@@ -269,6 +269,12 @@ export default function TabLayout() {
           tabBarButton: () => null,
         }}
       />
+      <Tabs.Screen
+        name="referral"
+        options={{
+          tabBarButton: () => null,
+        }}
+      />
     </Tabs>
     </>
   );
