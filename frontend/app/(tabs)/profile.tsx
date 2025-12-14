@@ -218,6 +218,12 @@ export default function Profile() {
       onPress: () => router.push('/(tabs)/paywall' as any),
     },
     {
+      title: 'Parrainer des amis',
+      icon: 'gift-outline',
+      badge: '🎁',
+      onPress: () => router.push('/(tabs)/referral' as any),
+    },
+    {
       title: 'Mes réservations',
       icon: 'calendar-outline',
       onPress: () => router.push('/(tabs)/my-bookings' as any),
