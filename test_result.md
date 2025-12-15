@@ -286,12 +286,11 @@ backend:
 
 test_plan:
   current_focus:
-    - "Conseils de soins automatiques via IA pour les plantes"
-    - "Amélioration page Scanner - Conseils MOF + Sélecteur de zone + Confirmation"
-    - "Retrait des fonctions d'arrosage dans les détails des plantes"
+    - "SÉCURITÉ CRITIQUE - Protection routes admin"
+    - "5 Nouvelles pages du profil (Informations personnelles, Mon abonnement, Notifications, Paramètres, Aide et support)"
   stuck_tasks: []
   test_all: false
-  test_priority: "high_first"
+  test_priority: "critical_first"
 
   - task: "Persistance des zones en base de données"
     implemented: true
@@ -486,12 +485,11 @@ frontend:
 
 test_plan:
   current_focus:
-    - "Conseils de soins automatiques via IA pour les plantes"
-    - "Amélioration page Scanner - Conseils MOF + Sélecteur de zone + Confirmation"
-    - "Retrait des fonctions d'arrosage dans les détails des plantes"
+    - "SÉCURITÉ CRITIQUE - Protection routes admin"
+    - "5 Nouvelles pages du profil (Informations personnelles, Mon abonnement, Notifications, Paramètres, Aide et support)"
   stuck_tasks: []
   test_all: false
-  test_priority: "high_first"
+  test_priority: "critical_first"
 
 agent_communication:
   - agent: "main"
