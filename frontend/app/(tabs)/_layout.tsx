@@ -278,31 +278,31 @@ export default function TabLayout() {
       <Tabs.Screen
         name="personal-info"
         options={{
-          tabBarButton: () => null,
+          href: null,
         }}
       />
       <Tabs.Screen
         name="subscription"
         options={{
-          tabBarButton: () => null,
+          href: null,
         }}
       />
       <Tabs.Screen
         name="notifications-settings"
         options={{
-          tabBarButton: () => null,
+          href: null,
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
-          tabBarButton: () => null,
+          href: null,
         }}
       />
       <Tabs.Screen
         name="support"
         options={{
-          tabBarButton: () => null,
+          href: null,
         }}
       />
     </Tabs>
