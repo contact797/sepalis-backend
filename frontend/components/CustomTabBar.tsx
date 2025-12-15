@@ -16,8 +16,12 @@ export default function CustomTabBar({ state, descriptors, navigation }: CustomT
         const { options } = descriptors[route.key];
         const isFocused = state.index === index;
 
-        // Si tabBarButton est null, on ne l'affiche pas
+        // Si tabBarButton est null ou href est null, on ne l'affiche pas
         if (options.tabBarButton && options.tabBarButton() === null) {
+          return null;
+        }
+        
+        if (options.href === null) {
           return null;
         }
 
