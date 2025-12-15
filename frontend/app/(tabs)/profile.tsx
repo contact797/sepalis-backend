@@ -74,32 +74,40 @@ export default function Profile() {
   const enableNotifications = async () => {
     try {
       setRegisteringNotifications(true);
+      console.log('🔔 Début activation notifications');
       
       // Vérifier si on est sur un vrai device
       if (!Device.isDevice) {
+        console.log('❌ Pas un vrai device');
         Alert.alert(
           'Appareil requis',
           'Les notifications push nécessitent un appareil mobile réel (pas le simulateur).'
         );
         return;
       }
+      console.log('✅ Device réel détecté');
 
       // Demander la permission
       const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      console.log('📱 Status actuel des permissions:', existingStatus);
       let finalStatus = existingStatus;
 
       if (existingStatus !== 'granted') {
+        console.log('🔄 Demande de permission...');
         const { status } = await Notifications.requestPermissionsAsync();
         finalStatus = status;
+        console.log('📱 Nouveau status:', finalStatus);
       }
 
       if (finalStatus !== 'granted') {
+        console.log('❌ Permission refusée, status:', finalStatus);
         Alert.alert(
           'Permission refusée',
           'Veuillez activer les notifications dans les paramètres de votre appareil.'
         );
         return;
       }
+      console.log('✅ Permission accordée');
 
       // Obtenir le push token
       const tokenData = await Notifications.getExpoPushTokenAsync();
