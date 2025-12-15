@@ -427,8 +427,8 @@ backend:
         comment: "🎉 TESTS COMPLETS DU SYSTÈME DE PARRAINAGE RÉUSSIS (20/20 tests passés, 100% de réussite). ✅ GÉNÉRATION CODE: Format SEPALIS-PRENOM-1234 correct, URL de partage https://sepalis.app/invite/{code}, message avec '2 semaines Premium gratuites'. ✅ STATISTIQUES: Endpoints retournent totalReferrals, activeReferrals, premiumEarned, nextReward, progressToNext, referrals avec structure complète. ✅ APPLICATION CODE: Filleul reçoit 2 semaines Premium, parrain reçoit récompenses automatiques selon paliers. ✅ CAS D'ERREUR: Code déjà utilisé (400), code invalide (404), utiliser son propre code (400) - toutes les validations fonctionnent. ✅ SYSTÈME RÉCOMPENSES: Paliers testés et validés - 1→30j, 3→90j+ambassador, 5→180j+super_ambassador, 10→36500j+legendary. ✅ PERSISTANCE DB: Codes persistés correctement, collection referrals opérationnelle. Le système de parrainage est ENTIÈREMENT FONCTIONNEL et prêt pour le lancement Play Store."
 
   - task: "SÉCURITÉ CRITIQUE - Protection routes admin"
-    implemented: false
-    working: false
+    implemented: true
+    working: "NA"
     file: "backend/server.py"
     stuck_count: 0
     priority: "critical"
@@ -437,6 +437,9 @@ backend:
       - working: false
         agent: "testing"
         comment: "🚨 PROBLÈME SÉCURITÉ CRITIQUE IDENTIFIÉ lors des tests avant lancement Play Store: Les routes admin (/api/admin/messages/broadcast, /api/admin/blog/articles, etc.) sont accessibles par tous les utilisateurs authentifiés, pas seulement les admins. Un utilisateur normal peut accéder aux fonctions d'administration. CORRECTION URGENTE REQUISE: Ajouter une vérification des permissions admin (ex: vérifier si user['email'] == 'contact@nicolasblot.com' ou ajouter un champ 'isAdmin' dans la base de données) avant d'autoriser l'accès aux routes /api/admin/*. Ceci est un risque de sécurité majeur qui doit être corrigé avant le lancement."
+      - working: "NA"
+        agent: "main"
+        comment: "CORRECTION IMPLÉMENTÉE: Toutes les routes admin ont été sécurisées en remplaçant l'utilisation de get_current_user(credentials) par la dépendance verify_admin qui vérifie le champ isAdmin dans la base de données. Routes corrigées: /admin/season-tips (GET, POST, DELETE), /admin/calendar-tasks (GET, POST, PUT, DELETE), /admin/calendar-tasks/distribute (POST), /admin/quiz/questions (GET, POST, PUT, DELETE), /admin/analytics (overview, users, export-emails, user-behavior), /admin/messages/broadcast/{message_id} (DELETE). Un script Python a été utilisé pour automatiser les corrections. Le backend redémarre correctement sans erreur. BESOIN DE TEST: Vérifier qu'un utilisateur normal ne peut plus accéder aux routes /api/admin/* et qu'un admin peut toujours y accéder."
 
 frontend:
   - task: "Amélioration page Scanner - Conseils MOF + Sélecteur de zone + Confirmation"
