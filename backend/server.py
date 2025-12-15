@@ -2630,8 +2630,7 @@ async def create_season_tip(tip: SeasonTipCreate, user: dict = Depends(verify_ad
 @api_router.delete("/admin/season-tips/{season}")
 async def delete_season_tip(season: str, user: dict = Depends(verify_admin)):
     """Supprimer un conseil de saison (admin uniquement)"""
-    try
-        
+    try:
         result = await db.season_tips.delete_one({"season": season})
         
         if result.deleted_count == 0:
