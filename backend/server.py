@@ -4241,7 +4241,7 @@ async def update_user_profile(
         
         if update_data:
             result = await db.users.update_one(
-                {"_id": ObjectId(user["_id"])},
+                {"_id": user["_id"]},
                 {"$set": update_data}
             )
             
