@@ -4264,7 +4264,7 @@ async def change_password(
         user = await get_current_user(credentials)
         
         # Vérifier le mot de passe actuel
-        if not verify_password(password_data.currentPassword, user["passwordHash"]):
+        if not verify_password(password_data.currentPassword, user["password"]):
             raise HTTPException(status_code=400, detail="Mot de passe actuel incorrect")
         
         # Hasher le nouveau mot de passe
@@ -4272,8 +4272,8 @@ async def change_password(
         
         # Mettre à jour dans la base de données
         await db.users.update_one(
-            {"_id": ObjectId(user["_id"])},
-            {"$set": {"passwordHash": new_password_hash}}
+            {"_id": user["_id"]},
+            {"$set": {"password": new_password_hash}}
         )
         
         return {"message": "Mot de passe modifié avec succès"}
