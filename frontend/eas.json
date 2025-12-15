@@ -22,12 +22,10 @@
     },
     "production": {
       "ios": {
-        "resourceClass": "m-medium",
-        "bundleIdentifier": "com.sepalis.app"
+        "resourceClass": "m-medium"
       },
       "android": {
-        "buildType": "aab",
-        "gradleCommand": ":app:bundleRelease"
+        "buildType": "app-bundle"
       }
     }
   },
