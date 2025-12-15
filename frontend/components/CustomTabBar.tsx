@@ -10,18 +10,17 @@ interface CustomTabBarProps {
 }
 
 export default function CustomTabBar({ state, descriptors, navigation }: CustomTabBarProps) {
+  // Liste des onglets à afficher dans la barre de navigation
+  const visibleTabs = ['index', 'zones', 'plants', 'academy', 'quiz', 'profile'];
+  
   return (
     <View style={styles.tabBar}>
       {state.routes.map((route: any, index: number) => {
         const { options } = descriptors[route.key];
         const isFocused = state.index === index;
 
-        // Si tabBarButton est null ou href est null, on ne l'affiche pas
-        if (options.tabBarButton && options.tabBarButton() === null) {
-          return null;
-        }
-        
-        if (options.href === null) {
+        // N'afficher QUE les onglets de la liste visibleTabs
+        if (!visibleTabs.includes(route.name)) {
           return null;
         }
 
