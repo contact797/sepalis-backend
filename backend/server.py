@@ -2628,11 +2628,9 @@ async def create_season_tip(tip: SeasonTipCreate, user: dict = Depends(verify_ad
 
 
 @api_router.delete("/admin/season-tips/{season}")
-async def delete_season_tip(season: str, credentials: HTTPAuthorizationCredentials = Depends(security)):
+async def delete_season_tip(season: str, user: dict = Depends(verify_admin)):
     """Supprimer un conseil de saison (admin uniquement)"""
-    try:
-        # Vérifier l'authentification
-        user = await get_current_user(credentials)
+    try
         
         result = await db.season_tips.delete_one({"season": season})
         
