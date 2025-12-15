@@ -65,7 +65,7 @@ Une application mobile native complète pour Sepalis avec **React Native / Expo*
 - Version de l'app
 
 ### 3. **Connexion API Backend**
-- ✅ URL Backend : `https://garden-academy.preview.emergentagent.com/api`
+- ✅ URL Backend : `https://sepalis-mobile-1.preview.emergentagent.com/api`
 - ✅ Axios configuré avec intercepteurs JWT
 - ✅ Gestion automatique des tokens
 - ✅ Refresh automatique en cas d'expiration
@@ -197,7 +197,7 @@ frontend/
 ## 📞 Support
 
 Pour toute question ou problème :
-- Backend API : https://garden-academy.preview.emergentagent.com/api
+- Backend API : https://sepalis-mobile-1.preview.emergentagent.com/api
 - Test endpoint : `GET /api/` → `{"message": "Hello World"}`
 
 ---

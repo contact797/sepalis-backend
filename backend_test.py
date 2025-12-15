@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Any
 
 # Configuration
-BASE_URL = "https://garden-academy.preview.emergentagent.com/api"
+BASE_URL = "https://sepalis-mobile-1.preview.emergentagent.com/api"
 TEST_EMAIL = "contact@nicolasblot.com"
 TEST_PASSWORD = "password123"  # Mot de passe par défaut pour les tests
 

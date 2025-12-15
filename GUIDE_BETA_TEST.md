@@ -10,7 +10,7 @@ Votre feedback est précieux pour améliorer l'application avant le lancement pu
 
 ## 🔗 Accès à l'Application
 
-**URL Web** : https://garden-academy.preview.emergentagent.com
+**URL Web** : https://sepalis-mobile-1.preview.emergentagent.com
 
 **Mobile (Expo Go)** :
 1. Installez l'app **Expo Go** depuis l'App Store ou Google Play

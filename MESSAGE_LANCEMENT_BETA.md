@@ -27,7 +27,7 @@ En tant que **Meilleur Ouvrier de France en paysagisme** 🏆, j'ai créé cette
 ### 🚀 Comment tester ?
 
 **1. Accède à l'app :**  
-👉 https://garden-academy.preview.emergentagent.com
+👉 https://sepalis-mobile-1.preview.emergentagent.com
 
 **2. Crée ton compte** (gratuit)
 
@@ -75,7 +75,7 @@ J'ai créé une app de jardinage avec mon expertise MOF 🏆
 ✅ Scan IA de plantes  
 ✅ Gamification  
 
-👉 https://garden-academy.preview.emergentagent.com
+👉 https://sepalis-mobile-1.preview.emergentagent.com
 
 Teste et donne ton avis ! 💬  
 (5-10 min suffisent)
@@ -132,7 +132,7 @@ En tant que Meilleur Ouvrier de France en paysagisme, j'ai voulu créer un outil
 Je recherche des testeurs pour valider le concept et améliorer l'expérience utilisateur avant le lancement public.
 
 **Intéressé(e) pour tester ?**  
-👉 https://garden-academy.preview.emergentagent.com
+👉 https://sepalis-mobile-1.preview.emergentagent.com
 
 Vos retours seront précieux pour faire de Sepalis l'app de référence du jardinage ! 🌱
 

@@ -7,7 +7,7 @@ import asyncio
 import httpx
 import json
 
-BASE_URL = "https://garden-academy.preview.emergentagent.com/api"
+BASE_URL = "https://sepalis-mobile-1.preview.emergentagent.com/api"
 TEST_EMAIL = "contact@nicolasblot.com"
 
 async def test_specific_account():
