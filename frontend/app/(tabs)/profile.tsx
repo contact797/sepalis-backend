@@ -75,17 +75,19 @@ export default function Profile() {
     try {
       setRegisteringNotifications(true);
       console.log('🔔 Début activation notifications');
+      console.log('📱 Device.isDevice:', Device.isDevice);
+      console.log('📱 Platform:', Platform.OS);
       
-      // Vérifier si on est sur un vrai device
-      if (!Device.isDevice) {
-        console.log('❌ Pas un vrai device');
-        Alert.alert(
-          'Appareil requis',
-          'Les notifications push nécessitent un appareil mobile réel (pas le simulateur).'
-        );
-        return;
-      }
-      console.log('✅ Device réel détecté');
+      // Désactiver temporairement la vérification pour debug
+      // if (!Device.isDevice) {
+      //   console.log('❌ Pas un vrai device');
+      //   Alert.alert(
+      //     'Appareil requis',
+      //     'Les notifications push nécessitent un appareil mobile réel (pas le simulateur).'
+      //   );
+      //   return;
+      // }
+      console.log('✅ Tentative d\'enregistrement des notifications');
 
       // Demander la permission
       const { status: existingStatus } = await Notifications.getPermissionsAsync();
