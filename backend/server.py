@@ -4202,6 +4202,135 @@ async def get_referral_stats(credentials: HTTPAuthorizationCredentials = Depends
         print(f"Erreur get referral stats: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
+# ============ USER PROFILE ENDPOINTS ============
+
+class ProfileUpdate(BaseModel):
+    firstName: Optional[str] = None
+    lastName: Optional[str] = None
+
+class PasswordChange(BaseModel):
+    currentPassword: str
+    newPassword: str
+
+class SupportMessage(BaseModel):
+    subject: str
+    message: str
+
+
+@api_router.get("/user/profile")
+async def get_user_profile(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Récupère les informations du profil utilisateur"""
+    try:
+        user = await get_current_user(credentials)
+        
+        return {
+            "firstName": user.get("firstName", user.get("name", "").split()[0] if user.get("name") else ""),
+            "lastName": user.get("lastName", user.get("name", "").split()[-1] if user.get("name") and len(user.get("name", "").split()) > 1 else ""),
+            "email": user["email"]
+        }
+    except Exception as e:
+        print(f"Erreur get profile: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.put("/user/profile")
+async def update_user_profile(
+    profile: ProfileUpdate,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Met à jour les informations du profil utilisateur"""
+    try:
+        user = await get_current_user(credentials)
+        
+        update_data = {}
+        if profile.firstName:
+            update_data["firstName"] = profile.firstName
+        if profile.lastName:
+            update_data["lastName"] = profile.lastName
+        
+        # Mettre à jour aussi le champ 'name' pour compatibilité
+        if profile.firstName or profile.lastName:
+            firstName = profile.firstName or user.get("firstName", "")
+            lastName = profile.lastName or user.get("lastName", "")
+            update_data["name"] = f"{firstName} {lastName}".strip()
+        
+        if update_data:
+            result = await db.users.update_one(
+                {"_id": ObjectId(user["_id"])},
+                {"$set": update_data}
+            )
+            
+            if result.modified_count == 0:
+                raise HTTPException(status_code=400, detail="Aucune modification effectuée")
+        
+        return {"message": "Profil mis à jour avec succès"}
+    except Exception as e:
+        print(f"Erreur update profile: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/user/change-password")
+async def change_password(
+    password_data: PasswordChange,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Change le mot de passe utilisateur"""
+    try:
+        user = await get_current_user(credentials)
+        
+        # Vérifier le mot de passe actuel
+        if not verify_password(password_data.currentPassword, user["passwordHash"]):
+            raise HTTPException(status_code=400, detail="Mot de passe actuel incorrect")
+        
+        # Hasher le nouveau mot de passe
+        new_password_hash = hash_password(password_data.newPassword)
+        
+        # Mettre à jour dans la base de données
+        await db.users.update_one(
+            {"_id": ObjectId(user["_id"])},
+            {"$set": {"passwordHash": new_password_hash}}
+        )
+        
+        return {"message": "Mot de passe modifié avec succès"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Erreur change password: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/user/support-message")
+async def send_support_message(
+    support_data: SupportMessage,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Envoie un message au support"""
+    try:
+        user = await get_current_user(credentials)
+        
+        # Enregistrer le message dans la base de données
+        message_doc = {
+            "userId": ObjectId(user["_id"]),
+            "userEmail": user["email"],
+            "userName": user.get("name", "Utilisateur"),
+            "subject": support_data.subject,
+            "message": support_data.message,
+            "createdAt": datetime.utcnow(),
+            "status": "new"
+        }
+        
+        await db.support_messages.insert_one(message_doc)
+        
+        # TODO: Envoyer un email de notification au support
+        # Pour l'instant, on enregistre juste dans la DB
+        
+        return {"message": "Message envoyé avec succès"}
+    except Exception as e:
+        print(f"Erreur send support message: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ============ ROOT ROUTE ============
 @api_router.get("/")
 async def root():
