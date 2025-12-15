@@ -4295,7 +4295,7 @@ async def send_support_message(
         
         # Enregistrer le message dans la base de données
         message_doc = {
-            "userId": ObjectId(user["_id"]),
+            "userId": user["_id"],
             "userEmail": user["email"],
             "userName": user.get("name", "Utilisateur"),
             "subject": support_data.subject,
