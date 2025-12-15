@@ -30,7 +30,9 @@
         "NSPrivacyAccessedAPITypes": [
           {
             "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
-            "NSPrivacyAccessedAPITypeReasons": ["CA92.1"]
+            "NSPrivacyAccessedAPITypeReasons": [
+              "CA92.1"
+            ]
           }
         ]
       }
@@ -48,7 +50,11 @@
         "WRITE_EXTERNAL_STORAGE",
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
-        "RECEIVE_BOOT_COMPLETED"
+        "RECEIVE_BOOT_COMPLETED",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
       ],
       "edgeToEdgeEnabled": true
     },
@@ -94,11 +100,13 @@
     },
     "extra": {
       "eas": {
-        "projectId": ""
-      }
+        "projectId": "325c8ce7-0404-4ebd-a16d-9d83455c56f4"
+      },
+      "router": {}
     },
     "runtimeVersion": {
       "policy": "appVersion"
-    }
+    },
+    "owner": "sepalis"
   }
 }
