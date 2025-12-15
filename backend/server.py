@@ -2591,8 +2591,7 @@ async def get_all_season_tips(user: dict = Depends(verify_admin)):
 @api_router.post("/admin/season-tips", response_model=SeasonTipResponse)
 async def create_season_tip(tip: SeasonTipCreate, user: dict = Depends(verify_admin)):
     """Créer ou mettre à jour un conseil de saison (admin uniquement)"""
-    try
-        
+    try:
         # Vérifier si un conseil existe déjà pour cette saison
         existing = await db.season_tips.find_one({"season": tip.season})
         
