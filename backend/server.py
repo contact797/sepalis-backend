@@ -2646,10 +2646,9 @@ async def delete_season_tip(season: str, user: dict = Depends(verify_admin)):
 
 # ============ CALENDAR TASKS ROUTES (ADMIN) ============
 @api_router.get("/admin/calendar-tasks", response_model=List[CalendarTaskResponse])
-async def get_calendar_tasks(credentials: HTTPAuthorizationCredentials = Depends(security)):
+async def get_calendar_tasks(user: dict = Depends(verify_admin)):
     """Obtenir toutes les tâches du calendrier (admin uniquement)"""
     try:
-        user = await get_current_user(credentials)
         
         tasks = await db.calendar_tasks.find({}).sort("weekNumber", 1).to_list(length=100)
         return [CalendarTaskResponse(**task) for task in tasks]
@@ -2659,10 +2658,9 @@ async def get_calendar_tasks(credentials: HTTPAuthorizationCredentials = Depends
 
 
 @api_router.post("/admin/calendar-tasks", response_model=CalendarTaskResponse)
-async def create_calendar_task(task_data: CalendarTaskCreate, credentials: HTTPAuthorizationCredentials = Depends(security)):
+async def create_calendar_task(task_data: CalendarTaskCreate, user: dict = Depends(verify_admin)):
     """Créer une tâche dans le calendrier (admin uniquement)"""
     try:
-        user = await get_current_user(credentials)
         
         # Valider le numéro de semaine
         if task_data.weekNumber < 1 or task_data.weekNumber > 52:
@@ -2727,10 +2725,9 @@ async def update_calendar_task(
 
 
 @api_router.delete("/admin/calendar-tasks/{task_id}")
-async def delete_calendar_task(task_id: str, credentials: HTTPAuthorizationCredentials = Depends(security)):
+async def delete_calendar_task(task_id: str, user: dict = Depends(verify_admin)):
     """Supprimer une tâche du calendrier (admin uniquement)"""
     try:
-        user = await get_current_user(credentials)
         
         result = await db.calendar_tasks.delete_one({"_id": task_id})
         
@@ -2746,10 +2743,9 @@ async def delete_calendar_task(task_id: str, credentials: HTTPAuthorizationCrede
 
 
 @api_router.post("/admin/calendar-tasks/distribute")
-async def distribute_calendar_tasks(credentials: HTTPAuthorizationCredentials = Depends(security)):
+async def distribute_calendar_tasks(user: dict = Depends(verify_admin)):
     """Distribuer les tâches de la semaine actuelle à tous les utilisateurs (admin uniquement)"""
     try:
-        user = await get_current_user(credentials)
         
         # Calculer le numéro de la semaine actuelle
         current_week = datetime.utcnow().isocalendar()[1]
@@ -3187,10 +3183,9 @@ async def get_notification_status(credentials: HTTPAuthorizationCredentials = De
 
 # ============ ADMIN - DAILY QUIZ ROUTES ============
 @api_router.get("/admin/quiz/questions", response_model=List[DailyQuizQuestionResponse])
-async def get_all_quiz_questions(credentials: HTTPAuthorizationCredentials = Depends(security)):
+async def get_all_quiz_questions(user: dict = Depends(verify_admin)):
     """Obtenir toutes les questions (admin uniquement)"""
     try:
-        user = await get_current_user(credentials)
         
         questions = await db.daily_quiz_questions.find({}).sort("scheduledDate", -1).to_list(length=200)
         return [DailyQuizQuestionResponse(**q) for q in questions]
@@ -3329,11 +3324,10 @@ async def track_event(event: AnalyticsEventCreate, credentials: HTTPAuthorizatio
 
 
 @api_router.get("/admin/analytics/overview")
-async def get_analytics_overview(credentials: HTTPAuthorizationCredentials = Depends(security)):
+async def get_analytics_overview(user: dict = Depends(verify_admin)):
     """Obtenir les statistiques globales (admin uniquement)"""
     try:
         # Vérifier l'authentification admin
-        user = await get_current_user(credentials)
         
         # Total d'utilisateurs inscrits
         total_users = await db.users.count_documents({})
@@ -3438,10 +3432,9 @@ async def get_users_list(
 
 
 @api_router.get("/admin/analytics/export-emails")
-async def export_user_emails(credentials: HTTPAuthorizationCredentials = Depends(security)):
+async def export_user_emails(user: dict = Depends(verify_admin)):
     """Exporter tous les emails des utilisateurs (admin uniquement)"""
     try:
-        user = await get_current_user(credentials)
         
         users = await db.users.find({}, {"email": 1, "name": 1, "createdAt": 1}).to_list(length=10000)
         
