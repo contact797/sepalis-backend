@@ -442,6 +442,18 @@ backend:
         comment: "CORRECTION IMPLÉMENTÉE: Toutes les routes admin ont été sécurisées en remplaçant l'utilisation de get_current_user(credentials) par la dépendance verify_admin qui vérifie le champ isAdmin dans la base de données. Routes corrigées: /admin/season-tips (GET, POST, DELETE), /admin/calendar-tasks (GET, POST, PUT, DELETE), /admin/calendar-tasks/distribute (POST), /admin/quiz/questions (GET, POST, PUT, DELETE), /admin/analytics (overview, users, export-emails, user-behavior), /admin/messages/broadcast/{message_id} (DELETE). Un script Python a été utilisé pour automatiser les corrections. Le backend redémarre correctement sans erreur. BESOIN DE TEST: Vérifier qu'un utilisateur normal ne peut plus accéder aux routes /api/admin/* et qu'un admin peut toujours y accéder."
 
 frontend:
+  - task: "5 Nouvelles pages du profil (Informations personnelles, Mon abonnement, Notifications, Paramètres, Aide et support)"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/(tabs)/personal-info.tsx, subscription.tsx, notifications-settings.tsx, settings.tsx, support.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "IMPLÉMENTATION COMPLÈTE des 5 pages du profil: 1) personal-info.tsx: Formulaire pour modifier prénom, nom, et changer le mot de passe avec endpoints backend (/api/user/profile GET/PUT, /api/user/change-password POST). 2) subscription.tsx: Affiche le statut d'abonnement (Premium/Trial/Free), jours restants, date d'expiration, avantages Premium, bouton pour passer à Premium ou gérer l'abonnement via Play Store. 3) notifications-settings.tsx: Paramètres détaillés des notifications (rappels quotidiens, quiz, conseils hebdomadaires, ateliers, emails marketing) avec vérification du statut push. 4) settings.tsx: Paramètres de l'app (mode sombre à venir, langue, unité de température, sauvegarde auto, mode hors ligne, vider cache, supprimer compte). 5) support.tsx: FAQ (8 questions/réponses), formulaire de contact avec endpoint /api/user/support-message, contact rapide (email/téléphone), horaires du support. Toutes les routes ont été ajoutées dans _layout.tsx avec tabBarButton: null. La navigation depuis profile.tsx a été mise à jour. BESOIN DE TEST: Vérifier la navigation vers toutes les pages, le chargement des données, et les formulaires."
+
   - task: "Amélioration page Scanner - Conseils MOF + Sélecteur de zone + Confirmation"
     implemented: true
     working: "NA"
