@@ -425,6 +425,21 @@ backend:
         agent: "testing"
         comment: "🎉 TESTS COMPLETS DU SYSTÈME DE PARRAINAGE RÉUSSIS (20/20 tests passés, 100% de réussite). ✅ GÉNÉRATION CODE: Format SEPALIS-PRENOM-1234 correct, URL de partage https://sepalis.app/invite/{code}, message avec '2 semaines Premium gratuites'. ✅ STATISTIQUES: Endpoints retournent totalReferrals, activeReferrals, premiumEarned, nextReward, progressToNext, referrals avec structure complète. ✅ APPLICATION CODE: Filleul reçoit 2 semaines Premium, parrain reçoit récompenses automatiques selon paliers. ✅ CAS D'ERREUR: Code déjà utilisé (400), code invalide (404), utiliser son propre code (400) - toutes les validations fonctionnent. ✅ SYSTÈME RÉCOMPENSES: Paliers testés et validés - 1→30j, 3→90j+ambassador, 5→180j+super_ambassador, 10→36500j+legendary. ✅ PERSISTANCE DB: Codes persistés correctement, collection referrals opérationnelle. Le système de parrainage est ENTIÈREMENT FONCTIONNEL et prêt pour le lancement Play Store."
 
+  - task: "Nouveaux endpoints profil utilisateur"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "ENDPOINTS PROFIL IMPLÉMENTÉS: 4 nouveaux endpoints créés pour les pages profil frontend. GET /api/user/profile (récupération firstName, lastName, email), PUT /api/user/profile (mise à jour prénom/nom), POST /api/user/change-password (changement mot de passe avec vérification ancien), POST /api/user/support-message (envoi message support). Modèles Pydantic ajoutés: ProfileUpdate, PasswordChange, SupportMessage. Tous les endpoints protégés par JWT."
+      - working: true
+        agent: "testing"
+        comment: "✅ ENDPOINTS PROFIL ENTIÈREMENT FONCTIONNELS - Tests complets RÉUSSIS (4/4 tests passés, 100% de réussite). ✅ GET /api/user/profile: Retourne correctement firstName, lastName, email avec structure attendue. ✅ PUT /api/user/profile: Mise à jour profil fonctionnelle avec données {firstName: 'Test', lastName: 'User'}. ✅ POST /api/user/change-password: Changement mot de passe opérationnel avec vérification mot de passe actuel. ✅ POST /api/user/support-message: Envoi message support fonctionnel avec {subject: 'Test Support', message: 'Message de test'}. ✅ PROTECTION JWT: Tous les endpoints correctement sécurisés. ✅ CORRECTIONS APPLIQUÉES: Fix des erreurs ObjectId (UUID utilisés) et champ password (au lieu de passwordHash). Les 5 nouvelles pages profil frontend peuvent maintenant utiliser ces endpoints backend sans problème."
+
   - task: "SÉCURITÉ CRITIQUE - Protection routes admin"
     implemented: true
     working: true
