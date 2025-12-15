@@ -2575,12 +2575,9 @@ async def get_current_season_tip():
 
 
 @api_router.get("/admin/season-tips", response_model=List[SeasonTipResponse])
-async def get_all_season_tips(credentials: HTTPAuthorizationCredentials = Depends(security)):
+async def get_all_season_tips(user: dict = Depends(verify_admin)):
     """Obtenir tous les conseils de saison (admin uniquement)"""
     try:
-        # Vérifier l'authentification
-        user = await get_current_user(credentials)
-        
         tips = await db.season_tips.find().to_list(length=100)
         for tip in tips:
             tip["_id"] = str(tip["_id"])
