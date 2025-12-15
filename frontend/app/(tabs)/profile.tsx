@@ -237,28 +237,28 @@ export default function Profile() {
     {
       title: 'Informations personnelles',
       icon: 'person-outline',
-      onPress: () => Alert.alert('Info', 'Fonctionnalité bientôt disponible'),
+      onPress: () => router.push('/(tabs)/personal-info' as any),
     },
     {
       title: 'Mon abonnement',
       icon: 'card-outline',
-      badge: 'Gratuit',
-      onPress: () => Alert.alert('Abonnement', 'Fonctionnalité bientôt disponible'),
+      badge: isPremium ? '💎' : 'Gratuit',
+      onPress: () => router.push('/(tabs)/subscription' as any),
     },
     {
       title: 'Notifications',
       icon: 'notifications-outline',
-      onPress: () => Alert.alert('Notifications', 'Fonctionnalité bientôt disponible'),
+      onPress: () => router.push('/(tabs)/notifications-settings' as any),
     },
     {
       title: 'Paramètres',
       icon: 'settings-outline',
-      onPress: () => Alert.alert('Paramètres', 'Fonctionnalité bientôt disponible'),
+      onPress: () => router.push('/(tabs)/settings' as any),
     },
     {
       title: 'Aide et support',
       icon: 'help-circle-outline',
-      onPress: () => Alert.alert('Aide', 'Contactez-nous à support@sepalis.com'),
+      onPress: () => router.push('/(tabs)/help-support' as any),
     },
     {
       title: 'À propos',
