@@ -258,7 +258,7 @@ export default function Profile() {
     {
       title: 'Aide et support',
       icon: 'help-circle-outline',
-      onPress: () => router.push('/(tabs)/help-support' as any),
+      onPress: () => router.push('/(tabs)/support' as any),
     },
     {
       title: 'À propos',
