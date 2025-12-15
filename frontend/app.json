@@ -94,12 +94,8 @@
     },
     "extra": {
       "eas": {
-        "projectId": "VOTRE_PROJECT_ID_ICI"
+        "projectId": ""
       }
-    },
-    "owner": "votre-compte-expo",
-    "updates": {
-      "url": "https://u.expo.dev/VOTRE_PROJECT_ID_ICI"
     },
     "runtimeVersion": {
       "policy": "appVersion"
