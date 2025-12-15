@@ -1,0 +1,31 @@
+#!/usr/bin/expect -f
+set timeout 600
+
+# Variables d'environnement
+set env(EXPO_TOKEN) "c7jw_y9xeuoic-on5ZLnS7j1iUtKPD_nR13wfyOm"
+
+# Lancer la commande de build
+spawn npx eas build --platform android --profile production
+
+# Attendre la question sur le keystore
+expect {
+    "Generate a new Android Keystore?" {
+        send "y\r"
+        exp_continue
+    }
+    "Build queued" {
+        puts "\n✅ Build lancé avec succès!\n"
+    }
+    "Error" {
+        puts "\n❌ Erreur détectée\n"
+        exit 1
+    }
+    timeout {
+        puts "\n⏱️ Timeout\n"
+        exit 1
+    }
+    eof
+}
+
+# Attendre la fin
+expect eof
