@@ -1,0 +1,21 @@
+#!/usr/bin/expect -f
+set timeout 600
+
+spawn npx eas build --platform android --profile preview --clear-cache
+
+expect {
+    "Build queued" {
+        puts "\n✅ Build APK lancé!\n"
+    }
+    "Error" {
+        puts "\n❌ Erreur\n"
+        exit 1
+    }
+    timeout {
+        puts "\n⏱️ Timeout\n"
+        exit 1
+    }
+    eof
+}
+
+expect eof
