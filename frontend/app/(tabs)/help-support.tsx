@@ -134,7 +134,7 @@ export default function HelpSupportScreen() {
 
           <TouchableOpacity
             style={styles.linkItem}
-            onPress={() => Linking.openURL('https://sepalis-mobile-1.preview.emergentagent.com/docs/POLITIQUE_CONFIDENTIALITE.md')}
+            onPress={() => Linking.openURL('https://garden-backend.preview.emergentagent.com/docs/POLITIQUE_CONFIDENTIALITE.md')}
           >
             <Ionicons name="shield-checkmark-outline" size={24} color={Colors.primary} />
             <View style={styles.linkInfo}>

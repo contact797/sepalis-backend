@@ -88,7 +88,7 @@ Supprimer un message programmé
 - Stratégie avis & notes
 - Timeline objectifs chiffrés
 
-**URL :** `https://sepalis-mobile-1.preview.emergentagent.com/docs/STRATEGIE_ASO.md`
+**URL :** `https://garden-backend.preview.emergentagent.com/docs/STRATEGIE_ASO.md`
 
 ---
 
@@ -100,7 +100,7 @@ Supprimer un message programmé
 - Stratégies de négociation
 - Tracking & analytics
 
-**URL :** `https://sepalis-mobile-1.preview.emergentagent.com/docs/STRATEGIE_INFLUENCEURS.md`
+**URL :** `https://garden-backend.preview.emergentagent.com/docs/STRATEGIE_INFLUENCEURS.md`
 
 ---
 
@@ -112,7 +112,7 @@ Supprimer un message programmé
 - ROI & calculs de viralité
 - Assets de communication
 
-**URL :** `https://sepalis-mobile-1.preview.emergentagent.com/docs/SYSTEME_PARRAINAGE.md`
+**URL :** `https://garden-backend.preview.emergentagent.com/docs/SYSTEME_PARRAINAGE.md`
 
 ---
 
@@ -124,12 +124,12 @@ Supprimer un message programmé
 - Checklist complète
 - Timeline réaliste
 
-**URL :** `https://sepalis-mobile-1.preview.emergentagent.com/docs/CALENDRIER_MARKETING_90J.md`
+**URL :** `https://garden-backend.preview.emergentagent.com/docs/CALENDRIER_MARKETING_90J.md`
 
 ---
 
 #### **📦 FICHIER ZIP (Tous ensemble)**
-**URL :** `https://sepalis-mobile-1.preview.emergentagent.com/docs/Documents_Strategiques_Sepalis.zip`
+**URL :** `https://garden-backend.preview.emergentagent.com/docs/Documents_Strategiques_Sepalis.zip`
 
 ---
 
