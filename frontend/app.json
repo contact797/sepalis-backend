@@ -102,7 +102,9 @@
         {
           "locationAlwaysAndWhenInUsePermission": "Sepalis utilise votre localisation pour la météo locale."
         }
-      ]
+      ],
+      "expo-font",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true
