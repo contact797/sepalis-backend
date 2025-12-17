@@ -61,7 +61,16 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/favicon.png",
+      "name": "Sepalis",
+      "shortName": "Sepalis",
+      "lang": "fr-FR",
+      "themeColor": "#22C55E",
+      "backgroundColor": "#1A1A1A",
+      "description": "Votre jardin connecté - Identification de plantes par IA",
+      "startUrl": "/",
+      "display": "standalone",
+      "orientation": "portrait"
     },
     "plugins": [
       "expo-router",
