@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#22C55E">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Sepalis">
+    <meta name="description" content="Sepalis - L'application de jardinage intelligente. Identifiez vos plantes, diagnostiquez les maladies et gérez votre jardin facilement.">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" href="/assets/images/icon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/icon.png">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/assets/images/favicon.png">
+    
+    <title>Sepalis - Télécharger l'Application</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(180deg, #0F172A 0%, #1E293B 100%);
+            min-height: 100vh;
+            color: #F8FAFC;
+            overflow-x: hidden;
+        }
+        
+        .hero {
+            padding: 60px 20px 40px;
+            text-align: center;
+            background: linear-gradient(180deg, rgba(34, 197, 94, 0.1) 0%, transparent 100%);
+        }
+        
+        .logo-container {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 24px;
+            background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%);
+            border-radius: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 20px 40px rgba(34, 197, 94, 0.3);
+        }
+        
+        .logo-container img {
+            width: 80px;
+            height: 80px;
+            border-radius: 16px;
+        }
+        
+        .logo-emoji {
+            font-size: 60px;
+        }
+        
+        h1 {
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #22C55E, #D4AF37);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .tagline {
+            font-size: 18px;
+            color: #94A3B8;
+            margin-bottom: 32px;
+        }
+        
+        .features {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 40px;
+            padding: 0 20px;
+        }
+        
+        .feature-badge {
+            background: rgba(34, 197, 94, 0.15);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            padding: 10px 18px;
+            border-radius: 100px;
+            font-size: 14px;
+            color: #22C55E;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .download-section {
+            padding: 0 20px 40px;
+        }
+        
+        .platform-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 32px 24px;
+            margin-bottom: 20px;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .platform-card.recommended {
+            border-color: #22C55E;
+            background: rgba(34, 197, 94, 0.1);
+        }
+        
+        .platform-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .platform-icon {
+            font-size: 40px;
+        }
+        
+        .platform-name {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .platform-desc {
+            color: #94A3B8;
+            font-size: 14px;
+        }
+        
+        .recommended-badge {
+            background: #22C55E;
+            color: #0F172A;
+            padding: 4px 12px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: auto;
+        }
+        
+        .download-btn {
+            display: block;
+            width: 100%;
+            padding: 18px 24px;
+            border-radius: 16px;
+            font-size: 18px;
+            font-weight: 600;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.3s ease;
+            margin-bottom: 16px;
+        }
+        
+        .download-btn.primary {
+            background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%);
+            color: white;
+            box-shadow: 0 10px 30px rgba(34, 197, 94, 0.3);
+        }
+        
+        .download-btn.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(34, 197, 94, 0.4);
+        }
+        
+        .download-btn.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .instructions {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 16px;
+        }
+        
+        .instructions h4 {
+            font-size: 14px;
+            color: #D4AF37;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .instructions ol {
+            padding-left: 20px;
+            color: #94A3B8;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        
+        .app-preview {
+            padding: 40px 20px;
+            text-align: center;
+        }
+        
+        .app-preview h2 {
+            font-size: 28px;
+            margin-bottom: 32px;
+        }
+        
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .preview-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 24px 16px;
+            text-align: center;
+        }
+        
+        .preview-item .icon {
+            font-size: 40px;
+            margin-bottom: 12px;
+        }
+        
+        .preview-item h3 {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        
+        .preview-item p {
+            font-size: 13px;
+            color: #94A3B8;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: #64748B;
+            font-size: 14px;
+        }
+        
+        .footer a {
+            color: #22C55E;
+            text-decoration: none;
+        }
+        
+        /* iOS Safari PWA install banner */
+        .ios-install-prompt {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #1E293B;
+            padding: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            z-index: 1000;
+        }
+        
+        .ios-install-prompt.show {
+            display: block;
+        }
+        
+        .ios-install-content {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .ios-install-text {
+            flex: 1;
+        }
+        
+        .ios-install-text h4 {
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+        
+        .ios-install-text p {
+            font-size: 13px;
+            color: #94A3B8;
+        }
+        
+        .ios-install-close {
+            background: none;
+            border: none;
+            color: #94A3B8;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        @media (min-width: 768px) {
+            .hero {
+                padding: 80px 20px 60px;
+            }
+            
+            h1 {
+                font-size: 56px;
+            }
+            
+            .tagline {
+                font-size: 22px;
+            }
+            
+            .download-section {
+                display: flex;
+                gap: 24px;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            
+            .platform-card {
+                margin: 0;
+                width: 380px;
+            }
+            
+            .preview-grid {
+                grid-template-columns: repeat(4, 1fr);
+                max-width: 800px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <section class="hero">
+        <div class="logo-container">
+            <span class="logo-emoji">🌿</span>
+        </div>
+        <h1>Sepalis</h1>
+        <p class="tagline">Votre jardin connecté, expert à portée de main</p>
+        
+        <div class="features">
+            <span class="feature-badge">📸 Identification IA</span>
+            <span class="feature-badge">🏥 Diagnostic maladies</span>
+            <span class="feature-badge">🌡️ Météo locale</span>
+            <span class="feature-badge">📅 Rappels d'entretien</span>
+        </div>
+    </section>
+    
+    <section class="download-section">
+        <!-- Android Card -->
+        <div class="platform-card recommended" id="android-card">
+            <div class="platform-header">
+                <span class="platform-icon">🤖</span>
+                <div>
+                    <div class="platform-name">Android</div>
+                    <div class="platform-desc">Installation directe</div>
+                </div>
+                <span class="recommended-badge">Recommandé</span>
+            </div>
+            
+            <a href="#" class="download-btn primary" id="android-download-btn">
+                📥 Télécharger l'APK
+            </a>
+            
+            <div class="instructions">
+                <h4>📋 Instructions d'installation</h4>
+                <ol>
+                    <li>Téléchargez le fichier APK</li>
+                    <li>Ouvrez le fichier téléchargé</li>
+                    <li>Autorisez l'installation depuis "Sources inconnues" si demandé</li>
+                    <li>Installez et profitez de Sepalis !</li>
+                </ol>
+            </div>
+        </div>
+        
+        <!-- iPhone Card -->
+        <div class="platform-card" id="iphone-card">
+            <div class="platform-header">
+                <span class="platform-icon">🍎</span>
+                <div>
+                    <div class="platform-name">iPhone</div>
+                    <div class="platform-desc">Ajouter à l'écran d'accueil</div>
+                </div>
+            </div>
+            
+            <a href="/" class="download-btn primary" id="ios-install-btn">
+                ➕ Installer Sepalis
+            </a>
+            
+            <div class="instructions">
+                <h4>📋 Instructions d'installation</h4>
+                <ol>
+                    <li>Appuyez sur le bouton <strong>Partager</strong> (icône ⬆️) en bas de Safari</li>
+                    <li>Faites défiler et appuyez sur <strong>"Sur l'écran d'accueil"</strong></li>
+                    <li>Appuyez sur <strong>"Ajouter"</strong> en haut à droite</li>
+                    <li>Sepalis apparaît sur votre écran d'accueil !</li>
+                </ol>
+            </div>
+        </div>
+    </section>
+    
+    <section class="app-preview">
+        <h2>✨ Fonctionnalités</h2>
+        <div class="preview-grid">
+            <div class="preview-item">
+                <div class="icon">📸</div>
+                <h3>Scanner</h3>
+                <p>Identifiez n'importe quelle plante en photo</p>
+            </div>
+            <div class="preview-item">
+                <div class="icon">🏥</div>
+                <h3>Diagnostic</h3>
+                <p>Détectez les maladies de vos plantes</p>
+            </div>
+            <div class="preview-item">
+                <div class="icon">🌱</div>
+                <h3>Mon Jardin</h3>
+                <p>Gérez toutes vos plantes</p>
+            </div>
+            <div class="preview-item">
+                <div class="icon">🎓</div>
+                <h3>Formations</h3>
+                <p>Apprenez avec des experts MOF</p>
+            </div>
+        </div>
+    </section>
+    
+    <footer class="footer">
+        <p>© 2025 Sepalis - L'application du jardinier moderne</p>
+        <p style="margin-top: 8px;">Créé avec 💚 en France</p>
+    </footer>
+    
+    <!-- iOS Install Prompt -->
+    <div class="ios-install-prompt" id="ios-prompt">
+        <div class="ios-install-content">
+            <span style="font-size: 40px;">🌿</span>
+            <div class="ios-install-text">
+                <h4>Installer Sepalis</h4>
+                <p>Appuyez sur ⬆️ puis "Sur l'écran d'accueil"</p>
+            </div>
+            <button class="ios-install-close" onclick="closeIOSPrompt()">×</button>
+        </div>
+    </div>
+    
+    <script>
+        // Détection de la plateforme
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const isAndroid = /Android/.test(navigator.userAgent);
+        const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+        
+        // Configuration
+        const APK_URL = 'APK_DOWNLOAD_URL_PLACEHOLDER'; // Sera remplacé par l'URL réelle
+        const APP_URL = 'https://garden-backend.preview.emergentagent.com';
+        
+        // Éléments
+        const androidCard = document.getElementById('android-card');
+        const iphoneCard = document.getElementById('iphone-card');
+        const androidBtn = document.getElementById('android-download-btn');
+        const iosBtn = document.getElementById('ios-install-btn');
+        const iosPrompt = document.getElementById('ios-prompt');
+        
+        // Adapter l'interface selon la plateforme
+        if (isIOS) {
+            iphoneCard.classList.add('recommended');
+            iphoneCard.querySelector('.recommended-badge')?.remove();
+            iphoneCard.insertAdjacentHTML('beforeend', '<span class="recommended-badge" style="position:absolute;top:20px;right:20px;">Votre appareil</span>');
+            androidCard.classList.remove('recommended');
+            androidCard.querySelector('.recommended-badge')?.remove();
+            
+            // Montrer le prompt iOS si pas installé
+            if (!isInStandaloneMode) {
+                setTimeout(() => {
+                    iosPrompt.classList.add('show');
+                }, 3000);
+            }
+            
+            // Bouton iOS ouvre l'app
+            iosBtn.href = APP_URL;
+        } else if (isAndroid) {
+            androidBtn.href = APK_URL;
+            if (APK_URL === 'APK_DOWNLOAD_URL_PLACEHOLDER') {
+                androidBtn.textContent = '🔄 APK en préparation...';
+                androidBtn.style.opacity = '0.7';
+            }
+        }
+        
+        // Fermer le prompt iOS
+        function closeIOSPrompt() {
+            iosPrompt.classList.remove('show');
+            localStorage.setItem('sepalis-ios-prompt-closed', 'true');
+        }
+        
+        // Ne pas montrer le prompt si déjà fermé
+        if (localStorage.getItem('sepalis-ios-prompt-closed')) {
+            iosPrompt.classList.remove('show');
+        }
+        
+        // Enregistrer le Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('Service Worker enregistré:', reg.scope))
+                    .catch(err => console.log('Erreur SW:', err));
+            });
+        }
+    </script>
+</body>
+</html>
