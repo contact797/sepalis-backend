@@ -4492,3 +4492,34 @@ async def shutdown_scheduler():
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
+
+# ============ SERVIR L'APPLICATION WEB STATIQUE ============
+# Monter les fichiers statiques (assets JS, CSS, images)
+static_path = Path(__file__).parent / "static"
+if static_path.exists():
+    app.mount("/assets", StaticFiles(directory=static_path / "assets"), name="assets")
+    app.mount("/_expo", StaticFiles(directory=static_path / "_expo"), name="expo")
+    
+    @app.get("/")
+    async def serve_root():
+        return FileResponse(static_path / "index.html")
+    
+    @app.get("/{path:path}")
+    async def serve_spa(path: str, request: Request):
+        # Si c'est une route API, laisser passer
+        if path.startswith("api"):
+            raise HTTPException(status_code=404)
+        
+        # Chercher le fichier HTML correspondant
+        file_path = static_path / f"{path}.html"
+        if file_path.exists():
+            return FileResponse(file_path)
+        
+        # Chercher dans les sous-dossiers
+        for subdir in ["(tabs)", "(auth)"]:
+            sub_path = static_path / subdir / f"{path}.html"
+            if sub_path.exists():
+                return FileResponse(sub_path)
+        
+        # Fallback sur index.html pour le SPA routing
+        return FileResponse(static_path / "index.html")
