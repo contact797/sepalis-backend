@@ -3,8 +3,15 @@ import { AuthProvider, useAuth } from '../contexts/AuthContext';
 import { SubscriptionProvider } from '../contexts/SubscriptionContext';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Onboarding } from '../components/Onboarding';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import * as Notifications from 'expo-notifications';
+import * as SplashScreen from 'expo-splash-screen';
+import { useFonts } from 'expo-font';
+import { Ionicons, MaterialIcons, FontAwesome, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
+import { View, ActivityIndicator } from 'react-native';
+
+// Empêcher le splash screen de se cacher automatiquement
+SplashScreen.preventAutoHideAsync();
 
 // Configuration des notifications
 Notifications.setNotificationHandler({
