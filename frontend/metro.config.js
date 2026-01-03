@@ -11,6 +11,12 @@ config.cacheStores = [
   new FileStore({ root: path.join(root, 'cache') }),
 ];
 
+// Ajouter les extensions pour les fonts
+config.resolver.assetExts.push('ttf', 'otf');
+
+// S'assurer que les fonts sont bien résolues
+config.resolver.sourceExts = [...config.resolver.sourceExts, 'mjs'];
+
 
 // // Exclude unnecessary directories from file watching
 // config.watchFolders = [__dirname];
