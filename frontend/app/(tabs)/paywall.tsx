@@ -68,11 +68,36 @@ export default function Paywall() {
   };
 
   const handlePurchase = async () => {
-    Alert.alert(
-      'Mode Démo',
-      'L\'achat réel sera disponible une fois RevenueCat configuré. En attendant, utilisez le bouton "Démarrer l\'Essai Gratuit" pour tester.',
-      [{ text: 'OK' }]
-    );
+    setPurchasing(true);
+    setSuccessMessage('');
+    setErrorMessage('');
+    
+    try {
+      console.log('🚀 Création session paiement Stripe...');
+      
+      // Appeler la route appropriée selon le plan sélectionné
+      const endpoint = selectedPlan === 'yearly' 
+        ? '/api/subscription/checkout-yearly'
+        : '/api/subscription/checkout';
+      
+      const response = await subscriptionAPI.createCheckout(selectedPlan);
+      console.log('✅ Réponse checkout:', response.data);
+      
+      if (response.data.checkout_url) {
+        // Ouvrir la page de paiement Stripe
+        const { Linking } = require('react-native');
+        await Linking.openURL(response.data.checkout_url);
+        setSuccessMessage('🔄 Redirection vers la page de paiement...');
+      } else {
+        setErrorMessage('❌ Erreur lors de la création du paiement');
+      }
+    } catch (error: any) {
+      console.log('❌ Erreur paiement:', error);
+      const errorMsg = error.response?.data?.detail || error.message || 'Une erreur est survenue';
+      setErrorMessage(`❌ ${errorMsg}`);
+    } finally {
+      setPurchasing(false);
+    }
   };
 
   const handleRestore = async () => {
