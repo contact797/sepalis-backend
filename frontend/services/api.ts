@@ -215,4 +215,10 @@ export const subscriptionAPI = {
   
   startTrial: () =>
     api.post('/user/start-trial'),
+  
+  createCheckout: (plan: 'monthly' | 'yearly') =>
+    api.post(plan === 'yearly' ? '/subscription/checkout-yearly' : '/subscription/checkout'),
+  
+  checkPaymentStatus: (sessionId: string) =>
+    api.get(`/subscription/status/${sessionId}`),
 };
