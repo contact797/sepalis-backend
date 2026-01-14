@@ -578,6 +578,20 @@ const styles = StyleSheet.create({
     opacity: 0.8,
     marginTop: 4,
   },
+  secondaryButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderColor: Colors.accent,
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  secondaryButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: Colors.accent,
+  },
   restoreButton: {
     padding: 16,
     alignItems: 'center',
