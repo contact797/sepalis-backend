@@ -1437,6 +1437,19 @@ async def get_zone_plants(zone_id: str, credentials: HTTPAuthorizationCredential
 async def create_zone(zone_data: ZoneCreate, credentials: HTTPAuthorizationCredentials = Depends(security)):
     user = await get_current_user(credentials)
     
+    # Vérifier la limite de zones pour les utilisateurs gratuits/essai
+    subscription = user.get("subscription", {})
+    is_premium = subscription.get("isActive", False) and not subscription.get("isTrial", True)
+    
+    if not is_premium:
+        # Compter les zones existantes
+        zones_count = await db.zones.count_documents({"userId": user["_id"]})
+        if zones_count >= 3:
+            raise HTTPException(
+                status_code=403, 
+                detail="Limite de 3 zones atteinte. Passez à Premium pour créer des zones illimitées."
+            )
+    
     zone_id = str(uuid.uuid4())
     new_zone = {
         "_id": zone_id,
