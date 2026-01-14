@@ -4073,10 +4073,23 @@ class BlogArticleResponse(BaseModel):
 @api_router.get("/blog/articles")
 async def get_blog_articles(
     category: Optional[str] = None,
-    published: bool = True
+    published: bool = True,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
-    """Récupérer tous les articles de blog (publics)"""
+    """Récupérer tous les articles de blog (Premium uniquement)"""
     try:
+        user = await get_current_user(credentials)
+        
+        # Vérifier si l'utilisateur est Premium
+        subscription = user.get("subscription", {})
+        is_premium = subscription.get("isActive", False) and not subscription.get("isTrial", True)
+        
+        if not is_premium:
+            raise HTTPException(
+                status_code=403,
+                detail="Le blog est réservé aux membres Premium. Passez à Premium pour accéder à tous les articles."
+            )
+        
         query = {"published": published} if published else {}
         
         if category:
