@@ -2412,7 +2412,253 @@ async def start_trial(credentials: HTTPAuthorizationCredentials = Depends(securi
     }
 
 
-# ============ WEATHER MODELS ============
+# ============ SUBSCRIPTION PAYMENT ROUTES ============
+@api_router.post("/subscription/checkout")
+async def create_subscription_checkout(
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Créer une session de paiement Stripe pour l'abonnement Premium à 9,99€/mois"""
+    user = await get_current_user(credentials)
+    
+    try:
+        stripe_api_key = os.getenv("STRIPE_API_KEY")
+        if not stripe_api_key:
+            raise HTTPException(status_code=500, detail="Stripe non configuré")
+        
+        host_url = os.getenv("HOST_URL", "https://garden-backend.preview.emergentagent.com")
+        webhook_url = f"{host_url}/api/webhook/stripe-subscription"
+        
+        stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url=webhook_url)
+        
+        checkout_request = CheckoutSessionRequest(
+            line_items=[{
+                "price_data": {
+                    "currency": "eur",
+                    "product_data": {
+                        "name": "Sepalis Premium",
+                        "description": "Abonnement mensuel - Accès illimité à toutes les fonctionnalités"
+                    },
+                    "unit_amount": 999,  # 9,99€ en centimes
+                    "recurring": {
+                        "interval": "month"
+                    }
+                },
+                "quantity": 1
+            }],
+            mode="subscription",
+            success_url=f"{host_url}/subscription-success?session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url=f"{host_url}/subscription-cancel",
+            metadata={
+                "user_id": user["_id"],
+                "user_email": user["email"],
+                "subscription_type": "monthly"
+            },
+            customer_email=user["email"]
+        )
+        
+        session = await stripe_checkout.create_checkout_session(checkout_request)
+        
+        # Enregistrer la tentative de souscription
+        await db.subscription_attempts.insert_one({
+            "_id": str(uuid.uuid4()),
+            "userId": user["_id"],
+            "sessionId": session.session_id,
+            "amount": 9.99,
+            "currency": "eur",
+            "status": "pending",
+            "createdAt": datetime.utcnow()
+        })
+        
+        return {
+            "checkout_url": session.url,
+            "session_id": session.session_id
+        }
+        
+    except Exception as e:
+        logging.error(f"Erreur création checkout abonnement: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la création du paiement: {str(e)}")
+
+
+@api_router.post("/subscription/checkout-yearly")
+async def create_subscription_checkout_yearly(
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Créer une session de paiement Stripe pour l'abonnement Premium annuel à 99€/an"""
+    user = await get_current_user(credentials)
+    
+    try:
+        stripe_api_key = os.getenv("STRIPE_API_KEY")
+        if not stripe_api_key:
+            raise HTTPException(status_code=500, detail="Stripe non configuré")
+        
+        host_url = os.getenv("HOST_URL", "https://garden-backend.preview.emergentagent.com")
+        webhook_url = f"{host_url}/api/webhook/stripe-subscription"
+        
+        stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url=webhook_url)
+        
+        checkout_request = CheckoutSessionRequest(
+            line_items=[{
+                "price_data": {
+                    "currency": "eur",
+                    "product_data": {
+                        "name": "Sepalis Premium Annuel",
+                        "description": "Abonnement annuel - 2 mois offerts - Accès illimité à toutes les fonctionnalités"
+                    },
+                    "unit_amount": 9900,  # 99€ en centimes
+                    "recurring": {
+                        "interval": "year"
+                    }
+                },
+                "quantity": 1
+            }],
+            mode="subscription",
+            success_url=f"{host_url}/subscription-success?session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url=f"{host_url}/subscription-cancel",
+            metadata={
+                "user_id": user["_id"],
+                "user_email": user["email"],
+                "subscription_type": "yearly"
+            },
+            customer_email=user["email"]
+        )
+        
+        session = await stripe_checkout.create_checkout_session(checkout_request)
+        
+        # Enregistrer la tentative de souscription
+        await db.subscription_attempts.insert_one({
+            "_id": str(uuid.uuid4()),
+            "userId": user["_id"],
+            "sessionId": session.session_id,
+            "amount": 99.00,
+            "currency": "eur",
+            "status": "pending",
+            "type": "yearly",
+            "createdAt": datetime.utcnow()
+        })
+        
+        return {
+            "checkout_url": session.url,
+            "session_id": session.session_id
+        }
+        
+    except Exception as e:
+        logging.error(f"Erreur création checkout abonnement annuel: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la création du paiement: {str(e)}")
+
+
+@api_router.post("/webhook/stripe-subscription")
+async def stripe_subscription_webhook(request: Request):
+    """Webhook pour gérer les paiements d'abonnement Stripe"""
+    try:
+        body = await request.json()
+        event_type = body.get("type", "")
+        
+        logging.info(f"📩 Webhook Stripe reçu: {event_type}")
+        
+        if event_type == "checkout.session.completed":
+            session = body.get("data", {}).get("object", {})
+            metadata = session.get("metadata", {})
+            user_id = metadata.get("user_id")
+            subscription_type = metadata.get("subscription_type", "monthly")
+            
+            if user_id:
+                # Calculer la date d'expiration
+                if subscription_type == "yearly":
+                    expires_at = datetime.utcnow() + timedelta(days=365)
+                else:
+                    expires_at = datetime.utcnow() + timedelta(days=30)
+                
+                # Activer l'abonnement Premium
+                await db.users.update_one(
+                    {"_id": user_id},
+                    {
+                        "$set": {
+                            "subscription.isActive": True,
+                            "subscription.isTrial": False,
+                            "subscription.type": subscription_type,
+                            "subscription.expiresAt": expires_at,
+                            "subscription.provider": "stripe",
+                            "subscription.stripeCustomerId": session.get("customer"),
+                            "subscription.stripeSubscriptionId": session.get("subscription")
+                        }
+                    }
+                )
+                
+                # Mettre à jour la tentative de souscription
+                await db.subscription_attempts.update_one(
+                    {"sessionId": session.get("id")},
+                    {"$set": {"status": "completed", "completedAt": datetime.utcnow()}}
+                )
+                
+                logging.info(f"✅ Abonnement activé pour user {user_id}, expire le {expires_at}")
+        
+        elif event_type == "invoice.payment_succeeded":
+            # Renouvellement automatique
+            subscription = body.get("data", {}).get("object", {})
+            customer_id = subscription.get("customer")
+            
+            if customer_id:
+                user = await db.users.find_one({"subscription.stripeCustomerId": customer_id})
+                if user:
+                    subscription_type = user.get("subscription", {}).get("type", "monthly")
+                    if subscription_type == "yearly":
+                        expires_at = datetime.utcnow() + timedelta(days=365)
+                    else:
+                        expires_at = datetime.utcnow() + timedelta(days=30)
+                    
+                    await db.users.update_one(
+                        {"_id": user["_id"]},
+                        {"$set": {"subscription.expiresAt": expires_at}}
+                    )
+                    logging.info(f"🔄 Abonnement renouvelé pour user {user['_id']}")
+        
+        elif event_type == "customer.subscription.deleted":
+            # Annulation d'abonnement
+            subscription = body.get("data", {}).get("object", {})
+            customer_id = subscription.get("customer")
+            
+            if customer_id:
+                await db.users.update_one(
+                    {"subscription.stripeCustomerId": customer_id},
+                    {
+                        "$set": {
+                            "subscription.isActive": False,
+                            "subscription.cancelledAt": datetime.utcnow()
+                        }
+                    }
+                )
+                logging.info(f"❌ Abonnement annulé pour customer {customer_id}")
+        
+        return {"status": "success"}
+        
+    except Exception as e:
+        logging.error(f"Erreur webhook Stripe: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
+
+@api_router.get("/subscription/status/{session_id}")
+async def check_subscription_status(
+    session_id: str,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Vérifier le statut d'un paiement d'abonnement"""
+    user = await get_current_user(credentials)
+    
+    try:
+        stripe_api_key = os.getenv("STRIPE_API_KEY")
+        stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url="")
+        
+        checkout_status = await stripe_checkout.get_checkout_status(session_id)
+        
+        return {
+            "status": checkout_status.status,
+            "payment_status": checkout_status.payment_status,
+            "subscription_active": user.get("subscription", {}).get("isActive", False)
+        }
+        
+    except Exception as e:
+        logging.error(f"Erreur vérification statut abonnement: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 class WeatherCurrent(BaseModel):
     temperature: float
     apparent_temperature: float
