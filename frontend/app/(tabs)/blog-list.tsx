@@ -30,6 +30,7 @@ export default function BlogList() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [isPremiumRequired, setIsPremiumRequired] = useState(false);
 
   useEffect(() => {
     loadPosts();
@@ -44,9 +45,14 @@ export default function BlogList() {
         },
       });
 
-      if (response.ok) {
+      if (response.status === 403) {
+        // Utilisateur non premium
+        setIsPremiumRequired(true);
+        setPosts([]);
+      } else if (response.ok) {
         const data = await response.json();
         setPosts(data);
+        setIsPremiumRequired(false);
       }
     } catch (error) {
       console.error('Erreur chargement articles:', error);
@@ -72,6 +78,25 @@ export default function BlogList() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={Colors.accent} />
+      </View>
+    );
+  }
+
+  if (isPremiumRequired) {
+    return (
+      <View style={styles.premiumContainer}>
+        <Ionicons name="lock-closed" size={80} color={Colors.accent} />
+        <Text style={styles.premiumTitle}>Contenu Premium</Text>
+        <Text style={styles.premiumText}>
+          Le blog est réservé aux membres Premium.{'\n'}
+          Accédez à tous nos articles et conseils d'experts !
+        </Text>
+        <TouchableOpacity 
+          style={styles.premiumButton}
+          onPress={() => router.push('/(tabs)/paywall' as any)}
+        >
+          <Text style={styles.premiumButtonText}>Passer à Premium</Text>
+        </TouchableOpacity>
       </View>
     );
   }
