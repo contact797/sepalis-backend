@@ -1730,12 +1730,38 @@ STATUS: excellent (90-100%), good (70-89%), fair (50-69%), poor (<50%)"""
 
 # ============ AI RECOGNITION ROUTES ============
 @api_router.post("/ai/identify-plant")
-async def identify_plant(data: dict):
+async def identify_plant(data: dict, credentials: HTTPAuthorizationCredentials = Depends(security)):
     """Identifier une plante avec GPT-4 Vision via Emergent Integrations"""
     from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
     import json as json_lib
     
     try:
+        user = await get_current_user(credentials)
+        
+        # Vérifier la limite de scans pour les utilisateurs gratuits/essai
+        subscription = user.get("subscription", {})
+        is_premium = subscription.get("isActive", False) and not subscription.get("isTrial", True)
+        
+        if not is_premium:
+            # Compter les scans d'aujourd'hui
+            today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+            scans_today = await db.scan_history.count_documents({
+                "userId": user["_id"],
+                "createdAt": {"$gte": today_start}
+            })
+            
+            if scans_today >= 5:
+                raise HTTPException(
+                    status_code=403,
+                    detail="Limite de 5 scans par jour atteinte. Passez à Premium pour des scans illimités."
+                )
+            
+            # Enregistrer ce scan
+            await db.scan_history.insert_one({
+                "_id": str(uuid.uuid4()),
+                "userId": user["_id"],
+                "createdAt": datetime.utcnow()
+            })
         image_base64 = data.get('image')
         if not image_base64:
             raise HTTPException(status_code=400, detail="Image requise")
