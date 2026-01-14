@@ -279,6 +279,7 @@ export default function Paywall() {
           </View>
         )}
 
+        {/* Bouton Essai Gratuit */}
         <TouchableOpacity
           style={[styles.primaryButton, purchasing && styles.buttonDisabled]}
           onPress={handleStartTrial}
@@ -288,10 +289,21 @@ export default function Paywall() {
             <ActivityIndicator color={Colors.dark} />
           ) : (
             <>
-              <Text style={styles.primaryButtonText}>Démarrer l'Essai Gratuit</Text>
-              <Text style={styles.primaryButtonSubtext}>7 jours gratuits, puis {selectedPlan === 'yearly' ? '99€/an' : '9.99€/mois'}</Text>
+              <Text style={styles.primaryButtonText}>🎁 Essai Gratuit 7 jours</Text>
+              <Text style={styles.primaryButtonSubtext}>Puis {selectedPlan === 'yearly' ? '99€/an' : '9,99€/mois'}</Text>
             </>
           )}
+        </TouchableOpacity>
+
+        {/* Bouton S'abonner Maintenant */}
+        <TouchableOpacity
+          style={[styles.secondaryButton, purchasing && styles.buttonDisabled]}
+          onPress={handlePurchase}
+          disabled={purchasing}
+        >
+          <Text style={styles.secondaryButtonText}>
+            💳 S'abonner maintenant - {selectedPlan === 'yearly' ? '99€/an' : '9,99€/mois'}
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
