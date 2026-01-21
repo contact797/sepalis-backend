@@ -5,8 +5,8 @@ import { Platform } from 'react-native';
 
 // Utiliser l'URL backend depuis les variables d'environnement
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
-const API_URL = Platform.OS === 'web' ? `${BACKEND_URL}/api` : '/api';
-
+// const API_URL = Platform.OS === 'web' ? `${BACKEND_URL}/api` : '/api';
+const API_URL = `${BACKEND_URL}/api`;
 const api = axios.create({
   baseURL: API_URL,
   headers: {
