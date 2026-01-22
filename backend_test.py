@@ -68,17 +68,18 @@ class SepalisBackendTester:
             return None, response_time
     
     def test_health_check(self):
-        """Test 11: Health check - Vérifier que l'API répond"""
+        """Test 11: Health check - Vérifier que l'API répond via /courses"""
         print("\n🏥 TEST HEALTH CHECK")
         
-        response, response_time = self.make_request('GET', '/health')
+        # Utiliser /courses comme health check car /health n'existe pas
+        response, response_time = self.make_request('GET', '/courses')
         
         if response and response.status_code == 200:
-            self.log_test("Health Check API", True, "API répond correctement", response_time)
+            self.log_test("Health Check API (via /courses)", True, "API répond correctement", response_time)
             return True
         else:
             error_msg = f"Status: {response.status_code if response else 'No response'}"
-            self.log_test("Health Check API", False, error_msg, response_time)
+            self.log_test("Health Check API (via /courses)", False, error_msg, response_time)
             return False
     
     def test_authentication(self):
