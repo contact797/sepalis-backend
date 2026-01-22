@@ -7,7 +7,6 @@ import React, { useEffect, useState } from 'react';
 import * as Notifications from 'expo-notifications';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
-import { Ionicons, MaterialIcons, FontAwesome, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import { View, ActivityIndicator } from 'react-native';
 
 // Empêcher le splash screen de se cacher automatiquement
@@ -39,12 +38,18 @@ function RootNavigator() {
 }
 
 export default function RootLayout() {
+  // Charger les polices d'icônes depuis assets/fonts pour le web
   const [fontsLoaded] = useFonts({
-    ...Ionicons.font,
-    ...MaterialIcons.font,
-    ...FontAwesome.font,
-    ...FontAwesome5.font,
-    ...MaterialCommunityIcons.font,
+    'Ionicons': require('../assets/fonts/Ionicons.ttf'),
+    'Material Icons': require('../assets/fonts/MaterialIcons.ttf'),
+    'MaterialIcons': require('../assets/fonts/MaterialIcons.ttf'),
+    'FontAwesome': require('../assets/fonts/FontAwesome.ttf'),
+    'FontAwesome5_Regular': require('../assets/fonts/FontAwesome5_Regular.ttf'),
+    'FontAwesome5_Solid': require('../assets/fonts/FontAwesome5_Solid.ttf'),
+    'FontAwesome5_Brands': require('../assets/fonts/FontAwesome5_Brands.ttf'),
+    'Material Design Icons': require('../assets/fonts/MaterialCommunityIcons.ttf'),
+    'MaterialCommunityIcons': require('../assets/fonts/MaterialCommunityIcons.ttf'),
+    'SpaceMono': require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
   useEffect(() => {
