@@ -1,88 +1,306 @@
 <analysis>
-The trajectory details an intensely iterative development cycle for the Sepalis mobile application, driven by direct user feedback. The work began with critical bug fixes in the admin panel, specifically correcting API endpoint URLs in  that prevented statistics from loading and email exports from functioning. The unreliable web  was also replaced with a custom .
 
-Following these fixes, development shifted to two major new features requested by the user. First, a comprehensive MOF Task Calendar was built. This involved creating backend models and CRUD endpoints in , a full management interface in the admin panel, and logic to automatically distribute these tasks to all users. A significant portion of this work involved debugging the backend, where tasks were not being correctly fetched due to querying the wrong collection and response models missing necessary fields.
+**original_problem_statement:**
+The user's goal is to launch the Sepalis mobile application on the Apple App Store and Google Play Store. Initially, the plan was to deploy the backend on Render.com to get a public URL for an Android build, but this was blocked by private dependencies (). The user then pivoted to wanting a simple, shareable link for the app, leading to the exploration of PWAs and static builds. The final and current strategy is to use the official Emergent build services to generate native app packages (IPA for iOS and APK for Android) and to prepare for a commercial launch with a full marketing plan. The application must have a clear distinction between free and premium features, with a working subscription system.
 
-The second major feature was a gamified Daily Quiz to improve user retention. This required a complete implementation cycle: backend models and endpoints for questions and user stats, a management UI in the admin panel, and a new user-facing screen (). A major backend refactoring was necessary to fix a critical bug where new API routes were registered in the wrong order in . The work concluded with adding push notification capabilities and starting the implementation of a notification badge on the quiz tab icon.
+PRODUCT REQUIREMENTS:
+- A functional  file for submission to the Apple App Store.
+- A functional  file for the Google Play Store (when Emergent supports it).
+- The native application must connect to the backend and be fully functional.
+- The application must enforce limitations for free users and provide full access to premium subscribers.
+- A working subscription system using Stripe must be in place, allowing users to purchase a premium plan.
+- The application must have a professional look and feel, with all icons and assets loading correctly.
 
-The user's primary language is French. All subsequent responses must be in French.
+**User's preferred language**: French
+
+**what currently exists?**
+A full-stack Expo (React Native) and FastAPI application. The application is feature-complete with a fully implemented subscription and feature-gating system. Users can start a 7-day free trial. Free users are limited to 3 garden zones and 5 plant scans per day, and do not have access to the blog. Premium users have unlimited access. The system uses Stripe for monthly (9.99€) and yearly (99€) subscriptions. A temporary web version is accessible via a preview URL, and a landing page exists. The user has successfully created an Apple ID and submitted the application for the Apple Developer Program.
+
+**Last working item**:
+    - Last item agent was working: The agent was providing a comprehensive marketing plan for the app's launch, following the user's request. This came after successfully guiding the user through the process of creating an Apple ID and applying for the Apple Developer Program.
+    - Status: USER VERIFICATION PENDING (User is waiting for Apple's approval of their Developer Program application).
+    - Agent Testing Done: N/A
+    - Which testing method agent to use? NA
+    - User Testing Done: Y (The user has tested the app on Expo Go and confirmed the icon issue is resolved).
+
+**All Pending/In progress Issue list**:
+  - Issue 1: Wait for Apple Developer Program Account Validation (P0 - CRITICAL BLOCKER)
+
+  Issues Detail:
+  - Issue 1: 
+     - **Description**: The user has successfully submitted their application to the Apple Developer Program (Cost: 99€/year). They must now wait for Apple's validation email, which can take 24-48 hours. This is a mandatory step before being able to access App Store Connect and publish the iOS app.
+     - **Attempted fixes**: The agent successfully guided the user through the signup process.
+     - **Next debug checklist**: 
+        1. User to monitor their email inbox () for the confirmation from Apple.
+        2. Once confirmed, the user needs to log in to  to verify access.
+     - **Why fix this issue and what will be achieved with the fix?** This is the main blocker for iOS deployment. Resolving it will allow the creation of the app's listing on the App Store and the upload of the  build.
+     - **Status:**  BLOCKED (Waiting on Apple)
+     - **Is recurring issue?** N
+     - **Should Test frontend/backend/both after fix?** both (via TestFlight)
+     - **Blocked on other issue:** None.
+
+**In progress Task List**:
+- There are no active in-progress development tasks. The project is pending external actions.
+
+**Upcoming and Future Tasks**
+    Upcoming Tasks:
+    - **P0: Deploy and Publish iOS App:** Once the Apple Developer account is validated:
+        1. Guide the user to Deploy the application within the Emergent platform.
+        2. Guide the user to use the Get iOS Builds option to generate the  file.
+        3. Guide the user to create the app listing on App Store Connect (name, description, screenshots, pricing).
+        4. Guide the user to upload the  file to App Store Connect.
+        5. Recommend publishing to **TestFlight** first for a final round of testing with a small group before submitting for public App Store review.
+    - **P1: Deploy and Publish Android App:**
+        1. Wait for Emergent to announce support for APK builds (expected in ~2 weeks from the last support message).
+        2. Once available, guide the user to generate the  or  file.
+        3. Guide the user to publish the app on the Google Play Store.
+
+    Future Tasks:
+    - **Execute Marketing Plan:** Once the app is on at least one store, begin executing the detailed marketing plan provided by the agent (pre-launch teasers, launch-day live stream, post-launch content).
+    - **Create a full-featured website:** The user has expressed interest in a separate, full e-commerce website. A detailed prompt for this has already been created and can be used to start a new project.
+    - **Create a Jardin de Suzanne page:** The user requested a sales page for the Jardin de Suzanne visits. This needs to be created, likely on the new website.
+
+**Completed work in this session**
+- **Full Subscription System Implementation:**
+  - Backend: Created API endpoints for Stripe checkout (, ), a webhook for payment confirmation, and a status check endpoint.
+  - Frontend: Updated the  screen to include Subscribe Now buttons that call the new API endpoints and redirect to Stripe.
+
+- **Feature Gating Implementation (Free vs. Premium):**
+  - Backend: Implemented logic in  to enforce limits for free/trial users:
+    - **5 plant scans per day**.
+    - **Maximum of 3 garden zones**.
+    - **Blocked access to the blog API**.
+  - Frontend: Updated the UI () to handle access denial and direct users to the premium page.
+
+- **Resolved Critical Icon Display Bug:** Diagnosed and fixed the recurring issue where all  were displayed as  in Expo Go. The final resolution involved a combination of cache clearing and dependency stabilization.
+
+- **Apple Developer Account Creation:** Successfully guided the user through the entire process of creating an Apple ID and applying for the Apple Developer Program, including troubleshooting common sign-up errors.
+
+- **Marketing & Strategy Content Creation:**
+  - Drafted a detailed 45-minute script for a Facebook Live launch event.
+  - Created a comprehensive 3-phase marketing plan (pre-launch, launch, post-launch).
+  - Wrote template posts for social media and a full-length newsletter.
+  - Provided realistic sales forecasts for the first year.
+
+- **User Support and Guidance:**
+  - Drafted multiple emails for the user to send to Emergent support to resolve issues with APK builds and icon display.
+  - Clarified platform limitations regarding web deployment vs. native builds.
+
+**Earlier issues found/mentioned but not fixed**
+- All major issues identified during the session have been addressed or have a clear path forward (e.g., waiting on support/validation).
+
+**Known issue recurrence from previous fork**
+  - **Issue recurrence in previous fork**: The agent repeatedly failed to create a functional build due to a misunderstanding of the Emergent platform's limitations regarding public URLs. This has now been diagnosed.
+  - **Recurrence count**: Multiple build failures (at least 2-3).
+  - **Status**: RESOLVED (The root cause is now understood, and a new strategy is in progress).
+
+**Code Architecture**
+
+
+**Key Technical Concepts**
+- **Mobile App Monetization:** Implementation of a freemium model with a 7-day trial and recurring subscriptions (monthly/yearly).
+- **Stripe Integration:** Using Stripe for handling credit card payments via checkout sessions and webhooks for subscription activation.
+- **Feature Gating:** Implementing checks in the backend API to restrict access to certain features based on a user's subscription status.
+- **Expo Application Services (EAS):** The underlying service used for building native app packages (.ipa, .apk). The agent experienced and debugged multiple build failures.
+- **Expo for Web:** The project is configured to run as a web app. The agent used env: load .env
+env: export EXPO_TUNNEL_SUBDOMAIN EXPO_PACKAGER_HOSTNAME EXPO_PUBLIC_BACKEND_URL EXPO_USE_FAST_RESOLVER METRO_CACHE_ROOT EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY
+Fast resolver is enabled.
+Starting Metro Bundler
+Static rendering is enabled. Learn more: https://docs.expo.dev/router/reference/static-rendering/
+Web node_modules/expo-router/entry.js ▓▓▓▓░░░░░░░░░░░░ 30.3% ( 31/177)
+λ node_modules/expo-router/node/render.js ▓░░░░░░░░░░░░░░░ 11.1% ( 18/167)
+Web node_modules/expo-router/entry.js ▓▓▓▓░░░░░░░░░░░░ 30.3% ( 33/188)
+λ node_modules/expo-router/node/render.js ▓░░░░░░░░░░░░░░░ 11.1% ( 96/312)
+Web node_modules/expo-router/entry.js ▓▓▓▓░░░░░░░░░░░░ 30.3% (115/293)
+λ node_modules/expo-router/node/render.js ▓▓░░░░░░░░░░░░░░ 13.2% (124/341)
+Web node_modules/expo-router/entry.js ▓▓▓▓░░░░░░░░░░░░ 30.3% (142/318)
+λ node_modules/expo-router/node/render.js ▓▓░░░░░░░░░░░░░░ 17.4% (148/355)
+Web node_modules/expo-router/entry.js ▓▓▓▓░░░░░░░░░░░░ 30.3% (203/397)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓░░░░░░░░░░ 39.4% (309/492)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓░░░░░░░░░░ 40.8% (377/637)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓░░░░░░░░░ 45.1% (373/608)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓░░░░░░░░░░ 40.8% (409/657)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓░░░░░░░░ 50.4% (516/727)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓░░░░░░░░░ 48.7% (587/876)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓░░░░░░░░ 51.2% (547/774)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 61.9% (733/932)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 58.5% (728/952)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓░░░░░ 69.0% ( 875/1053)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓░░░░░░ 66.9% ( 831/1016)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓░░░░ 77.7% (1047/1188)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓░░░░░ 74.6% ( 951/1101)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓░░░░ 80.9% (1183/1315)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓░░░░ 80.8% (1169/1309)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓░░░ 82.6% (1342/1508)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓░░░ 83.7% (1349/1506)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓░░░ 85.3% (1506/1638)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 88.5% (1520/1622)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 97.9% (1694/1712)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 93.9% (1654/1707)
+Web Bundled 53596ms node_modules/expo-router/entry.js (1744 modules)
+λ Bundled 53612ms node_modules/expo-router/node/render.js (1757 modules)
+
+› web bundles (1):
+_expo/static/js/web/entry-ab6f63eae743ae626c0a3f73ef99e3ff.js (3.51 MB)
+
+› Static routes (80):
+/quiz (36.8 kB)
+/ (index) (32.4 kB)
+/login (34.6 kB)
+/about (41.9 kB)
+/admin (45.8 kB)
+/tasks (37.2 kB)
+/zones (37.9 kB)
+/plants (37.2 kB)
+/academy (37.2 kB)
+/paywall (45.9 kB)
+/profile (52.8 kB)
+/support (45.2 kB)
+/_sitemap (31.4 kB)
+/register (35.8 kB)
+/add-task (41 kB)
+/referral (37.2 kB)
+/settings (45.6 kB)
+/add-plant (41.1 kB)
+/blog-list (37.2 kB)
+/edit-zone (36.8 kB)
+/+not-found (31.4 kB)
+/diagnostic (39 kB)
+/scan-plant (37.2 kB)
+/academy.old (37.2 kB)
+/blog-detail (37.2 kB)
+/my-bookings (37.8 kB)
+/(tabs)/quiz (36.8 kB)
+/zone-detail (36.8 kB)
+/(auth)/login (34.6 kB)
+/(tabs)/about (41.9 kB)
+/achievements (37.2 kB)
+/(tabs)/admin (45.8 kB)
+/help-support (45.2 kB)
+/(tabs) (40.6 kB)
+/plant-detail (36.8 kB)
+/subscription (37.2 kB)
+/(tabs)/tasks (37.2 kB)
+/(tabs)/zones (37.9 kB)
+/course-detail (36.8 kB)
+/personal-info (37.2 kB)
+/(tabs)/plants (37.2 kB)
+/(tabs)/academy (37.2 kB)
+/course-booking (36.8 kB)
+/(tabs)/paywall (45.9 kB)
+/(tabs)/profile (52.8 kB)
+/(tabs)/support (45.2 kB)
+/(auth)/register (35.8 kB)
+/(tabs)/add-task (41 kB)
+/booking-success (37.5 kB)
+/(tabs)/referral (37.2 kB)
+/(tabs)/settings (45.6 kB)
+/workshop-detail (36.8 kB)
+/(tabs)/add-plant (41.1 kB)
+/(tabs)/blog-list (37.2 kB)
+/(tabs)/edit-zone (36.8 kB)
+/workshop-booking (36.8 kB)
+/(tabs)/diagnostic (39 kB)
+/(tabs)/scan-plant (37.2 kB)
+/(tabs)/academy.old (37.2 kB)
+/(tabs)/blog-detail (37.2 kB)
+/course-preregister (36.8 kB)
+/(tabs)/my-bookings (37.8 kB)
+/(tabs)/zone-detail (36.8 kB)
+/(tabs)/achievements (37.2 kB)
+/check-compatibility (37.2 kB)
+/(tabs)/help-support (45.2 kB)
+/(tabs)/plant-detail (36.8 kB)
+/(tabs)/subscription (37.2 kB)
+/(tabs)/course-detail (36.8 kB)
+/(tabs)/personal-info (37.2 kB)
+/(tabs)/course-booking (36.8 kB)
+/(tabs)/booking-success (37.5 kB)
+/course-booking-success (37.5 kB)
+/notifications-settings (44.5 kB)
+/(tabs)/workshop-detail (36.8 kB)
+/(tabs)/workshop-booking (36.8 kB)
+/(tabs)/course-preregister (36.8 kB)
+/(tabs)/check-compatibility (37.2 kB)
+/(tabs)/course-booking-success (37.5 kB)
+/(tabs)/notifications-settings (44.5 kB)
+
+Exported: dist to create a static build, though this is not the current deployment strategy.
+- **Apple Developer Program:** The process of enrolling and the requirements for publishing on the App Store.
+
+**key DB schema**
+- **users collection:** The user document now contains a  sub-document with fields like , , , , . A  field with  and Thu Jan 22 06:43:40 UTC 2026 was also added to track usage.
+
+**changes in tech stack**
+- No fundamental changes, but a deeper integration with **Stripe** for recurring subscriptions has been implemented.
+
+**All files of reference**
+- **Updated:**
+  - : Major changes to add Stripe checkout routes, webhooks, and logic for feature-gating (scan limits, zone limits, blog access).
+  - : Updated to call the new checkout APIs and provide options for monthly/yearly subscriptions.
+  - : Added new functions to call the subscription-related backend endpoints.
+  - : Modified to catch 403 errors and display a Premium Content view.
+- **Created:**
+  - : Created to resolve a critical Javascript bundling error.
+  - : A static HTML sales page for the application.
+
+**Areas that need refactoring**:
+- The code for feature limitations in  is functional but could be refactored into a reusable dependency/middleware for cleaner route definitions.
+
+**key api endpoints**
+- : Creates a Stripe session for the monthly plan.
+- : Creates a Stripe session for the yearly plan.
+- : Listens for successful payments from Stripe to activate premium status.
+- : Checks the status of a Stripe payment.
+- : Now includes a check to prevent free users from creating more than 3 zones.
+- : Now includes a check to prevent free users from making more than 5 scans per day.
+- : Now blocked for non-premium users.
+
+**Critical Info for New Agent**
+- **DO NOT ATTEMPT TO BUILD THE APK YOURSELF.** Emergent support has confirmed this feature is not yet available but will be in ~2 weeks. The only path for Android is to wait.
+- **THE IMMEDIATE GOAL IS IOS DEPLOYMENT.** The user is waiting for their Apple Developer account to be validated. Once it is, your top priority is to guide them through generating the  file from Emergent and submitting it to App Store Connect, preferably via TestFlight first.
+- The app's business logic (subscriptions, feature limits) is now implemented. The core development work is largely done. The focus is now on **deployment and marketing**.
+- The user is non-technical but motivated. Provide clear, step-by-step instructions, especially for the App Store Connect process, which can be complex.
+
+**documents created in this job**
+-  (Sales page)
+- The agent also generated text for a newsletter, social media posts, a live stream script, and a full marketing plan, which exist only in the chat history.
+
+**Last 10 User Messages and any pending HUMAN messages**
+1.  **oui prepare le plan marketing**: User requests a marketing plan. (Completed)
+2.  **Image showing Apple ID creation success**: User confirms Apple ID is created. (In Progress - waiting for Developer Program enrollment)
+3.  **que faire maintenant?**: User asks for next steps after creating Apple ID. (Responded)
+4.  **Image showing Apple Developer Program purchase confirmation**: User confirms they have paid and enrolled in the Developer Program. (Completed - now waiting for validation)
+5.  **redonne moi le flacsh code de lapp stp"**: User asks for the QR code. (Responded)
+6.  **"mince je viens de mappercevoir quon a le meme probleme avec les icones**: User reports the icon bug has returned. (Resolved)
+7.  **Support reply: I have checked... icons and logo are displaying correctly**: User forwards support email. (Responded)
+8.  **jai testé tout fonctionne normalement"**: User confirms the icon bug is now fixed for them. (Completed)
+9.  **"peux tu maider ppur créer mon compte app store?**: User asks for help creating Apple Developer account. (Completed)
+10. **non**: User confirms they do not have an iPhone to use for Apple ID creation. (Responded)
+
+**Pending User Action:** User is waiting for the Apple Developer Program validation email.
+
+**Project Health Check:**
+- Broken: None. The native build process is blocked pending external actions, but the codebase itself is functional.
+- Mocked: None.
+
+**3rd Party Integrations**
+- **Expo (EAS Build)**: For building native mobile apps. Currently waiting to be used for the first successful IPA build.
+- **Stripe (Payments)**: Fully integrated for handling premium subscriptions. Uses a live API key ().
+- **OpenAI (via emergentintegrations)**: Used for the plant identification and diagnosis features.
+
+**Testing status**
+  - Testing agent used after significant changes: NO
+  - Troubleshoot agent used after agent stuck in loop: YES (Used to diagnose the white screen bug).
+  - Test files created: None.
+  - Known regressions: The icon display issue was a major regression that has now been fixed. It should be monitored closely.
+
+**Credentials to test flow:**
+- **Expo Account**:  / (password not visible)
+- **Apple ID**:  / (password not visible)
+- **Stripe API Key**: 
+
+**What agent forgot to execute**
+- The agent successfully implemented the backend logic for feature limits but did not fully implement the frontend UI pop-ups for the scan limit and zone limit. The blog page shows a premium lock screen, but the other features might just fail without a clear user-facing message explaining why. This should be addressed to improve user experience.
+
 </analysis>
-
-<product_requirements>
-The project, Sepalis, is a premium mobile gardening assistant designed to provide an expert-in-your-pocket experience, validated by a Meilleur Ouvrier de France (MOF) landscaper.
-
-**Core Goal:** Leverage AI and expert knowledge to provide personalized, actionable gardening advice.
-
-**Implemented Features:**
-*   **Core Functionality:** Zone management, AI-powered plant suggestions, compatibility scanning, and disease diagnosis.
-*   **Admin Dashboard:** A private section for app analytics (user stats, email export) and content management.
-
-**Recent Additions (from Trajectory):**
-1.  **MOF Task Calendar:** A system allowing the admin to create a yearly schedule of gardening tasks. These tasks are automatically distributed to all users' task lists on a weekly basis, marked with a special MOF badge to indicate their expert origin. The distribution is automated via a scheduled job.
-2.  **Daily Quiz (MVP):** A gamified feature to drive daily engagement. It presents one new question each day with a QCM format. It includes a streak counter, XP points, and a system of five essential badges for motivation. An admin interface was also built for the user to add new questions.
-3.  **Push Notifications:** A system was implemented to send daily reminders for the quiz and notifications for new MOF tasks.
-</product_requirements>
-
-<key_technical_concepts>
-- **Frameworks:** Expo (React Native), FastAPI (Python).
-- **Database:** MongoDB.
-- **AI/LLM:**  for AI features.
-- **Authentication:** JWT with  and an Axios 401 interceptor.
-- **Routing:** Expo Router (file-based).
-- **Asynchronous Tasks:**  for running weekly task distribution and daily quiz notifications.
-- **Notifications:**  (backend) and  (frontend) for push notifications.
-- **State Management:** React Context () and local component state ().
-</key_technical_concepts>
-
-<code_architecture>
-The application is a standard monorepo with a  Expo app and a  FastAPI server.
-
-
-- ****
-    - **Importance:** This is the application's central nervous system, handling all logic, database interactions, AI calls, and scheduled tasks.
-    - **Summary of Changes:** This file was massively extended and refactored.
-        - **Task Calendar:** New Pydantic models () and full CRUD endpoints () were added. A distribution endpoint () was created to populate the  collection.
-        - **Daily Quiz:** New models (, ) and API endpoints (, ) were implemented to manage the quiz logic, user progress, streaks, and badges.
-        - **Scheduler:**  was installed and configured to run two cron jobs: one for distributing MOF tasks weekly and another for sending daily quiz notifications.
-        - **Refactoring:** A major refactoring was performed to fix a critical bug where new API routes were defined after the router was included in the app, making them inaccessible. This involved moving large blocks of code.
-
-- ****
-    - **Importance:** Serves as the admin dashboard for analytics and content management.
-    - **Summary of Changes:**
-        - **Bug Fixes:** Corrected API calls by changing  to  and adding the  prefix. Replaced an unreliable  with a custom  for email export.
-        - **Feature Additions:** The UI was heavily extended to include complete management sections for the Calendrier annuel MOF and the Quiz Quotidien, each with its own list view and creation/edit modal.
-
-- ****
-    - **Importance:** A brand new screen that houses the entire user-facing daily quiz feature.
-    - **Summary of Changes:** Created from scratch. It handles the golden envelope opening animation, fetching and displaying the daily question, submitting the user's answer, showing the result with the MOF's explanation, and displaying user statistics like streak, XP, and earned badges. It also includes the logic to request push notification permissions.
-
-- ****
-    - **Importance:** Configures the main tab navigation for the app.
-    - **Summary of Changes:** A new  for the Quiz was added with a  icon. Work was started to add a  to this screen to show a 1 when the daily question is unanswered.
-
-- ****
-    - **Importance:** The main home/dashboard screen for the user, displaying tasks.
-    - **Summary of Changes:** The task rendering logic was updated to conditionally display a 🏆 MOF badge if the  property is true on a task item.
-
-</code_architecture>
-
-<pending_tasks>
-- **Finalize Quiz Tab Badge:** Complete the implementation to show a 1 on the Quiz tab when the daily question is unanswered and hide it after the user responds.
-- **Filter MOF Tasks:** The user was asked about adding a filter for MOF tasks on the main task list, but this has not been implemented.
-- **Content Population:** The Académie section needs to be filled with articles and videos.
-- **Onboarding:** A guided tour or tooltips for new users to explain the app's features is still pending.
-</pending_tasks>
-
-<current_work>
-The most recent task was a user request to add a small red 1 badge on the Quiz tab icon if the user has not yet answered the daily question.
-
-The AI engineer started this implementation by:
-1.  **Acknowledging the request:** Confirmed it was a good idea for user engagement.
-2.  **Modifying :** Added necessary React hooks (, ) and started to add the logic to manage the visibility of the badge.
-3.  **Planning the update:** The plan was to add the  prop to the Quiz . This badge's visibility would be controlled by a new state variable, .
-4.  **Connecting Components:** The next logical step, which was about to be implemented, is to update this  state. This requires communication between the  screen (where the user answers the question) and the  file (which controls the tab bar). The state needs to be set to  from  once the user submits their answer. The trajectory ended just as this cross-component state management was being tackled.
-</current_work>
-
-<optional_next_step>
-Complete the implementation of the  on the Quiz tab by ensuring the state is updated across components when a user answers the daily question. This will likely involve using a shared React Context or an event emitter.
-</optional_next_step>

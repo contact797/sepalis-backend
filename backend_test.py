@@ -11,7 +11,7 @@ import uuid
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://garden-backend.preview.emergentagent.com/api"
+BACKEND_URL = "https://sepalis-app-1.preview.emergentagent.com/api"
 
 class SepalisSecurityTester:
     def __init__(self):

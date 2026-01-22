@@ -2464,7 +2464,7 @@ async def create_subscription_checkout(
         if not stripe_api_key:
             raise HTTPException(status_code=500, detail="Stripe non configuré")
         
-        host_url = os.getenv("HOST_URL", "https://garden-backend.preview.emergentagent.com")
+        host_url = os.getenv("HOST_URL", "https://sepalis-app-1.preview.emergentagent.com")
         webhook_url = f"{host_url}/api/webhook/stripe-subscription"
         
         stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url=webhook_url)
@@ -2530,7 +2530,7 @@ async def create_subscription_checkout_yearly(
         if not stripe_api_key:
             raise HTTPException(status_code=500, detail="Stripe non configuré")
         
-        host_url = os.getenv("HOST_URL", "https://garden-backend.preview.emergentagent.com")
+        host_url = os.getenv("HOST_URL", "https://sepalis-app-1.preview.emergentagent.com")
         webhook_url = f"{host_url}/api/webhook/stripe-subscription"
         
         stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url=webhook_url)

@@ -80,7 +80,7 @@ export default function WorkshopBooking() {
     try {
       const originUrl = Constants.expoConfig?.extra?.backendUrl || 
                        process.env.EXPO_PUBLIC_BACKEND_URL || 
-                       'https://garden-backend.preview.emergentagent.com';
+                       'https://sepalis-app-1.preview.emergentagent.com';
 
       const bookingData = {
         workshopSlug: workshop.slug,
