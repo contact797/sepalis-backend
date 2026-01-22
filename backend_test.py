@@ -459,7 +459,7 @@ class SepalisBackendTester:
             
             if len(courses) >= 4:
                 first_course = courses[0]
-                required_fields = ['id', 'title', 'description', 'level', 'duration', 'price', 'slug', 'instructor', 'topics', 'image']
+                required_fields = ['_id', 'title', 'description', 'level', 'duration', 'price', 'slug', 'instructor', 'topics', 'image']
                 has_all_fields = all(field in first_course for field in required_fields)
                 
                 if has_all_fields and first_course.get('image'):
