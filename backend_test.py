@@ -482,7 +482,7 @@ class SepalisBackendTester:
             
             if len(workshops) >= 5:
                 first_workshop = workshops[0]
-                required_fields = ['id', 'title', 'description', 'date', 'location', 'duration', 'price', 'slug', 'instructor', 'image']
+                required_fields = ['_id', 'title', 'description', 'date', 'location', 'duration', 'price', 'slug', 'instructor', 'image']
                 has_all_fields = all(field in first_workshop for field in required_fields)
                 
                 if has_all_fields and first_workshop.get('image'):
