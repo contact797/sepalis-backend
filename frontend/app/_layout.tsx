@@ -3,11 +3,12 @@ import { AuthProvider, useAuth } from '../contexts/AuthContext';
 import { SubscriptionProvider } from '../contexts/SubscriptionContext';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Onboarding } from '../components/Onboarding';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import * as Notifications from 'expo-notifications';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
-import { View, ActivityIndicator } from 'react-native';
+import { Ionicons, MaterialIcons, FontAwesome, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
+import { View, ActivityIndicator, Platform } from 'react-native';
 
 // Empêcher le splash screen de se cacher automatiquement
 SplashScreen.preventAutoHideAsync();
@@ -38,24 +39,36 @@ function RootNavigator() {
 }
 
 export default function RootLayout() {
-  // Charger les polices d'icônes depuis assets/fonts pour le web
-  // Les noms doivent correspondre exactement aux noms utilisés dans @expo/vector-icons
-  const [fontsLoaded] = useFonts({
-    // Ionicons utilise 'ionicons' (minuscule) comme nom de famille
-    'ionicons': require('../assets/fonts/Ionicons.ttf'),
-    // MaterialIcons utilise 'Material Icons' avec un espace
-    'Material Icons': require('../assets/fonts/MaterialIcons.ttf'),
-    // FontAwesome utilise 'FontAwesome'
-    'FontAwesome': require('../assets/fonts/FontAwesome.ttf'),
-    // FontAwesome5 
-    'FontAwesome5Free-Regular': require('../assets/fonts/FontAwesome5_Regular.ttf'),
-    'FontAwesome5Free-Solid': require('../assets/fonts/FontAwesome5_Solid.ttf'),
-    'FontAwesome5Brands-Regular': require('../assets/fonts/FontAwesome5_Brands.ttf'),
-    // MaterialCommunityIcons utilise 'Material Design Icons'
-    'Material Design Icons': require('../assets/fonts/MaterialCommunityIcons.ttf'),
-    // Police personnalisée
+  const [iconsLoaded, setIconsLoaded] = useState(false);
+  
+  // Charger les polices d'icônes de manière asynchrone pour le web
+  const loadIconFonts = useCallback(async () => {
+    try {
+      await Promise.all([
+        Ionicons.loadFont(),
+        MaterialIcons.loadFont(),
+        FontAwesome.loadFont(),
+        FontAwesome5.loadFont(),
+        MaterialCommunityIcons.loadFont(),
+      ]);
+      setIconsLoaded(true);
+    } catch (error) {
+      console.warn('Error loading icon fonts:', error);
+      // On continue même si le chargement échoue
+      setIconsLoaded(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadIconFonts();
+  }, [loadIconFonts]);
+
+  // Polices personnalisées seulement (pas @expo/vector-icons)
+  const [customFontsLoaded] = useFonts({
     'SpaceMono': require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
+
+  const fontsLoaded = customFontsLoaded && iconsLoaded;
 
   useEffect(() => {
     if (fontsLoaded) {
