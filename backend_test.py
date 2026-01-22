@@ -1,405 +1,731 @@
 #!/usr/bin/env python3
 """
-Tests critiques avant lancement Play Store - Sécurité Admin et Profil
-Focus sur la protection des routes admin et les nouveaux endpoints profil
+Tests complets du backend Sepalis avant déploiement App Store/Play Store
+Application de jardinage avec IA - Backend FastAPI
+
+Tests critiques selon la demande d'analyse:
+1. Authentification & Sécurité (JWT, routes admin)
+2. Système d'abonnement (essai gratuit, limitations)
+3. CRUD Zones, Plantes, Tâches
+4. API Météo
+5. Contenu (Formations/Ateliers)
+6. Quiz quotidien
+7. Système de parrainage
+8. Profil utilisateur
+9. Health check
 """
 
-import asyncio
-import httpx
+import requests
 import json
+import time
+from datetime import datetime, timedelta
 import uuid
-from datetime import datetime
 
 # Configuration
 BACKEND_URL = "https://sepalis-app-1.preview.emergentagent.com/api"
+TIMEOUT = 10
 
-class SepalisSecurityTester:
+class SepalisBackendTester:
     def __init__(self):
-        self.backend_url = BACKEND_URL
-        self.normal_user_token = None
-        self.admin_user_token = None
-        self.normal_user_data = None
-        self.admin_user_data = None
+        self.session = requests.Session()
+        self.session.timeout = TIMEOUT
+        self.auth_token = None
+        self.admin_token = None
+        self.user_id = None
+        self.admin_user_id = None
         self.test_results = []
         
-    def log_test(self, test_name, success, details=""):
+    def log_test(self, test_name, success, details="", response_time=0):
         """Enregistrer le résultat d'un test"""
         status = "✅ PASS" if success else "❌ FAIL"
         self.test_results.append({
             "test": test_name,
             "status": status,
             "success": success,
-            "details": details
+            "details": details,
+            "response_time": f"{response_time:.3f}s"
         })
-        print(f"{status} - {test_name}")
-        if details:
-            print(f"    {details}")
+        print(f"{status} {test_name} ({response_time:.3f}s)")
+        if details and not success:
+            print(f"   └─ {details}")
     
-    async def create_normal_user(self):
-        """Créer un utilisateur normal de test"""
-        try:
-            user_data = {
-                "email": f"testuser_{uuid.uuid4().hex[:8]}@test.com",
-                "password": "TestPassword123!",
-                "name": "Test User Normal"
-            }
-            
-            async with httpx.AsyncClient() as client:
-                response = await client.post(
-                    f"{self.backend_url}/auth/register",
-                    json=user_data,
-                    timeout=30.0
-                )
-                
-                if response.status_code == 200:
-                    data = response.json()
-                    self.normal_user_token = data["token"]
-                    self.normal_user_data = user_data
-                    self.log_test("Création utilisateur normal", True, f"Email: {user_data['email']}")
-                    return True
-                else:
-                    self.log_test("Création utilisateur normal", False, f"Status: {response.status_code}, Response: {response.text}")
-                    return False
-                    
-        except Exception as e:
-            self.log_test("Création utilisateur normal", False, f"Erreur: {str(e)}")
-            return False
-    
-    async def login_admin_user(self):
-        """Tenter de se connecter avec l'utilisateur admin"""
-        try:
-            # L'utilisateur admin est contact@nicolasblot.com mais nous ne connaissons pas le mot de passe
-            # Nous allons d'abord vérifier s'il existe dans la base
-            admin_data = {
-                "email": "contact@nicolasblot.com",
-                "password": "unknown_password"  # Nous ne connaissons pas le mot de passe
-            }
-            
-            async with httpx.AsyncClient() as client:
-                response = await client.post(
-                    f"{self.backend_url}/auth/login",
-                    json=admin_data,
-                    timeout=30.0
-                )
-                
-                if response.status_code == 200:
-                    data = response.json()
-                    self.admin_user_token = data["token"]
-                    self.admin_user_data = admin_data
-                    self.log_test("Connexion utilisateur admin", True, "Admin connecté avec succès")
-                    return True
-                else:
-                    # Comme nous ne connaissons pas le mot de passe, nous allons créer un utilisateur admin de test
-                    self.log_test("Connexion utilisateur admin", False, f"Mot de passe admin inconnu - Status: {response.status_code}")
-                    return await self.create_admin_user()
-                    
-        except Exception as e:
-            self.log_test("Connexion utilisateur admin", False, f"Erreur: {str(e)}")
-            return await self.create_admin_user()
-    
-    async def create_admin_user(self):
-        """Créer un utilisateur admin de test (pour les tests uniquement)"""
-        try:
-            # Créer un utilisateur normal d'abord
-            admin_data = {
-                "email": f"admin_test_{uuid.uuid4().hex[:8]}@test.com",
-                "password": "AdminPassword123!",
-                "name": "Test Admin User"
-            }
-            
-            async with httpx.AsyncClient() as client:
-                # Créer l'utilisateur
-                response = await client.post(
-                    f"{self.backend_url}/auth/register",
-                    json=admin_data,
-                    timeout=30.0
-                )
-                
-                if response.status_code == 200:
-                    data = response.json()
-                    self.admin_user_token = data["token"]
-                    self.admin_user_data = admin_data
-                    
-                    # Note: Dans un vrai environnement, nous devrions modifier la base de données
-                    # pour ajouter isAdmin: true à cet utilisateur, mais pour les tests
-                    # nous allons utiliser l'utilisateur normal et documenter le problème
-                    self.log_test("Création utilisateur admin de test", True, f"Email: {admin_data['email']} (Note: isAdmin doit être ajouté manuellement en DB)")
-                    return True
-                else:
-                    self.log_test("Création utilisateur admin de test", False, f"Status: {response.status_code}")
-                    return False
-                    
-        except Exception as e:
-            self.log_test("Création utilisateur admin de test", False, f"Erreur: {str(e)}")
-            return False
-    
-    async def test_admin_routes_with_normal_user(self):
-        """Tester l'accès aux routes admin avec un utilisateur normal (doit échouer)"""
-        if not self.normal_user_token:
-            self.log_test("Test routes admin - utilisateur normal", False, "Pas de token utilisateur normal")
-            return
+    def make_request(self, method, endpoint, **kwargs):
+        """Faire une requête HTTP avec gestion d'erreur"""
+        url = f"{BACKEND_URL}{endpoint}"
+        start_time = time.time()
         
-        headers = {"Authorization": f"Bearer {self.normal_user_token}"}
+        try:
+            if self.auth_token and 'headers' not in kwargs:
+                kwargs['headers'] = {'Authorization': f'Bearer {self.auth_token}'}
+            elif self.auth_token and 'headers' in kwargs:
+                kwargs['headers']['Authorization'] = f'Bearer {self.auth_token}'
+                
+            response = self.session.request(method, url, **kwargs)
+            response_time = time.time() - start_time
+            return response, response_time
+        except Exception as e:
+            response_time = time.time() - start_time
+            return None, response_time
+    
+    def test_health_check(self):
+        """Test 11: Health check - Vérifier que l'API répond"""
+        print("\n🏥 TEST HEALTH CHECK")
+        
+        response, response_time = self.make_request('GET', '/health')
+        
+        if response and response.status_code == 200:
+            self.log_test("Health Check API", True, "API répond correctement", response_time)
+            return True
+        else:
+            error_msg = f"Status: {response.status_code if response else 'No response'}"
+            self.log_test("Health Check API", False, error_msg, response_time)
+            return False
+    
+    def test_authentication(self):
+        """Test 1: Authentification & Sécurité"""
+        print("\n🔐 TEST AUTHENTIFICATION & SÉCURITÉ")
+        
+        # Test inscription
+        test_email = f"test_{uuid.uuid4().hex[:8]}@sepalis.test"
+        test_password = "TestPassword123!"
+        test_name = "Test User"
+        
+        register_data = {
+            "email": test_email,
+            "password": test_password,
+            "name": test_name
+        }
+        
+        response, response_time = self.make_request('POST', '/auth/register', json=register_data)
+        
+        if response and response.status_code == 200:
+            data = response.json()
+            self.auth_token = data.get('token')
+            self.user_id = data.get('user', {}).get('id')
+            self.log_test("POST /api/auth/register", True, "Inscription réussie", response_time)
+        else:
+            error_msg = f"Status: {response.status_code if response else 'No response'}"
+            self.log_test("POST /api/auth/register", False, error_msg, response_time)
+            return False
+        
+        # Test connexion
+        login_data = {
+            "email": test_email,
+            "password": test_password
+        }
+        
+        response, response_time = self.make_request('POST', '/auth/login', json=login_data)
+        
+        if response and response.status_code == 200:
+            data = response.json()
+            token = data.get('token')
+            self.log_test("POST /api/auth/login", True, "Connexion réussie", response_time)
+        else:
+            error_msg = f"Status: {response.status_code if response else 'No response'}"
+            self.log_test("POST /api/auth/login", False, error_msg, response_time)
+        
+        # Test protection JWT sur endpoint protégé
+        response, response_time = self.make_request('GET', '/user/profile')
+        
+        if response and response.status_code == 200:
+            self.log_test("Protection JWT endpoints", True, "Accès autorisé avec token valide", response_time)
+        else:
+            error_msg = f"Status: {response.status_code if response else 'No response'}"
+            self.log_test("Protection JWT endpoints", False, error_msg, response_time)
+        
+        # Test accès sans token
+        old_token = self.auth_token
+        self.auth_token = None
+        response, response_time = self.make_request('GET', '/user/profile')
+        self.auth_token = old_token
+        
+        if response and response.status_code == 401:
+            self.log_test("Protection JWT - Accès refusé sans token", True, "401 Unauthorized comme attendu", response_time)
+        else:
+            error_msg = f"Status: {response.status_code if response else 'No response'} - Devrait être 401"
+            self.log_test("Protection JWT - Accès refusé sans token", False, error_msg, response_time)
+        
+        return True
+    
+    def test_admin_security(self):
+        """Test protection des routes admin"""
+        print("\n🛡️ TEST SÉCURITÉ ROUTES ADMIN")
         
         admin_routes = [
-            ("GET", "/admin/season-tips", None),
-            ("POST", "/admin/calendar-tasks", {
-                "title": "Test Task",
-                "description": "Test Description", 
-                "weekNumber": 1,
-                "taskType": "general",
-                "priority": "optionnel"
-            }),
-            ("GET", "/admin/quiz/questions", None),
-            ("GET", "/admin/analytics/overview", None),
-            ("POST", "/admin/messages/broadcast", {
-                "title": "Test Message",
-                "content": "Test Content",
-                "targetAudience": "all"
-            }),
-            ("POST", "/admin/blog/articles", {
-                "title": "Test Article",
-                "content": "Test Content",
-                "category": "general"
-            })
+            '/admin/season-tips',
+            '/admin/calendar-tasks', 
+            '/admin/quiz/questions',
+            '/admin/analytics/overview',
+            '/admin/messages/broadcast',
+            '/admin/blog/articles'
         ]
         
-        forbidden_count = 0
-        total_routes = len(admin_routes)
+        all_protected = True
         
-        async with httpx.AsyncClient() as client:
-            for method, route, data in admin_routes:
-                try:
-                    if method == "GET":
-                        response = await client.get(
-                            f"{self.backend_url}{route}",
-                            headers=headers,
-                            timeout=30.0
-                        )
-                    else:  # POST
-                        response = await client.post(
-                            f"{self.backend_url}{route}",
-                            headers=headers,
-                            json=data,
-                            timeout=30.0
-                        )
-                    
-                    if response.status_code == 403:
-                        forbidden_count += 1
-                        self.log_test(f"Route admin {method} {route} - utilisateur normal", True, "403 Forbidden (correct)")
-                    else:
-                        self.log_test(f"Route admin {method} {route} - utilisateur normal", False, f"Status: {response.status_code} (devrait être 403)")
-                        
-                except Exception as e:
-                    self.log_test(f"Route admin {method} {route} - utilisateur normal", False, f"Erreur: {str(e)}")
+        for route in admin_routes:
+            response, response_time = self.make_request('GET', route)
+            
+            if response and response.status_code == 403:
+                self.log_test(f"Protection route {route}", True, "403 Forbidden pour utilisateur normal", response_time)
+            else:
+                error_msg = f"Status: {response.status_code if response else 'No response'} - Devrait être 403"
+                self.log_test(f"Protection route {route}", False, error_msg, response_time)
+                all_protected = False
         
-        # Résumé de sécurité
-        if forbidden_count == total_routes:
-            self.log_test("🔒 SÉCURITÉ ADMIN - Protection complète", True, f"Toutes les {total_routes} routes admin protégées contre utilisateurs normaux")
+        return all_protected
+    
+    def test_subscription_system(self):
+        """Test 2: Système d'abonnement"""
+        print("\n💳 TEST SYSTÈME D'ABONNEMENT")
+        
+        # Test démarrage essai gratuit
+        response, response_time = self.make_request('POST', '/user/start-trial')
+        
+        if response and response.status_code == 200:
+            data = response.json()
+            self.log_test("POST /api/user/start-trial", True, "Essai gratuit démarré", response_time)
         else:
-            self.log_test("🚨 SÉCURITÉ ADMIN - Faille critique", False, f"Seulement {forbidden_count}/{total_routes} routes protégées")
-    
-    async def test_admin_routes_with_admin_user(self):
-        """Tester l'accès aux routes admin avec l'utilisateur admin (doit fonctionner)"""
-        if not self.admin_user_token:
-            self.log_test("Test routes admin - utilisateur admin", False, "Pas de token utilisateur admin")
-            return
+            error_msg = f"Status: {response.status_code if response else 'No response'}"
+            self.log_test("POST /api/user/start-trial", False, error_msg, response_time)
         
-        headers = {"Authorization": f"Bearer {self.admin_user_token}"}
+        # Test vérification statut abonnement
+        response, response_time = self.make_request('GET', '/user/subscription')
         
-        # Test simple avec GET /admin/season-tips
-        try:
-            async with httpx.AsyncClient() as client:
-                response = await client.get(
-                    f"{self.backend_url}/admin/season-tips",
-                    headers=headers,
-                    timeout=30.0
-                )
-                
-                if response.status_code == 200:
-                    self.log_test("Route admin GET /admin/season-tips - utilisateur admin", True, "200 OK (accès autorisé)")
-                elif response.status_code == 403:
-                    self.log_test("Route admin GET /admin/season-tips - utilisateur admin", False, "403 Forbidden (utilisateur test n'a pas isAdmin=true)")
-                else:
-                    self.log_test("Route admin GET /admin/season-tips - utilisateur admin", False, f"Status: {response.status_code}")
-                    
-        except Exception as e:
-            self.log_test("Route admin GET /admin/season-tips - utilisateur admin", False, f"Erreur: {str(e)}")
-    
-    async def test_profile_endpoints(self):
-        """Tester les nouveaux endpoints de profil"""
-        if not self.normal_user_token:
-            self.log_test("Test endpoints profil", False, "Pas de token utilisateur")
-            return
-        
-        headers = {"Authorization": f"Bearer {self.normal_user_token}"}
-        
-        # Test GET /api/user/profile
-        try:
-            async with httpx.AsyncClient() as client:
-                response = await client.get(
-                    f"{self.backend_url}/user/profile",
-                    headers=headers,
-                    timeout=30.0
-                )
-                
-                if response.status_code == 200:
-                    data = response.json()
-                    if "firstName" in data or "lastName" in data or "email" in data:
-                        self.log_test("GET /api/user/profile", True, f"Profil récupéré: {list(data.keys())}")
-                    else:
-                        self.log_test("GET /api/user/profile", False, f"Structure inattendue: {data}")
-                else:
-                    self.log_test("GET /api/user/profile", False, f"Status: {response.status_code}, Response: {response.text}")
-                    
-        except Exception as e:
-            self.log_test("GET /api/user/profile", False, f"Erreur: {str(e)}")
-        
-        # Test PUT /api/user/profile
-        try:
-            profile_update = {
-                "firstName": "Test",
-                "lastName": "User"
-            }
+        if response and response.status_code == 200:
+            data = response.json()
+            required_fields = ['isActive', 'isTrial', 'daysRemaining', 'isExpired']
+            has_all_fields = all(field in data for field in required_fields)
             
-            async with httpx.AsyncClient() as client:
-                response = await client.put(
-                    f"{self.backend_url}/user/profile",
-                    headers=headers,
-                    json=profile_update,
-                    timeout=30.0
-                )
-                
-                if response.status_code == 200:
-                    self.log_test("PUT /api/user/profile", True, "Profil mis à jour avec succès")
-                else:
-                    self.log_test("PUT /api/user/profile", False, f"Status: {response.status_code}, Response: {response.text}")
-                    
-        except Exception as e:
-            self.log_test("PUT /api/user/profile", False, f"Erreur: {str(e)}")
+            if has_all_fields:
+                details = f"Statut: {data.get('isActive')}, Trial: {data.get('isTrial')}, Jours restants: {data.get('daysRemaining')}"
+                self.log_test("GET /api/user/subscription", True, details, response_time)
+            else:
+                missing = [f for f in required_fields if f not in data]
+                self.log_test("GET /api/user/subscription", False, f"Champs manquants: {missing}", response_time)
+        else:
+            error_msg = f"Status: {response.status_code if response else 'No response'}"
+            self.log_test("GET /api/user/subscription", False, error_msg, response_time)
         
-        # Test POST /api/user/change-password
-        try:
-            password_change = {
-                "currentPassword": self.normal_user_data["password"],
-                "newPassword": "NewPassword123!"
-            }
-            
-            async with httpx.AsyncClient() as client:
-                response = await client.post(
-                    f"{self.backend_url}/user/change-password",
-                    headers=headers,
-                    json=password_change,
-                    timeout=30.0
-                )
-                
-                if response.status_code == 200:
-                    self.log_test("POST /api/user/change-password", True, "Mot de passe changé avec succès")
-                else:
-                    self.log_test("POST /api/user/change-password", False, f"Status: {response.status_code}, Response: {response.text}")
-                    
-        except Exception as e:
-            self.log_test("POST /api/user/change-password", False, f"Erreur: {str(e)}")
-        
-        # Test POST /api/user/support-message
-        try:
-            support_message = {
-                "subject": "Test Support",
-                "message": "Message de test pour le support"
-            }
-            
-            async with httpx.AsyncClient() as client:
-                response = await client.post(
-                    f"{self.backend_url}/user/support-message",
-                    headers=headers,
-                    json=support_message,
-                    timeout=30.0
-                )
-                
-                if response.status_code == 200:
-                    self.log_test("POST /api/user/support-message", True, "Message de support envoyé avec succès")
-                else:
-                    self.log_test("POST /api/user/support-message", False, f"Status: {response.status_code}, Response: {response.text}")
-                    
-        except Exception as e:
-            self.log_test("POST /api/user/support-message", False, f"Erreur: {str(e)}")
+        return True
     
-    async def run_all_tests(self):
+    def test_zones_crud(self):
+        """Test 3: CRUD Zones"""
+        print("\n🏡 TEST CRUD ZONES")
+        
+        # Test récupération zones (vide initialement)
+        response, response_time = self.make_request('GET', '/user/zones')
+        
+        if response and response.status_code == 200:
+            zones = response.json()
+            self.log_test("GET /api/user/zones", True, f"Récupéré {len(zones)} zones", response_time)
+        else:
+            error_msg = f"Status: {response.status_code if response else 'No response'}"
+            self.log_test("GET /api/user/zones", False, error_msg, response_time)
+            return False
+        
+        # Test création zone avec champ humidity
+        zone_data = {
+            "name": "Zone Test Potager",
+            "type": "vegetable",
+            "length": 5.0,
+            "width": 3.0,
+            "area": 15.0,
+            "soilType": "Argileux",
+            "soilPH": "Neutre (6.5-7)",
+            "humidity": "Normal",  # Champ critique après fix
+            "sunExposure": "Plein soleil",
+            "climateZone": "Tempéré océanique",
+            "windProtection": "Protégé",
+            "wateringSystem": "Arrosage manuel",
+            "notes": "Zone test pour les légumes",
+            "color": "#4CAF50"
+        }
+        
+        response, response_time = self.make_request('POST', '/user/zones', json=zone_data)
+        
+        if response and response.status_code == 200:
+            zone = response.json()
+            zone_id = zone.get('id')
+            self.log_test("POST /api/user/zones", True, f"Zone créée avec humidity: {zone.get('humidity')}", response_time)
+        else:
+            error_msg = f"Status: {response.status_code if response else 'No response'}"
+            if response:
+                error_msg += f" - {response.text}"
+            self.log_test("POST /api/user/zones", False, error_msg, response_time)
+            return False
+        
+        # Test récupération zone par ID
+        response, response_time = self.make_request('GET', f'/user/zones/{zone_id}')
+        
+        if response and response.status_code == 200:
+            zone_detail = response.json()
+            self.log_test("GET /api/user/zones/{id}", True, f"Zone récupérée: {zone_detail.get('name')}", response_time)
+        else:
+            error_msg = f"Status: {response.status_code if response else 'No response'}"
+            self.log_test("GET /api/user/zones/{id}", False, error_msg, response_time)
+        
+        # Test mise à jour zone
+        update_data = {**zone_data, "humidity": "Humide", "notes": "Zone mise à jour"}
+        response, response_time = self.make_request('PUT', f'/user/zones/{zone_id}', json=update_data)
+        
+        if response and response.status_code == 200:
+            updated_zone = response.json()
+            self.log_test("PUT /api/user/zones/{id}", True, f"Humidity mis à jour: {updated_zone.get('humidity')}", response_time)
+        else:
+            error_msg = f"Status: {response.status_code if response else 'No response'}"
+            self.log_test("PUT /api/user/zones/{id}", False, error_msg, response_time)
+        
+        # Test suppression zone
+        response, response_time = self.make_request('DELETE', f'/user/zones/{zone_id}')
+        
+        if response and response.status_code == 200:
+            self.log_test("DELETE /api/user/zones/{id}", True, "Zone supprimée avec succès", response_time)
+        else:
+            error_msg = f"Status: {response.status_code if response else 'No response'}"
+            self.log_test("DELETE /api/user/zones/{id}", False, error_msg, response_time)
+        
+        return True
+    
+    def test_plants_crud(self):
+        """Test 4: CRUD Plantes"""
+        print("\n🌱 TEST CRUD PLANTES")
+        
+        # Test récupération plantes
+        response, response_time = self.make_request('GET', '/user/plants')
+        
+        if response and response.status_code == 200:
+            plants = response.json()
+            self.log_test("GET /api/user/plants", True, f"Récupéré {len(plants)} plantes", response_time)
+        else:
+            error_msg = f"Status: {response.status_code if response else 'No response'}"
+            self.log_test("GET /api/user/plants", False, error_msg, response_time)
+            return False
+        
+        # Test création plante avec conseils MOF
+        plant_data = {
+            "name": "Rosier Pierre de Ronsard",
+            "scientificName": "Rosa 'Pierre de Ronsard'",
+            "description": "Magnifique rosier grimpant aux fleurs blanc rosé",
+            "careInstructions": {
+                "sunExposure": "Plein soleil à mi-ombre",
+                "plantingPeriod": "Automne ou début de printemps",
+                "pruning": "Taille légère en fin d'hiver",
+                "temperature": "Rustique jusqu'à -15°C",
+                "soilType": "Sol riche, bien drainé",
+                "commonIssues": "Surveiller pucerons et maladies cryptogamiques"
+            },
+            "isFavorite": False
+        }
+        
+        response, response_time = self.make_request('POST', '/user/plants', json=plant_data)
+        
+        if response and response.status_code == 200:
+            plant = response.json()
+            plant_id = plant.get('id')
+            care_instructions = plant.get('careInstructions', {})
+            self.log_test("POST /api/user/plants", True, f"Plante créée avec conseils MOF: {len(care_instructions)} champs", response_time)
+        else:
+            error_msg = f"Status: {response.status_code if response else 'No response'}"
+            self.log_test("POST /api/user/plants", False, error_msg, response_time)
+            return False
+        
+        # Test suppression plante
+        response, response_time = self.make_request('DELETE', f'/user/plants/{plant_id}')
+        
+        if response and response.status_code == 200:
+            self.log_test("DELETE /api/user/plants/{id}", True, "Plante supprimée avec succès", response_time)
+        else:
+            error_msg = f"Status: {response.status_code if response else 'No response'}"
+            self.log_test("DELETE /api/user/plants/{id}", False, error_msg, response_time)
+        
+        return True
+    
+    def test_tasks_crud(self):
+        """Test 5: CRUD Tâches"""
+        print("\n✅ TEST CRUD TÂCHES")
+        
+        # Test récupération tâches
+        response, response_time = self.make_request('GET', '/user/tasks')
+        
+        if response and response.status_code == 200:
+            tasks = response.json()
+            self.log_test("GET /api/user/tasks", True, f"Récupéré {len(tasks)} tâches", response_time)
+        else:
+            error_msg = f"Status: {response.status_code if response else 'No response'}"
+            self.log_test("GET /api/user/tasks", False, error_msg, response_time)
+            return False
+        
+        # Test création tâche
+        task_data = {
+            "title": "Tailler les rosiers",
+            "description": "Taille de fin d'hiver pour favoriser la floraison",
+            "type": "pruning",
+            "dueDate": (datetime.utcnow() + timedelta(days=7)).isoformat(),
+            "completed": False
+        }
+        
+        response, response_time = self.make_request('POST', '/user/tasks', json=task_data)
+        
+        if response and response.status_code == 200:
+            task = response.json()
+            task_id = task.get('id')
+            self.log_test("POST /api/user/tasks", True, f"Tâche créée: {task.get('title')}", response_time)
+        else:
+            error_msg = f"Status: {response.status_code if response else 'No response'}"
+            self.log_test("POST /api/user/tasks", False, error_msg, response_time)
+            return False
+        
+        # Test mise à jour tâche (complétion)
+        response, response_time = self.make_request('POST', f'/user/tasks/{task_id}/complete')
+        
+        if response and response.status_code == 200:
+            self.log_test("POST /api/user/tasks/{id}/complete", True, "Tâche marquée comme terminée", response_time)
+        else:
+            error_msg = f"Status: {response.status_code if response else 'No response'}"
+            self.log_test("POST /api/user/tasks/{id}/complete", False, error_msg, response_time)
+        
+        # Test suppression tâche
+        response, response_time = self.make_request('DELETE', f'/user/tasks/{task_id}')
+        
+        if response and response.status_code == 200:
+            self.log_test("DELETE /api/user/tasks/{id}", True, "Tâche supprimée avec succès", response_time)
+        else:
+            error_msg = f"Status: {response.status_code if response else 'No response'}"
+            self.log_test("DELETE /api/user/tasks/{id}", False, error_msg, response_time)
+        
+        return True
+    
+    def test_weather_api(self):
+        """Test 6: API Météo"""
+        print("\n🌤️ TEST API MÉTÉO")
+        
+        # Coordonnées de Paris pour les tests
+        lat, lon = 48.8566, 2.3522
+        
+        # Test météo actuelle
+        response, response_time = self.make_request('GET', f'/weather/current?lat={lat}&lon={lon}')
+        
+        if response and response.status_code == 200:
+            weather = response.json()
+            required_fields = ['temperature', 'humidity', 'precipitation', 'weather_code', 'wind_speed']
+            has_all_fields = all(field in weather for field in required_fields)
+            
+            if has_all_fields:
+                details = f"Temp: {weather.get('temperature')}°C, Humidité: {weather.get('humidity')}%"
+                self.log_test("GET /api/weather/current", True, details, response_time)
+            else:
+                missing = [f for f in required_fields if f not in weather]
+                self.log_test("GET /api/weather/current", False, f"Champs manquants: {missing}", response_time)
+        else:
+            error_msg = f"Status: {response.status_code if response else 'No response'}"
+            self.log_test("GET /api/weather/current", False, error_msg, response_time)
+        
+        # Test prévisions météo 7 jours
+        response, response_time = self.make_request('GET', f'/weather/forecast?lat={lat}&lon={lon}&days=7')
+        
+        if response and response.status_code == 200:
+            forecast = response.json()
+            daily_forecasts = forecast.get('daily', [])
+            
+            if len(daily_forecasts) == 7:
+                first_day = daily_forecasts[0]
+                required_fields = ['date', 'temperature_min', 'temperature_max', 'weather_code']
+                has_all_fields = all(field in first_day for field in required_fields)
+                
+                if has_all_fields:
+                    details = f"7 jours de prévisions, Min/Max: {first_day.get('temperature_min')}/{first_day.get('temperature_max')}°C"
+                    self.log_test("GET /api/weather/forecast", True, details, response_time)
+                else:
+                    missing = [f for f in required_fields if f not in first_day]
+                    self.log_test("GET /api/weather/forecast", False, f"Champs manquants dans prévision: {missing}", response_time)
+            else:
+                self.log_test("GET /api/weather/forecast", False, f"Attendu 7 jours, reçu {len(daily_forecasts)}", response_time)
+        else:
+            error_msg = f"Status: {response.status_code if response else 'No response'}"
+            self.log_test("GET /api/weather/forecast", False, error_msg, response_time)
+        
+        return True
+    
+    def test_content_courses_workshops(self):
+        """Test 7: Contenu (Formations/Ateliers)"""
+        print("\n📚 TEST CONTENU (FORMATIONS/ATELIERS)")
+        
+        # Test formations
+        response, response_time = self.make_request('GET', '/courses')
+        
+        if response and response.status_code == 200:
+            courses = response.json()
+            
+            if len(courses) >= 4:
+                first_course = courses[0]
+                required_fields = ['id', 'title', 'description', 'level', 'duration', 'price', 'slug', 'instructor', 'topics', 'image']
+                has_all_fields = all(field in first_course for field in required_fields)
+                
+                if has_all_fields and first_course.get('image'):
+                    details = f"{len(courses)} formations avec images, Instructeur: {first_course.get('instructor')}"
+                    self.log_test("GET /api/courses", True, details, response_time)
+                else:
+                    missing = [f for f in required_fields if f not in first_course]
+                    self.log_test("GET /api/courses", False, f"Champs manquants: {missing}", response_time)
+            else:
+                self.log_test("GET /api/courses", False, f"Attendu ≥4 formations, reçu {len(courses)}", response_time)
+        else:
+            error_msg = f"Status: {response.status_code if response else 'No response'}"
+            self.log_test("GET /api/courses", False, error_msg, response_time)
+        
+        # Test ateliers
+        response, response_time = self.make_request('GET', '/workshops')
+        
+        if response and response.status_code == 200:
+            workshops = response.json()
+            
+            if len(workshops) >= 5:
+                first_workshop = workshops[0]
+                required_fields = ['id', 'title', 'description', 'date', 'location', 'duration', 'price', 'slug', 'instructor', 'image']
+                has_all_fields = all(field in first_workshop for field in required_fields)
+                
+                if has_all_fields and first_workshop.get('image'):
+                    details = f"{len(workshops)} ateliers avec images, Prix: {first_workshop.get('price')}€"
+                    self.log_test("GET /api/workshops", True, details, response_time)
+                else:
+                    missing = [f for f in required_fields if f not in first_workshop]
+                    self.log_test("GET /api/workshops", False, f"Champs manquants: {missing}", response_time)
+            else:
+                self.log_test("GET /api/workshops", False, f"Attendu ≥5 ateliers, reçu {len(workshops)}", response_time)
+        else:
+            error_msg = f"Status: {response.status_code if response else 'No response'}"
+            self.log_test("GET /api/workshops", False, error_msg, response_time)
+        
+        return True
+    
+    def test_quiz_system(self):
+        """Test 8: Quiz quotidien"""
+        print("\n🧠 TEST QUIZ QUOTIDIEN")
+        
+        # Test question du jour
+        response, response_time = self.make_request('GET', '/quiz/today')
+        
+        if response and response.status_code == 200:
+            quiz = response.json()
+            required_fields = ['id', 'question', 'answers', 'alreadyAnswered']
+            has_all_fields = all(field in quiz for field in required_fields)
+            
+            if has_all_fields:
+                details = f"Question disponible, Déjà répondu: {quiz.get('alreadyAnswered')}"
+                self.log_test("GET /api/quiz/today", True, details, response_time)
+            else:
+                missing = [f for f in required_fields if f not in quiz]
+                self.log_test("GET /api/quiz/today", False, f"Champs manquants: {missing}", response_time)
+        elif response and response.status_code == 404:
+            self.log_test("GET /api/quiz/today", True, "Pas de question aujourd'hui (404 normal)", response_time)
+        else:
+            error_msg = f"Status: {response.status_code if response else 'No response'}"
+            self.log_test("GET /api/quiz/today", False, error_msg, response_time)
+        
+        # Test statistiques quiz avec todayAnswered
+        response, response_time = self.make_request('GET', '/quiz/stats')
+        
+        if response and response.status_code == 200:
+            stats = response.json()
+            required_fields = ['currentStreak', 'totalXP', 'totalAnswered', 'totalCorrect', 'todayAnswered']
+            has_all_fields = all(field in stats for field in required_fields)
+            
+            if has_all_fields:
+                details = f"XP: {stats.get('totalXP')}, Streak: {stats.get('currentStreak')}, Aujourd'hui: {stats.get('todayAnswered')}"
+                self.log_test("GET /api/quiz/stats", True, details, response_time)
+            else:
+                missing = [f for f in required_fields if f not in stats]
+                self.log_test("GET /api/quiz/stats", False, f"Champs manquants: {missing}", response_time)
+        else:
+            error_msg = f"Status: {response.status_code if response else 'No response'}"
+            self.log_test("GET /api/quiz/stats", False, error_msg, response_time)
+        
+        return True
+    
+    def test_referral_system(self):
+        """Test 9: Système de parrainage"""
+        print("\n🤝 TEST SYSTÈME DE PARRAINAGE")
+        
+        # Test génération code parrainage
+        response, response_time = self.make_request('GET', '/user/referral/code')
+        
+        if response and response.status_code == 200:
+            referral = response.json()
+            required_fields = ['code', 'shareUrl', 'shareMessage']
+            has_all_fields = all(field in referral for field in required_fields)
+            
+            if has_all_fields and referral.get('code', '').startswith('SEPALIS-'):
+                details = f"Code: {referral.get('code')}, URL: {referral.get('shareUrl')}"
+                self.log_test("GET /api/user/referral/code", True, details, response_time)
+            else:
+                missing = [f for f in required_fields if f not in referral]
+                self.log_test("GET /api/user/referral/code", False, f"Champs manquants ou format incorrect: {missing}", response_time)
+        else:
+            error_msg = f"Status: {response.status_code if response else 'No response'}"
+            self.log_test("GET /api/user/referral/code", False, error_msg, response_time)
+        
+        # Test statistiques parrainage
+        response, response_time = self.make_request('GET', '/user/referral/stats')
+        
+        if response and response.status_code == 200:
+            stats = response.json()
+            required_fields = ['totalReferrals', 'activeReferrals', 'premiumEarned', 'nextReward']
+            has_all_fields = all(field in stats for field in required_fields)
+            
+            if has_all_fields:
+                details = f"Total: {stats.get('totalReferrals')}, Actifs: {stats.get('activeReferrals')}, Premium gagné: {stats.get('premiumEarned')}j"
+                self.log_test("GET /api/user/referral/stats", True, details, response_time)
+            else:
+                missing = [f for f in required_fields if f not in stats]
+                self.log_test("GET /api/user/referral/stats", False, f"Champs manquants: {missing}", response_time)
+        else:
+            error_msg = f"Status: {response.status_code if response else 'No response'}"
+            self.log_test("GET /api/user/referral/stats", False, error_msg, response_time)
+        
+        return True
+    
+    def test_user_profile(self):
+        """Test 10: Profil utilisateur"""
+        print("\n👤 TEST PROFIL UTILISATEUR")
+        
+        # Test récupération profil
+        response, response_time = self.make_request('GET', '/user/profile')
+        
+        if response and response.status_code == 200:
+            profile = response.json()
+            required_fields = ['firstName', 'lastName', 'email']
+            has_all_fields = all(field in profile for field in required_fields)
+            
+            if has_all_fields:
+                details = f"Email: {profile.get('email')}, Nom: {profile.get('firstName')} {profile.get('lastName')}"
+                self.log_test("GET /api/user/profile", True, details, response_time)
+            else:
+                missing = [f for f in required_fields if f not in profile]
+                self.log_test("GET /api/user/profile", False, f"Champs manquants: {missing}", response_time)
+        else:
+            error_msg = f"Status: {response.status_code if response else 'No response'}"
+            self.log_test("GET /api/user/profile", False, error_msg, response_time)
+        
+        # Test mise à jour profil
+        update_data = {
+            "firstName": "Test",
+            "lastName": "Updated"
+        }
+        
+        response, response_time = self.make_request('PUT', '/user/profile', json=update_data)
+        
+        if response and response.status_code == 200:
+            self.log_test("PUT /api/user/profile", True, "Profil mis à jour avec succès", response_time)
+        else:
+            error_msg = f"Status: {response.status_code if response else 'No response'}"
+            self.log_test("PUT /api/user/profile", False, error_msg, response_time)
+        
+        # Test changement mot de passe
+        password_data = {
+            "currentPassword": "TestPassword123!",
+            "newPassword": "NewTestPassword123!"
+        }
+        
+        response, response_time = self.make_request('POST', '/user/change-password', json=password_data)
+        
+        if response and response.status_code == 200:
+            self.log_test("POST /api/user/change-password", True, "Mot de passe changé avec succès", response_time)
+        else:
+            error_msg = f"Status: {response.status_code if response else 'No response'}"
+            self.log_test("POST /api/user/change-password", False, error_msg, response_time)
+        
+        return True
+    
+    def run_all_tests(self):
         """Exécuter tous les tests critiques"""
-        print("🎯 TESTS CRITIQUES AVANT LANCEMENT PLAY STORE")
-        print("=" * 60)
-        print(f"Backend URL: {self.backend_url}")
-        print(f"Timestamp: {datetime.now().isoformat()}")
-        print()
+        print("🧪 TESTS COMPLETS BACKEND SEPALIS - ANALYSE AVANT DÉPLOIEMENT APP STORE/PLAY STORE")
+        print("=" * 80)
         
-        # Phase 1: Création des utilisateurs
-        print("📋 PHASE 1: PRÉPARATION DES UTILISATEURS")
-        await self.create_normal_user()
-        await self.login_admin_user()
-        print()
+        start_time = time.time()
         
-        # Phase 2: Tests de sécurité admin (CRITIQUE)
-        print("🔒 PHASE 2: TESTS SÉCURITÉ ADMIN (CRITIQUE)")
-        await self.test_admin_routes_with_normal_user()
-        await self.test_admin_routes_with_admin_user()
-        print()
+        # Tests dans l'ordre de priorité critique
+        tests = [
+            ("Health Check", self.test_health_check),
+            ("Authentification & Sécurité", self.test_authentication),
+            ("Protection Routes Admin", self.test_admin_security),
+            ("Système d'Abonnement", self.test_subscription_system),
+            ("CRUD Zones", self.test_zones_crud),
+            ("CRUD Plantes", self.test_plants_crud),
+            ("CRUD Tâches", self.test_tasks_crud),
+            ("API Météo", self.test_weather_api),
+            ("Contenu (Formations/Ateliers)", self.test_content_courses_workshops),
+            ("Quiz Quotidien", self.test_quiz_system),
+            ("Système de Parrainage", self.test_referral_system),
+            ("Profil Utilisateur", self.test_user_profile)
+        ]
         
-        # Phase 3: Tests endpoints profil
-        print("👤 PHASE 3: TESTS ENDPOINTS PROFIL")
-        await self.test_profile_endpoints()
-        print()
+        for test_name, test_func in tests:
+            try:
+                test_func()
+            except Exception as e:
+                self.log_test(f"ERREUR {test_name}", False, f"Exception: {str(e)}")
         
-        # Résumé final
-        self.print_summary()
-    
-    def print_summary(self):
-        """Afficher le résumé des tests"""
-        print("📊 RÉSUMÉ DES TESTS")
-        print("=" * 60)
+        total_time = time.time() - start_time
         
-        total_tests = len(self.test_results)
-        passed_tests = sum(1 for result in self.test_results if result["success"])
-        failed_tests = total_tests - passed_tests
-        success_rate = (passed_tests / total_tests * 100) if total_tests > 0 else 0
+        # Résumé des résultats
+        print("\n" + "=" * 80)
+        print("📊 RÉSUMÉ DES TESTS BACKEND SEPALIS")
+        print("=" * 80)
         
-        print(f"Total des tests: {total_tests}")
-        print(f"Tests réussis: {passed_tests}")
-        print(f"Tests échoués: {failed_tests}")
-        print(f"Taux de réussite: {success_rate:.1f}%")
-        print()
+        passed = sum(1 for result in self.test_results if result['success'])
+        total = len(self.test_results)
+        success_rate = (passed / total * 100) if total > 0 else 0
         
-        # Tests échoués (priorité)
-        failed_results = [r for r in self.test_results if not r["success"]]
-        if failed_results:
-            print("❌ TESTS ÉCHOUÉS (ATTENTION REQUISE):")
-            for result in failed_results:
-                print(f"  • {result['test']}")
-                if result['details']:
-                    print(f"    {result['details']}")
-            print()
+        print(f"✅ Tests réussis: {passed}/{total} ({success_rate:.1f}%)")
+        print(f"⏱️  Temps total: {total_time:.2f}s")
+        print(f"🌐 Backend URL: {BACKEND_URL}")
         
-        # Tests réussis
-        passed_results = [r for r in self.test_results if r["success"]]
-        if passed_results:
-            print("✅ TESTS RÉUSSIS:")
-            for result in passed_results:
-                print(f"  • {result['test']}")
-            print()
+        # Détail des échecs
+        failures = [result for result in self.test_results if not result['success']]
+        if failures:
+            print(f"\n❌ ÉCHECS CRITIQUES ({len(failures)}):")
+            for failure in failures:
+                print(f"   • {failure['test']}: {failure['details']}")
         
-        # Recommandations
-        print("🎯 RECOMMANDATIONS:")
-        if failed_tests == 0:
-            print("  ✅ Tous les tests sont passés - Application prête pour le lancement")
+        # Points critiques pour déploiement
+        print(f"\n🎯 ANALYSE CRITIQUE POUR DÉPLOIEMENT:")
+        
+        critical_endpoints = [
+            "POST /api/auth/register",
+            "POST /api/auth/login", 
+            "Protection JWT endpoints",
+            "Protection route /admin/",
+            "GET /api/user/subscription",
+            "POST /api/user/zones",
+            "GET /api/weather/current",
+            "GET /api/courses",
+            "GET /api/quiz/stats"
+        ]
+        
+        critical_failures = [r for r in self.test_results if not r['success'] and any(endpoint in r['test'] for endpoint in critical_endpoints)]
+        
+        if not critical_failures:
+            print("   ✅ Tous les endpoints critiques fonctionnent")
+            print("   ✅ Sécurité JWT et admin validée")
+            print("   ✅ CRUD principal opérationnel")
+            print("   ✅ API météo et contenu accessibles")
+            print("   🚀 BACKEND PRÊT POUR DÉPLOIEMENT APP STORE/PLAY STORE")
         else:
-            critical_security_failed = any("SÉCURITÉ ADMIN" in r["test"] and not r["success"] for r in self.test_results)
-            if critical_security_failed:
-                print("  🚨 CRITIQUE: Problème de sécurité admin détecté - CORRECTION URGENTE REQUISE")
-            print(f"  ⚠️  {failed_tests} test(s) échoué(s) - Vérification nécessaire avant lancement")
-
-async def main():
-    """Point d'entrée principal"""
-    tester = SepalisSecurityTester()
-    await tester.run_all_tests()
+            print("   ❌ PROBLÈMES CRITIQUES IDENTIFIÉS:")
+            for failure in critical_failures:
+                print(f"      • {failure['test']}")
+            print("   ⚠️  CORRECTION REQUISE AVANT DÉPLOIEMENT")
+        
+        # Temps de réponse
+        avg_response_time = sum(float(r['response_time'].replace('s', '')) for r in self.test_results) / len(self.test_results)
+        if avg_response_time < 2.0:
+            print(f"   ✅ Temps de réponse moyen: {avg_response_time:.3f}s (< 2s)")
+        else:
+            print(f"   ⚠️  Temps de réponse moyen: {avg_response_time:.3f}s (> 2s)")
+        
+        return success_rate >= 85  # 85% minimum pour validation
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    tester = SepalisBackendTester()
+    success = tester.run_all_tests()
+    exit(0 if success else 1)
