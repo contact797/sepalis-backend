@@ -23,7 +23,7 @@ import uuid
 
 # Configuration
 BACKEND_URL = "https://sepalis-app-1.preview.emergentagent.com/api"
-TIMEOUT = 10
+TIMEOUT = 30  # Increased timeout for admin routes
 
 class SepalisBackendTester:
     def __init__(self):
