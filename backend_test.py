@@ -503,6 +503,9 @@ class SepalisBackendTester:
         """Test 8: Quiz quotidien"""
         print("\n🧠 TEST QUIZ QUOTIDIEN")
         
+        # Test question du jour
+        response, response_time = self.make_request('GET', '/quiz/today')
+        
         # Test quiz/today - handle 404 as normal
         if response and response.status_code == 404:
             self.log_test("GET /api/quiz/today", True, "Pas de question aujourd'hui (404 normal)", response_time)
