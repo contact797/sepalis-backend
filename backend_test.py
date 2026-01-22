@@ -322,7 +322,7 @@ class SepalisBackendTester:
         
         if response and response.status_code == 200:
             plant = response.json()
-            plant_id = plant.get('id')
+            plant_id = plant.get('_id')  # Use _id instead of id
             care_instructions = plant.get('careInstructions', {})
             self.log_test("POST /api/user/plants", True, f"Plante créée avec conseils MOF: {len(care_instructions)} champs", response_time)
         else:
