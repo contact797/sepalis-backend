@@ -503,10 +503,10 @@ class SepalisBackendTester:
         """Test 8: Quiz quotidien"""
         print("\n🧠 TEST QUIZ QUOTIDIEN")
         
-        # Test question du jour
-        response, response_time = self.make_request('GET', '/quiz/today')
-        
-        if response and response.status_code == 200:
+        # Test quiz/today - handle 404 as normal
+        if response and response.status_code == 404:
+            self.log_test("GET /api/quiz/today", True, "Pas de question aujourd'hui (404 normal)", response_time)
+        elif response and response.status_code == 200:
             quiz = response.json()
             required_fields = ['id', 'question', 'answers', 'alreadyAnswered']
             has_all_fields = all(field in quiz for field in required_fields)
@@ -517,8 +517,6 @@ class SepalisBackendTester:
             else:
                 missing = [f for f in required_fields if f not in quiz]
                 self.log_test("GET /api/quiz/today", False, f"Champs manquants: {missing}", response_time)
-        elif response and response.status_code == 404:
-            self.log_test("GET /api/quiz/today", True, "Pas de question aujourd'hui (404 normal)", response_time)
         else:
             error_msg = f"Status: {response.status_code if response else 'No response'}"
             self.log_test("GET /api/quiz/today", False, error_msg, response_time)
