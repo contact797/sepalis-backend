@@ -87,7 +87,7 @@ class SepalisBackendTester:
         print("\n🔐 TEST AUTHENTIFICATION & SÉCURITÉ")
         
         # Test inscription
-        test_email = f"test_{uuid.uuid4().hex[:8]}@sepalis.test"
+        test_email = f"test_{uuid.uuid4().hex[:8]}@example.com"
         test_password = "TestPassword123!"
         test_name = "Test User"
         
