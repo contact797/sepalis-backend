@@ -369,7 +369,7 @@ class SepalisBackendTester:
         
         if response and response.status_code == 200:
             task = response.json()
-            task_id = task.get('id')
+            task_id = task.get('_id')  # Use _id instead of id
             self.log_test("POST /api/user/tasks", True, f"Tâche créée: {task.get('title')}", response_time)
         else:
             error_msg = f"Status: {response.status_code if response else 'No response'}"
