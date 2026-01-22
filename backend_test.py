@@ -246,7 +246,7 @@ class SepalisBackendTester:
         
         if response and response.status_code == 200:
             zone = response.json()
-            zone_id = zone.get('id')
+            zone_id = zone.get('_id')  # Use _id instead of id
             self.log_test("POST /api/user/zones", True, f"Zone créée avec humidity: {zone.get('humidity')}", response_time)
         else:
             error_msg = f"Status: {response.status_code if response else 'No response'}"
