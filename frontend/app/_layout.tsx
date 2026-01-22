@@ -22,6 +22,59 @@ Notifications.setNotificationHandler({
   }),
 });
 
+// Fonction pour injecter les fonts CSS sur le web
+function injectWebFonts() {
+  if (Platform.OS === 'web' && typeof document !== 'undefined') {
+    // Vérifier si déjà injecté
+    if (document.getElementById('vector-icons-fonts')) return;
+    
+    const style = document.createElement('style');
+    style.id = 'vector-icons-fonts';
+    style.textContent = `
+      @font-face {
+        font-family: 'ionicons';
+        src: url('/fonts/Ionicons.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: 'Material Icons';
+        src: url('/fonts/MaterialIcons.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: 'FontAwesome';
+        src: url('/fonts/FontAwesome.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: 'Material Design Icons';
+        src: url('/fonts/MaterialCommunityIcons.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: 'FontAwesome5Free-Solid';
+        font-family: 'FontAwesome5_Solid';
+        src: url('/fonts/FontAwesome5_Solid.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: 'FontAwesome5Free-Regular';
+        font-family: 'FontAwesome5_Regular';
+        src: url('/fonts/FontAwesome5_Regular.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+      }
+    `;
+    document.head.appendChild(style);
+    console.log('Vector icon fonts CSS injected');
+  }
+}
+
 function RootNavigator() {
   const { showOnboarding, completeOnboarding } = useAuth();
 
@@ -41,9 +94,13 @@ function RootNavigator() {
 export default function RootLayout() {
   const [iconsLoaded, setIconsLoaded] = useState(false);
   
-  // Charger les polices d'icônes de manière asynchrone pour le web
+  // Injecter les fonts CSS sur le web et charger les fonts de manière asynchrone
   const loadIconFonts = useCallback(async () => {
     try {
+      // Injecter les styles CSS sur le web
+      injectWebFonts();
+      
+      // Charger les fonts via la méthode @expo/vector-icons
       await Promise.all([
         Ionicons.loadFont(),
         MaterialIcons.loadFont(),
